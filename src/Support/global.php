@@ -2,7 +2,7 @@
 
 use Velm\Core\Support\Helpers\VelmUtils;
 
-if (!function_exists('velm')) {
+if (! function_exists('velm')) {
     /**
      * Get the Velm manager instance.
      */
@@ -11,7 +11,7 @@ if (!function_exists('velm')) {
         return \Velm\Core\Facades\Velm::getFacadeRoot();
     }
 }
-if (!function_exists('velm_utils')) {
+if (! function_exists('velm_utils')) {
     /**
      * Get the Velm utilities instance.
      */
@@ -21,7 +21,7 @@ if (!function_exists('velm_utils')) {
     }
 }
 
-if (!function_exists('velm_factory')) {
+if (! function_exists('velm_factory')) {
     /**
      * Get a Velm model factory instance for the given model.
      */

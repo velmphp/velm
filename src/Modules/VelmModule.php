@@ -14,6 +14,7 @@ abstract class VelmModule implements VelmModuleContract
         $child = get_called_class();
         $this->registered();
     }
+
     public function registering(): void
     {
         // Hook for actions before registering
@@ -47,6 +48,7 @@ abstract class VelmModule implements VelmModuleContract
          * @var VelmModuleContract $called
          */
         $called = get_called_class();
+
         return \Velm::registry()->modules()->resolvePath($called::slug());
     }
 
@@ -56,6 +58,7 @@ abstract class VelmModule implements VelmModuleContract
          * @var VelmModuleContract $called
          */
         $called = get_called_class();
+
         return \Velm::registry()->modules()->find($called::slug())?->version ?? 'unknown';
     }
 
@@ -65,6 +68,7 @@ abstract class VelmModule implements VelmModuleContract
          * @var VelmModuleContract $called
          */
         $called = get_called_class();
+
         return \Velm::registry()->modules()->resolveNamespace($called::slug());
     }
 
@@ -74,6 +78,7 @@ abstract class VelmModule implements VelmModuleContract
          * @var VelmModuleContract $called
          */
         $called = get_called_class();
+
         return \Velm::registry()->modules()->resolvePackageName($called::slug());
     }
 
@@ -84,6 +89,7 @@ abstract class VelmModule implements VelmModuleContract
          * @var VelmModuleContract $called
          */
         $called = get_called_class();
+
         return \Velm::registry()->modules()->resolveDependencies($called::slug());
     }
 }

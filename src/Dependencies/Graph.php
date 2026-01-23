@@ -26,4 +26,3 @@ final class Graph
         return $this->edges;
     }
 }
-

@@ -79,13 +79,13 @@ class VelmServiceProvider extends PackageServiceProvider
                     ->endWith(function (Command $command) {
                         $command->alert('Velm Framework installation completed');
                     });
-            })
-        ;
+            });
         $this->app->singleton('velm', function ($app) {
-            return new Velm();
+            return new Velm;
         });
 
     }
+
     public function packageRegistered()
     {
         // Register Velm

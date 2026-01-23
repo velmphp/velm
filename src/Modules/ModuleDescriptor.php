@@ -10,13 +10,13 @@ final class ModuleDescriptor
         public readonly string $namespace,
         public readonly string $path,
         /**
-         *@var class-string<VelmModule> $entryPoint
+         * @var class-string<VelmModule> $entryPoint
          */
         public readonly string $entryPoint,
         public VelmModule $instance,
         public readonly string $version,
         public readonly string $packageName,
-        public array  $dependencies
+        public array $dependencies
     ) {}
 
     public function setInstance(VelmModule $instance): void

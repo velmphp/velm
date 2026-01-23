@@ -2,7 +2,4 @@
 
 namespace Velm\Core\Support\Helpers;
 
-class VelmUtils
-{
-
-}
+class VelmUtils {}

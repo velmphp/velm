@@ -7,8 +7,11 @@ use Illuminate\Contracts\Container\CircularDependencyException;
 final class Resolver
 {
     private array $graph;
+
     private array $visited = [];
+
     private array $visiting = [];
+
     private array $result = [];
 
     public function __construct(Graph $graph)
@@ -18,16 +21,16 @@ final class Resolver
 
     public function resolve(): array
     {
-        dump("Resolving dependencies...");
+        dump('Resolving dependencies...');
         // reset state (important!)
-        $this->visited  = [];
+        $this->visited = [];
         $this->visiting = [];
-        $this->result   = [];
+        $this->result = [];
         $nodes = array_keys($this->graph);
         sort($nodes, SORT_STRING);
 
         foreach ($nodes as $node) {
-            if (!isset($this->visited[$node])) {
+            if (! isset($this->visited[$node])) {
                 $this->visit($node);
             }
         }
@@ -40,14 +43,14 @@ final class Resolver
      */
     public function resolveFor(string $package): array
     {
-        if (!isset($this->graph[$package])) {
+        if (! isset($this->graph[$package])) {
             throw new \Exception("Unknown module: {$package}");
         }
 
         // reset state (important!)
-        $this->visited  = [];
+        $this->visited = [];
         $this->visiting = [];
-        $this->result   = [];
+        $this->result = [];
 
         $this->visit($package);
 
@@ -78,5 +81,3 @@ final class Resolver
         $this->result[] = $node;
     }
 }
-
-

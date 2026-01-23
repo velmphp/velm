@@ -1,4 +1,5 @@
 <?php
+
 namespace Velm\Core\Registry;
 
 use Velm\Core\Dependencies\Graph;
@@ -6,17 +7,22 @@ use Velm\Core\Dependencies\Resolver;
 use Velm\Core\Modules\ModuleDescriptor;
 use Velm\Core\Modules\VelmModule;
 use Velm\Core\Support\Repositories\ComposerRepo;
+
 use function Laravel\Prompts\warning;
 
 class ModuleRegistry
 {
     private bool $frozen = false;
+
     /**
      * This is a search map
-     * @var array<string, ModuleDescriptor> $modules
+     *
+     * @var array<string, ModuleDescriptor>
      */
     private array $modules = [];
+
     private ?Graph $_graph = null;
+
     private ?Resolver $_resolver = null;
 
     /**
@@ -25,7 +31,6 @@ class ModuleRegistry
     private ?array $_resolved = null;
 
     /**
-     * @return void
      * @throws \JsonException
      */
     final protected function scan(): void
@@ -40,7 +45,7 @@ class ModuleRegistry
         );
 
         foreach ($installed['packages'] ?? [] as $package) {
-            if (!isset($package['extra']['velm'])) {
+            if (! isset($package['extra']['velm'])) {
                 continue;
             }
 
@@ -87,6 +92,7 @@ class ModuleRegistry
                 // Warn and skip, but don't throw
                 if (app()->runningInConsole()) {
                     warning("Warning: Velm module [{$package['name']}] does not have a valid PSR-4 namespace pointing to app/ folder. Skipping registration ...\n");
+
                     continue;
                 }
             }
@@ -97,7 +103,7 @@ class ModuleRegistry
                 namespace: $namespace,
                 path: $path,
                 entryPoint: $class,
-                instance: new $class(),
+                instance: new $class,
                 version: $package['version'],
                 packageName: $package['name'],
                 dependencies: $this->getComposerDependencies($package['name'])
@@ -110,13 +116,13 @@ class ModuleRegistry
      */
     final public function getComposerJson(string $packageName): array
     {
-        if (!isset($this->modules[$packageName])) {
+        if (! isset($this->modules[$packageName])) {
             return [];
         }
         $module = $this->modules[$packageName];
-        $composerPath = $module->path . '/composer.json';
+        $composerPath = $module->path.'/composer.json';
 
-        if (!is_file($composerPath)) {
+        if (! is_file($composerPath)) {
             return [];
         }
 
@@ -143,12 +149,13 @@ class ModuleRegistry
                 }
             }
         }
+
         return $dependencies;
     }
 
     public function graph(): Graph
     {
-        return $this->_graph ??= tap(new Graph(), function (Graph $graph) {
+        return $this->_graph ??= tap(new Graph, function (Graph $graph) {
             foreach ($this->modules as $package => $module) {
                 $graph->addNode($module->packageName);
                 foreach ($module->dependencies as $dependency) {
@@ -177,7 +184,7 @@ class ModuleRegistry
             $class = $module->entryPoint;
             $slug = $class::slug();
             $this->modules[$package]->setDependencies($this->getComposerDependencies($package));
-            if (!static::isActive($slug, $this->tenant())) {
+            if (! static::isActive($slug, $this->tenant())) {
                 continue;
             }
             // Load dependencies from composer.json
@@ -195,11 +202,11 @@ class ModuleRegistry
 
         foreach ($resolved as $module) {
             $moduleInstance = $module->instance;
-            if (!filled($moduleInstance)) {
+            if (! filled($moduleInstance)) {
                 continue;
             }
             // Boot only active modules
-            if (!static::isActive($moduleInstance::slug(), $this->tenant())) {
+            if (! static::isActive($moduleInstance::slug(), $this->tenant())) {
                 continue;
             }
             $moduleInstance->boot();
@@ -220,6 +227,7 @@ class ModuleRegistry
         if (in_array($slug, ['academic-library'])) {
             return false;
         }
+
         return true;
     }
 
@@ -229,9 +237,6 @@ class ModuleRegistry
         return null;
     }
 
-    /**
-     * @return ModuleDescriptor|null
-     */
     final public function find(string $moduleSlug, $orFail = false): ?ModuleDescriptor
     {
         /**
@@ -240,13 +245,10 @@ class ModuleRegistry
         $module = collect($this->modules)->first(function (ModuleDescriptor $module) use ($moduleSlug) {
             return $module->slug === $moduleSlug;
         }) ?: null;
+
         return $module ?: ($orFail ? throw new \RuntimeException("Module [$moduleSlug] not found.") : null);
     }
 
-    /**
-     * @param string $moduleSlug
-     * @return ModuleDescriptor
-     */
     final public function findOrFail(string $moduleSlug): ModuleDescriptor
     {
         return $this->find($moduleSlug, true);
@@ -259,20 +261,25 @@ class ModuleRegistry
     {
         return $this->modules;
     }
+
     /**
      * Return Resolved modules in order, based on dependencies. The result is cached.
+     *
      * @return array<ModuleDescriptor>
      */
     final public function resolved(): array
     {
         $resolved = $this->_resolved ??= $this->resolver()->resolve();
+
         // Map to descriptors
-        return collect($resolved)->map(fn(string $package) => $this->modules[$package])->all();
+        return collect($resolved)->map(fn (string $package) => $this->modules[$package])->all();
     }
 
     /**
      * Return Resolved modules for a specific module, based on dependencies. The result is never cached.
+     *
      * @return array<ModuleDescriptor>
+     *
      * @throws \Exception
      */
     final public function resolvedFor(string $moduleSlug, bool $ensureActive = false): array
@@ -283,41 +290,46 @@ class ModuleRegistry
             $inactive = [];
             foreach ($packageNames as $packageName) {
                 $module = $this->modules[$packageName];
-                if (!static::isActive($module->slug, $this->tenant())) {
+                if (! static::isActive($module->slug, $this->tenant())) {
                     $inactive[] = $module->slug;
                 }
             }
             if (filled($inactive)) {
                 throw new \RuntimeException(
                     "Cannot resolve module [{$moduleSlug}] because the following dependencies are inactive: "
-                    . implode(', ', $inactive)
+                    .implode(', ', $inactive)
                 );
             }
         }
-        return collect($packageNames)->map(fn(string $package) => $this->modules[$package])->all();
+
+        return collect($packageNames)->map(fn (string $package) => $this->modules[$package])->all();
     }
 
     final public function resolvePath(string $moduleSlug): ?string
     {
         $module = $this->find($moduleSlug);
+
         return $module?->path;
     }
 
     final public function resolveNamespace(string $moduleSlug): ?string
     {
         $module = $this->find($moduleSlug);
+
         return $module?->namespace;
     }
 
     final public function resolvePackageName(string $moduleSlug): ?string
     {
         $module = $this->find($moduleSlug);
+
         return $module?->packageName;
     }
 
     final public function resolveDependencies(string $moduleSlug): array
     {
         $module = $this->find($moduleSlug);
+
         return $module?->dependencies ?? [];
     }
 }
