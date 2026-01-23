@@ -1,8 +1,9 @@
-# This is my package velm-core
+# Velm
+A compiler-driven, modular framework for Laravel with strict domain autonomy
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/velm/velm-core.svg?style=flat-square)](https://packagist.org/packages/velm/velm-core)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/velm/velm-core/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/velm/velm-core/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/velm/velm-core/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/velm/velm-core/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/velm/velm.svg?style=flat-square)](https://packagist.org/packages/velm/velm)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/velmphp/velm/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/velmphp/velm/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/velmphp/velm/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/velm/velm-core/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/velm/velm-core.svg?style=flat-square)](https://packagist.org/packages/velm/velm-core)
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
@@ -20,20 +21,19 @@ We highly appreciate you sending us a postcard from your hometown, mentioning wh
 You can install the package via composer:
 
 ```bash
-composer require velm/velm-core
+composer require velm/velm
 ```
 
-You can publish and run the migrations with:
+Then run the installation command
 
 ```bash
-php artisan vendor:publish --tag="velm-core-migrations"
-php artisan migrate
+php artisan velm:install
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="velm-core-config"
+php artisan vendor:publish --tag="velm-config"
 ```
 
 This is the contents of the published config file:
@@ -52,8 +52,7 @@ php artisan vendor:publish --tag="velm-core-views"
 ## Usage
 
 ```php
-$velm = new Velm\Core\Velm();
-echo $velm->echoPhrase('Hello, Velm\Core!');
+// Usage example here
 ```
 
 ## Testing

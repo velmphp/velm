@@ -21,7 +21,6 @@ final class Resolver
 
     public function resolve(): array
     {
-        dump('Resolving dependencies...');
         // reset state (important!)
         $this->visited = [];
         $this->visiting = [];
