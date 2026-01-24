@@ -2,10 +2,15 @@
 
 namespace Velm\Core\Registry;
 
-use Velm\Core\Dependencies\Graph;
-use Velm\Core\Dependencies\Resolver;
+use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use JsonException;
+use RuntimeException;
 use Velm\Core\Modules\ModuleDescriptor;
 use Velm\Core\Modules\VelmModule;
+use Velm\Core\Persistence\Contracts\ModuleStateRepository;
+use Velm\Core\Persistence\ModuleState;
+use Velm\Core\Support\Helpers\ConsoleLogType;
 use Velm\Core\Support\Repositories\ComposerRepo;
 
 use function Laravel\Prompts\warning;
@@ -21,30 +26,40 @@ class ModuleRegistry
      */
     private array $modules = [];
 
-    private ?Graph $_graph = null;
-
-    private ?Resolver $_resolver = null;
-
     /**
      * @var array<ModuleDescriptor>|null
      */
     private ?array $_resolved = null;
 
+    private ?ModuleStateRepository $_repo = null;
+
     /**
-     * @throws \JsonException
+     * @var array<string,ModuleState>|null
      */
-    final protected function scan(): void
+    private ?array $_installed = null;
+
+    /**
+     * @throws JsonException
+     */
+    final protected function scan(bool $rescan = false): void
     {
-        if (filled($this->modules)) {
+        if ($this->frozen && ! $rescan) {
             return;
         }
-        $installed = json_decode(
-            file_get_contents(base_path('vendor/composer/installed.json')),
-            true,
-            flags: JSON_THROW_ON_ERROR
-        );
+        if ($rescan) {
+            $this->modules = [];
+            $this->_resolved = null;
+        }
 
-        foreach ($installed['packages'] ?? [] as $package) {
+        $installed = velm()->composer()->getInstalledPackages();
+
+        foreach ($installed as $name => $json) {
+            $package = velm()->composer()->getComposerJson($name);
+
+            if (($package['type'] ?? null) !== 'velm-module') {
+                continue;
+            }
+
             if (! isset($package['extra']['velm'])) {
                 continue;
             }
@@ -62,21 +77,18 @@ class ModuleRegistry
             }
 
             if (! class_exists($class)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     "Velm module class [$class] declared in composer extra not found."
                 );
             }
 
             if (! is_subclass_of($class, VelmModule::class)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     "Velm module [$class] must extend VelmModule."
                 );
             }
 
-            $relativePath = $package['install-path'];
-            // Get the absolute path using the relative path. E.g ../velm/module-name should resolve to /path/to/project/vendor/velm/module-name
-            // The relative path is relative to vendor/composer/installed.json
-            $path = realpath(base_path('vendor/composer/'.$relativePath));
+            $path = velm()->composer()->getPackagePath($name);
 
             // Get the namespace from psr-4, the one that links to app/ folder
             $namespace = null;
@@ -106,20 +118,24 @@ class ModuleRegistry
                 instance: new $class,
                 version: $package['version'],
                 packageName: $package['name'],
-                dependencies: $this->getComposerDependencies($package['name'])
+                dependencies: []
             );
+        }
+        // Set dependencies
+        foreach ($this->modules as $package => $module) {
+            $this->modules[$package]->dependencies = $this->getComposerDependencies($package);
         }
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    final public function getComposerJson(string $packageName): array
+    final public function getComposerJson(string $package): array
     {
-        if (! isset($this->modules[$packageName])) {
+        if (! isset($this->modules[$package])) {
             return [];
         }
-        $module = $this->modules[$packageName];
+        $module = $this->modules[$package];
         $composerPath = $module->path.'/composer.json';
 
         if (! is_file($composerPath)) {
@@ -134,17 +150,16 @@ class ModuleRegistry
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function getComposerDependencies(string $packageName): array
+    public function getComposerDependencies(string $package): array
     {
-        $repo = app(ComposerRepo::class);
-        $json = $repo->getComposerJson($packageName);
+        $repo = velm()->composer();
+        $json = $repo->getComposerJson($package);
         $dependencies = [];
-        if (isset($json['dependencies']) && is_array($json['dependencies'])) {
-            foreach ($json['dependencies'] as $dependency => $version) {
-                $depJson = $repo->getVelmModule($dependency);
-                if (filled($depJson)) {
+        if (isset($json['require']) && is_array($json['require'])) {
+            foreach ($json['require'] as $dependency => $version) {
+                if ($repo->isVelmModule($dependency)) {
                     $dependencies[] = $dependency;
                 }
             }
@@ -153,49 +168,43 @@ class ModuleRegistry
         return $dependencies;
     }
 
-    public function graph(): Graph
-    {
-        return $this->_graph ??= tap(new Graph, function (Graph $graph) {
-            foreach ($this->modules as $package => $module) {
-                $graph->addNode($module->packageName);
-                foreach ($module->dependencies as $dependency) {
-                    $graph->addDependency($module->packageName, $dependency);
-                }
-            }
-        });
-    }
-
-    protected function resolver(): Resolver
-    {
-        return $this->_resolver ??= new Resolver($this->graph());
-    }
-
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    final public function registerModules(): void
+    final public function registerModules(bool $force = false): void
     {
-        if ($this->frozen) {
+        if ($this->frozen && ! $force) {
             return;
         }
-        $this->scan();
+        // / STEP 1: Scan for modules
+        $this->scan($force);
 
+        // / STEP 2: Set Dependencies and register each instance
         foreach ($this->modules as $package => $module) {
-            $class = $module->entryPoint;
-            $slug = $class::slug();
-            $this->modules[$package]->setDependencies($this->getComposerDependencies($package));
-            if (! static::isActive($slug, $this->tenant())) {
-                continue;
-            }
             // Load dependencies from composer.json
+            velm_utils()->consoleLog("Setting dependencies for module [$package]");
+            $this->modules[$package]->dependencies = $this->getComposerDependencies($package);
             $module->instance->register();
         }
     }
 
     final public function bootModules(): void
     {
-        if ($this->frozen) {
-            return;
+        // Get installed modules for the current tenant
+        $installedModules = $this->installed($this->tenant());
+        // Get only modules which have an installed state
+        foreach ($this->modules as $package => $module) {
+            $state = $installedModules[$package] ?? null;
+            if (filled($state)) {
+                $this->modules[$package]->states[] = $state;
+            }
+        }
+        // Remove orphans from the database (Installed modules that are not present in the registry)
+        $repo = $this->repository();
+        foreach ($installedModules as $package => $state) {
+            if (! isset($this->modules[$package])) {
+                $repo->uninstall($package, $this->tenant());
+            }
         }
         // Resolve
         $resolved = $this->resolved();
@@ -205,10 +214,10 @@ class ModuleRegistry
             if (! filled($moduleInstance)) {
                 continue;
             }
-            // Boot only active modules
-            if (! static::isActive($moduleInstance::slug(), $this->tenant())) {
+            if (! $module->state($this->tenant())?->isEnabled) {
                 continue;
             }
+
             $moduleInstance->boot();
         }
     }
@@ -221,14 +230,18 @@ class ModuleRegistry
         $this->frozen = true;
     }
 
-    final public static function isActive(string $slug, string|int|null $tenant = null): bool
+    final public function isActive(string $package, string|int|null $tenant = null): bool
     {
-        // Placeholder for actual activation check logic per tenant
-        if (in_array($slug, ['academic-library'])) {
+        $module = $this->find($package);
+        if (! filled($module)) {
+            return false;
+        }
+        $state = $module->state($tenant);
+        if (! filled($state)) {
             return false;
         }
 
-        return true;
+        return $state->isEnabled;
     }
 
     final public function tenant(): string|int|null
@@ -237,24 +250,33 @@ class ModuleRegistry
         return null;
     }
 
-    final public function find(string $moduleSlug, $orFail = false): ?ModuleDescriptor
+    final public function repository(): ModuleStateRepository
+    {
+        return $this->_repo ??= app()->make(ModuleStateRepository::class);
+    }
+
+    final public function find(string $packageOrSlug, bool $orFail = false, bool $bySlug = false): ?ModuleDescriptor
     {
         /**
          * @var ModuleDescriptor|null $module
          */
-        $module = collect($this->modules)->first(function (ModuleDescriptor $module) use ($moduleSlug) {
-            return $module->slug === $moduleSlug;
-        }) ?: null;
+        if ($bySlug) {
+            $module = collect($this->modules)->where('slug', $packageOrSlug)->first();
+        } else {
+            $module = $this->modules[$packageOrSlug] ?? null;
+        }
 
-        return $module ?: ($orFail ? throw new \RuntimeException("Module [$moduleSlug] not found.") : null);
+        return $module ?: ($orFail ? throw new RuntimeException("Module [$packageOrSlug] not found.") : null);
     }
 
-    final public function findOrFail(string $moduleSlug): ModuleDescriptor
+    final public function findOrFail(string $packageOrSlug, bool $bySlug = false): ModuleDescriptor
     {
-        return $this->find($moduleSlug, true);
+        return $this->find($packageOrSlug, orFail: true, bySlug: $bySlug);
     }
 
     /**
+     * Return all discovered modules, indexed by package name. Unordered, unresolved.
+     *
      * @return array<string, ModuleDescriptor>
      */
     final public function all(): array
@@ -267,9 +289,15 @@ class ModuleRegistry
      *
      * @return array<ModuleDescriptor>
      */
-    final public function resolved(): array
+    final public function resolved(bool $force = false): array
     {
-        $resolved = $this->_resolved ??= $this->resolver()->resolve();
+        if ($force) {
+            $this->_resolved = null;
+        }
+        if (empty($this->_resolved)) {
+            velm_utils()->consoleLog('Resolving modules.', ConsoleLogType::INTRO);
+        }
+        $resolved = $this->_resolved ??= \Velm::resolver()->resolve();
 
         // Map to descriptors
         return collect($resolved)->map(fn (string $package) => $this->modules[$package])->all();
@@ -280,23 +308,45 @@ class ModuleRegistry
      *
      * @return array<ModuleDescriptor>
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    final public function resolvedFor(string $moduleSlug, bool $ensureActive = false): array
+    final public function resolvedFor(string $package, bool $ensureActive = false, bool $installMissing = true): array
     {
-        $packageNames = $this->resolver()->resolveFor($this->findOrFail($moduleSlug)->packageName);
+        $packageNames = $this->resolver()->resolveFor($package);
+        $newInstalls = [];
+        if ($installMissing) {
+            // Ensure all dependencies are installed
+            $repo = app()->make(ModuleStateRepository::class);
+            foreach ($packageNames as $packageName) {
+                // If not installed, install
+                $state = $repo->get($packageName, $this->tenant());
+                if (filled($state)) {
+                    continue;
+                }
+                $this->install($packageName, $this->tenant());
+                $newInstalls[] = $packageName;
+            }
+        }
+        if (filled($newInstalls)) {
+            // Rescan to load newly installed modules
+            if (app()->runningInConsole()) {
+                warning('New modules installed: '.implode(', ', $newInstalls).'. Please reload the application to load them properly.');
+            }
+        }
+
         // Ensure all of them are activated and throw if some of them are not.
         if ($ensureActive) {
             $inactive = [];
             foreach ($packageNames as $packageName) {
                 $module = $this->modules[$packageName];
-                if (! static::isActive($module->slug, $this->tenant())) {
+                $state = $module->state($this->tenant());
+                if (! filled($state) || ! $state->isEnabled) {
                     $inactive[] = $module->slug;
                 }
             }
             if (filled($inactive)) {
-                throw new \RuntimeException(
-                    "Cannot resolve module [{$moduleSlug}] because the following dependencies are inactive: "
+                throw new RuntimeException(
+                    "Cannot resolve module [{$package}] because the following dependencies are inactive: "
                     .implode(', ', $inactive)
                 );
             }
@@ -305,31 +355,101 @@ class ModuleRegistry
         return collect($packageNames)->map(fn (string $package) => $this->modules[$package])->all();
     }
 
-    final public function resolvePath(string $moduleSlug): ?string
+    /**
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
+    final public function install(string $package, ?string $tenant = null): ModuleState
     {
-        $module = $this->find($moduleSlug);
+        // First, composer require the package if not present
+        $module = $this->find($package);
+        if (! filled($module)) {
+            // composer install with no interaction
+            $composer = app()->make(ComposerRepo::class);
+            $composer->require($package);
+            $this->scan(true);
+            $module = $this->findOrFail($package);
+        }
 
-        return $module?->path;
+        $repo = app()->make(ModuleStateRepository::class);
+        $state = $repo->get($package, $tenant);
+        if (filled($state)) {
+            return $state;
+        }
+
+        return $repo->install($package, $tenant);
     }
 
-    final public function resolveNamespace(string $moduleSlug): ?string
+    public function unload(string $package): void
     {
-        $module = $this->find($moduleSlug);
-
-        return $module?->namespace;
+        // Unregister the module if loaded
+        $module = $this->find($package);
+        if (filled($module)) {
+            $module->instance->destroy();
+            // Remove it from current modules
+            unset($this->modules[$package]);
+        }
     }
 
-    final public function resolvePackageName(string $moduleSlug): ?string
+    final public function uninstall(string $package, ?string $tenant = null): void
     {
-        $module = $this->find($moduleSlug);
-
-        return $module?->packageName;
+        // 1. Unregister the module if loaded
+        $module = $this->find($package);
+        if (filled($module)) {
+            $module->instance->destroy();
+            // Remove it from current modules
+            unset($this->modules[$package]);
+        }
+        // 2. Composer remove the package
+        $composer = app()->make(ComposerRepo::class);
+        $composer->remove($package);
+        // 3. Remove from persistence
+        $repo = app()->make(ModuleStateRepository::class);
+        $repo->uninstall($package, $tenant);
     }
 
-    final public function resolveDependencies(string $moduleSlug): array
+    /* ===================================================
+        PERSISTENCE
+      ================================================ */
+    /**
+     * @returns array<string,ModuleState>
+     **/
+    final public function installed(?string $tenant = null): array
     {
-        $module = $this->find($moduleSlug);
+        $repo = app(ModuleStateRepository::class);
 
-        return $module?->dependencies ?? [];
+        return $this->_installed ??= $repo->all($tenant);
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    final public function isInstalled(string $package, ?string $tenant = null, bool $recheck = false): bool
+    {
+        if ($recheck) {
+            $repo = app()->make(ModuleStateRepository::class);
+            $state = $repo->get($package, $tenant);
+
+            return filled($state);
+        }
+        $installed = $this->installed($tenant);
+
+        return isset($installed[$package]) && filled($installed[$package]);
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    final public function isEnabled(string $package, ?string $tenant = null, bool $recheck = false): bool
+    {
+        if ($recheck) {
+            $repo = app()->make(ModuleStateRepository::class);
+            $state = $repo->get($package, $tenant);
+
+            return filled($state) && $state->isEnabled;
+        }
+        $installed = $this->installed($tenant);
+
+        return isset($installed[$package]) && filled($installed[$package]) && $installed[$package]->isEnabled;
     }
 }
