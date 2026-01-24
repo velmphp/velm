@@ -7,6 +7,26 @@ final class Graph
     /** @var array<string, list<string>> */
     private array $edges = [];
 
+    public function __construct(array $edges = [])
+    {
+        $this->edges = $edges;
+    }
+
+    public static function from(array $modules): self
+    {
+        $graph = new self;
+
+        foreach ($modules as $pkg => $module) {
+            $graph->addNode($pkg);
+
+            foreach ($module->dependencies as $dependency) {
+                $graph->addDependency($pkg, $dependency);
+            }
+        }
+
+        return $graph;
+    }
+
     public function addNode(string $package): void
     {
         $this->edges[$package] ??= [];

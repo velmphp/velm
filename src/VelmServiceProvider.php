@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Velm\Core\Persistence\Contracts\ModuleStateRepository;
+use Velm\Core\Persistence\Eloquent\EloquentModuleStateRepository;
 use Velm\Core\Support\Constants;
 
 class VelmServiceProvider extends PackageServiceProvider
@@ -83,6 +85,11 @@ class VelmServiceProvider extends PackageServiceProvider
         $this->app->singleton('velm', function ($app) {
             return new Velm;
         });
+        // Bind the Module State Repository
+        $this->app->bind(
+            ModuleStateRepository::class,
+            config('velm.persistence.module_state_repository', EloquentModuleStateRepository::class)
+        );
 
     }
 
@@ -104,6 +111,8 @@ class VelmServiceProvider extends PackageServiceProvider
 
     public static function getMigrations(): array
     {
-        return [];
+        return [
+            'create_velm_modules_table',
+        ];
     }
 }

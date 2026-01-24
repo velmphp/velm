@@ -29,6 +29,7 @@ final class Resolver
         sort($nodes, SORT_STRING);
 
         foreach ($nodes as $node) {
+            // Only if installed.
             if (! isset($this->visited[$node])) {
                 $this->visit($node);
             }

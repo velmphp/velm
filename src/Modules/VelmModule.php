@@ -49,7 +49,7 @@ abstract class VelmModule implements VelmModuleContract
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->resolvePath($called::slug());
+        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->path ?? '';
     }
 
     public static function version(): string
@@ -59,7 +59,7 @@ abstract class VelmModule implements VelmModuleContract
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug())?->version ?? 'unknown';
+        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->version ?? 'unknown';
     }
 
     public static function namespace(): string
@@ -69,7 +69,7 @@ abstract class VelmModule implements VelmModuleContract
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->resolveNamespace($called::slug());
+        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->namespace ?? '';
     }
 
     public static function packageName(): string
@@ -79,7 +79,7 @@ abstract class VelmModule implements VelmModuleContract
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->resolvePackageName($called::slug());
+        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->packageName ?? '';
     }
 
     final public static function dependencies(): array
@@ -90,6 +90,11 @@ abstract class VelmModule implements VelmModuleContract
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->resolveDependencies($called::slug());
+        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->dependencies ?? [];
+    }
+
+    public function destroy(): void
+    {
+        // Hook for actions before destroying the module
     }
 }

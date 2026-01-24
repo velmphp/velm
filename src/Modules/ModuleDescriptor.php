@@ -2,6 +2,8 @@
 
 namespace Velm\Core\Modules;
 
+use Velm\Core\Persistence\ModuleState;
+
 final class ModuleDescriptor
 {
     public function __construct(
@@ -13,19 +15,23 @@ final class ModuleDescriptor
          * @var class-string<VelmModule> $entryPoint
          */
         public readonly string $entryPoint,
-        public VelmModule $instance,
+        public VelmModule $instance {
+            set(VelmModule $value) {
+                $this->instance = $value;
+            }
+        },
         public readonly string $version,
         public readonly string $packageName,
-        public array $dependencies
+        public array $dependencies {
+            set {
+                $this->dependencies = $value;
+            }
+        },
+        public array $states = [],
     ) {}
 
-    public function setInstance(VelmModule $instance): void
+    public function state(?string $tenant = null): ?ModuleState
     {
-        $this->instance = $instance;
-    }
-
-    public function setDependencies(array $dependencies): void
-    {
-        $this->dependencies = $dependencies;
+        return array_find($this->states, fn ($state) => $state->tenant === $tenant);
     }
 }
