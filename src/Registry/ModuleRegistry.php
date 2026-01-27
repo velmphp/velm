@@ -184,7 +184,6 @@ class ModuleRegistry
             // Load dependencies from composer.json
             velm_utils()->consoleLog("Setting dependencies for module [$package]");
             $this->modules[$package]->dependencies = $this->getComposerDependencies($package);
-            $module->instance->register();
         }
     }
 
@@ -218,6 +217,9 @@ class ModuleRegistry
                 continue;
             }
 
+            // Register
+            $moduleInstance->register();
+            // Boot
             $moduleInstance->boot();
         }
     }
@@ -451,5 +453,11 @@ class ModuleRegistry
         $installed = $this->installed($tenant);
 
         return isset($installed[$package]) && filled($installed[$package]) && $installed[$package]->isEnabled;
+    }
+
+    final public static function findForClass(string $class): ?ModuleDescriptor
+    {
+        // Given any class, determine the module to which it belongs based on its namespace
+        return array_find(velm()->registry()->modules()->all(), fn (ModuleDescriptor $module) => str_starts_with($class, $module->namespace.'\\'));
     }
 }

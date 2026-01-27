@@ -21,12 +21,22 @@ if (! function_exists('velm_utils')) {
     }
 }
 
-if (! function_exists('velm_factory')) {
-    /**
-     * Get a Velm model factory instance for the given model.
-     */
-    function velm_factory(string $modelClass): VelmFactory
+if (! function_exists('velm_base_path')) {
+    // get the base path
+    function velm_base_path(string $package, string $path = ''): string
     {
-        return velm()->factory()->forModel($modelClass);
+        $module = velm()->registry()->modules()->findOrFail($package);
+
+        return $module->entryPoint::modulePath($path);
+    }
+}
+
+if (! function_exists('velm_app_path')) {
+    // get the app path
+    function velm_app_path(string $package, string $path = ''): string
+    {
+        $module = velm()->registry()->modules()->findOrFail($package);
+
+        return $module->entryPoint::getAppPath($path);
     }
 }
