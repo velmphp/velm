@@ -71,7 +71,7 @@ class ModelRegistry
     /**
      * return compiled proxies for a given model name
      */
-    final public function proxies(?string $logicalName = null): ?array
+    final public function proxies(): ?array
     {
         if (empty($this->_proxies)) {
             // Boot proxies
@@ -82,12 +82,13 @@ class ModelRegistry
                 $this->_proxies[$package] = $models[0]::velm()->proxyCandidateClass;
             }
         }
-        // If no logical name is provided, return all proxies
-        if (empty($logicalName)) {
-            return $this->_proxies;
-        }
 
-        // Return proxies for the specified logical name
-        return $this->_proxies[$logicalName] ?? null;
+        // If no logical name is provided, return all proxies
+        return $this->_proxies;
+    }
+
+    final public function proxy(string $modelName): ?string
+    {
+        return $this->proxies()[$modelName] ?? null;
     }
 }
