@@ -6,12 +6,20 @@ use Velm\Core\Contracts\VelmModuleContract;
 
 abstract class VelmModule implements VelmModuleContract
 {
+    use Concerns\RegistersDomainClasses;
+
     // register method
     final public function register(): void
     {
+        velm_utils()->consoleLog('Registering module: '.get_called_class()::name());
         $this->registering();
-        // Not abstract since the slug method has already been implemented in the child class
-        $child = get_called_class();
+
+        /* ====== Register Domain Classes ====== */
+        $this->registerModels();
+        $this->registerPolicies();
+        $this->registerCommands();
+        /* ===================================== */
+
         $this->registered();
     }
 
@@ -93,8 +101,97 @@ abstract class VelmModule implements VelmModuleContract
         return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->dependencies ?? [];
     }
 
+    final public static function modulePath($subpath = ''): string
+    {
+        $basePath = static::path();
+
+        return $subpath ? rtrim($basePath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.ltrim($subpath, DIRECTORY_SEPARATOR) : $basePath;
+    }
+
     public function destroy(): void
     {
         // Hook for actions before destroying the module
+    }
+
+    public static function getModelsPath(string $subpath = ''): string
+    {
+        return static::getAppPath($subpath ? 'Models'.DIRECTORY_SEPARATOR.ltrim($subpath, DIRECTORY_SEPARATOR) : 'Models');
+    }
+
+    public static function getMigrationsPath(string $subpath = ''): string
+    {
+        $base = 'database'.DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getFactoriesPath(string $subpath = ''): string
+    {
+        $base = 'database'.DIRECTORY_SEPARATOR.'factories'.DIRECTORY_SEPARATOR;
+
+        return static::getAppPath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getSeedersPath(string $subpath = ''): string
+    {
+        $base = 'database'.DIRECTORY_SEPARATOR.'seeders'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getRoutesPath(string $subpath = ''): string
+    {
+        $base = 'routes'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getViewsPath(string $subpath = ''): string
+    {
+        $base = 'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getTranslationsPath(string $subpath = ''): string
+    {
+        $base = 'resources'.DIRECTORY_SEPARATOR.'lang'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getConfigPath(string $subpath = ''): string
+    {
+        $base = 'config'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getAssetsPath(string $subpath = ''): string
+    {
+        $base = 'resources'.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getPoliciesPath(string $subpath = ''): string
+    {
+        $base = 'Policies'.DIRECTORY_SEPARATOR;
+
+        return static::getAppPath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getCommandsPath(string $subpath = ''): string
+    {
+        $base = 'Console'.DIRECTORY_SEPARATOR.'Commands'.DIRECTORY_SEPARATOR;
+
+        return static::getAppPath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
+    }
+
+    public static function getAppPath(string $subpath = ''): string
+    {
+        $base = 'app'.DIRECTORY_SEPARATOR;
+
+        return static::modulePath($base.($subpath ? ltrim($subpath, DIRECTORY_SEPARATOR) : ''));
     }
 }

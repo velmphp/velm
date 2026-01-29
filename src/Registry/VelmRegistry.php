@@ -9,9 +9,23 @@ class VelmRegistry
     // Register the modules registry
     private ?ModuleRegistry $_moduleRegistry = null;
 
+    private ?ModelRegistry $_modelRegistry = null;
+
+    private ?CompilerRegistry $_compilerRegistry = null;
+
     public function modules(): ModuleRegistry
     {
         return $this->_moduleRegistry ??= new ModuleRegistry;
+    }
+
+    public function models(): ModelRegistry
+    {
+        return $this->_modelRegistry ??= new ModelRegistry;
+    }
+
+    public function compiler(): CompilerRegistry
+    {
+        return $this->_compilerRegistry ??= new CompilerRegistry;
     }
 
     final public function freeze(): void

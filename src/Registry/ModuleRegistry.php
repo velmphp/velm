@@ -10,6 +10,7 @@ use Velm\Core\Modules\ModuleDescriptor;
 use Velm\Core\Modules\VelmModule;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
 use Velm\Core\Persistence\ModuleState;
+use Velm\Core\Support\Constants;
 use Velm\Core\Support\Helpers\ConsoleLogType;
 use Velm\Core\Support\Repositories\ComposerRepo;
 
@@ -25,6 +26,13 @@ class ModuleRegistry
      * @var array<string, ModuleDescriptor>
      */
     private array $modules = [];
+
+    /**
+     * Find locally defined modules that are not yet installed
+     *
+     * @var array <string, class-string>
+     */
+    private array $available = [];
 
     /**
      * @var array<ModuleDescriptor>|null
@@ -184,7 +192,6 @@ class ModuleRegistry
             // Load dependencies from composer.json
             velm_utils()->consoleLog("Setting dependencies for module [$package]");
             $this->modules[$package]->dependencies = $this->getComposerDependencies($package);
-            $module->instance->register();
         }
     }
 
@@ -218,6 +225,9 @@ class ModuleRegistry
                 continue;
             }
 
+            // Register
+            $moduleInstance->register();
+            // Boot
             $moduleInstance->boot();
         }
     }
@@ -451,5 +461,92 @@ class ModuleRegistry
         $installed = $this->installed($tenant);
 
         return isset($installed[$package]) && filled($installed[$package]) && $installed[$package]->isEnabled;
+    }
+
+    final public function findForClass(string $class): ?ModuleDescriptor
+    {
+        $class = ltrim($class, '\\');
+
+        // Given any class, determine the module to which it belongs based on its namespace
+        return array_find($this->all(), fn (ModuleDescriptor $module) => str_starts_with($class, $module->namespace.'\\'));
+    }
+
+    /**
+     * @throws JsonException
+     */
+    final public function scanAvailable(): array
+    {
+        if (filled($this->available)) {
+            return $this->available;
+        }
+        $localModulesPath = base_path(Constants::MODULES_DIRECTORY);
+        if (! is_dir($localModulesPath)) {
+            return [];
+        }
+        $dirs = scandir($localModulesPath);
+        foreach ($dirs as $dir) {
+            if (in_array($dir, ['.', '..'])) {
+                continue;
+            }
+            $modulePath = $localModulesPath.DIRECTORY_SEPARATOR.$dir;
+            if (! is_dir($modulePath)) {
+                continue;
+            }
+            // Parse its composer file to get the entry point
+            $composerArray = json_decode(
+                file_get_contents($modulePath.DIRECTORY_SEPARATOR.'composer.json'),
+                true,
+                flags: JSON_THROW_ON_ERROR
+            );
+            if ($composerArray === null) {
+                continue;
+            }
+            if (($composerArray['type'] ?? null) !== 'velm-module') {
+                continue;
+            }
+            $entryPointClass = $composerArray['extra']['velm']['module'] ?? null;
+            if (! is_string($entryPointClass)) {
+                continue;
+            }
+            $namespace = null;
+            if (isset($composerArray['autoload']['psr-4']) && is_array($composerArray['autoload']['psr-4'])) {
+                foreach ($composerArray['autoload']['psr-4'] as $ns => $nsPath) {
+                    if (str_ends_with($nsPath, 'app/')) {
+                        $namespace = rtrim($ns, '\\');
+                        break;
+                    }
+                }
+            }
+            if ($namespace === null) {
+                // Warn and skip, but don't throw
+                if (app()->runningInConsole()) {
+                    warning("Warning: Velm module [{$composerArray['name']}] does not have a valid PSR-4 namespace pointing to app/ folder. Skipping registration ...\n");
+
+                    continue;
+                }
+            }
+            if (! class_exists($entryPointClass)) {
+                $this->available[$composerArray['name']] = [
+                    'namespace' => $namespace,
+                    'entryPoint' => $entryPointClass,
+                    'packageName' => $composerArray['name'],
+                ];
+            }
+        }
+
+        return $this->available;
+    }
+
+    /**
+     * @returns array{namespace: string, entryPoint: class-string, packageName: string} | null
+     *
+     * @throws JsonException
+     */
+    final public function findForClassInAvailable(string $class): ?array
+    {
+        $available = $this->scanAvailable();
+        $class = ltrim($class, '\\');
+
+        return array_find($available, fn (array $module) => str_starts_with($class, $module['namespace'].'\\'));
     }
 }

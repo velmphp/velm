@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Velm\Core\Commands\VelmClearCompiledCommand;
+use Velm\Core\Commands\VelmCompileCommand;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
 use Velm\Core\Persistence\Eloquent\EloquentModuleStateRepository;
 use Velm\Core\Support\Constants;
@@ -102,11 +104,21 @@ class VelmServiceProvider extends PackageServiceProvider
     public function packageBooted()
     {
         $this->app->make('velm')->boot();
+        if ($this->app->runningInConsole()) {
+            $this->optimizes(
+                optimize: 'velm:compile',
+                clear: 'velm:clear-compiled'
+            );
+            $this->reloads(reload: 'velm:compile');
+        }
     }
 
     public static function getCommands(): array
     {
-        return [];
+        return [
+            VelmCompileCommand::class,
+            VelmClearCompiledCommand::class,
+        ];
     }
 
     public static function getMigrations(): array
