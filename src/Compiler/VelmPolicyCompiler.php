@@ -2,11 +2,11 @@
 
 namespace Velm\Core\Compiler;
 
-use Velm\Core\Compiler\Concerns\CompilesDomainFiles;
+use Velm\Core\Compiler\Concerns\CompilesDomainFilesUsingParser;
 
 final class VelmPolicyCompiler extends BaseCompiler
 {
-    use CompilesDomainFiles;
+    use CompilesDomainFilesUsingParser;
 
     /**
      * @throws \ReflectionException

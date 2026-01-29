@@ -1,13 +1,13 @@
 <?php
 
-namespace Velm\Core\Domain\Models;
+namespace Velm\Core\Domain;
 
 use Velm\Core\Compiler\GeneratedPaths;
 use Velm\Core\Modules\ModuleDescriptor;
 
 use function Symfony\Component\String\s;
 
-final readonly class ModelDescriptor
+final readonly class DomainDescriptor
 {
     public function __construct(
         public string $name,
@@ -15,12 +15,12 @@ final readonly class ModelDescriptor
         public string $proxyCandidateClass,
     ) {}
 
-    // Factory method to create a ModelDescriptor
+    // Factory method to create a DomainDescriptor
 
     /**
      * @throws \ReflectionException
      */
-    public static function make(?string $name = null, ?ModuleDescriptor $module = null, ?string $proxyCandidateClass = null): ModelDescriptor
+    public static function make(?string $name = null, ?ModuleDescriptor $module = null, ?string $proxyCandidateClass = null): DomainDescriptor
     {
         if (empty($name)) {
             // Get the name of the class from where this was called.
@@ -60,7 +60,7 @@ final readonly class ModelDescriptor
             throw new \InvalidArgumentException('Cannot determine the proxy class candidate for '.$name.'.');
         }
 
-        return new ModelDescriptor(
+        return new DomainDescriptor(
             name: $name,
             module: $module,
             proxyCandidateClass: $proxyCandidateClass

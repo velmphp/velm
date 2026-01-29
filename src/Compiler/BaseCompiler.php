@@ -20,7 +20,7 @@ abstract class BaseCompiler implements VelmCompilerContract
             return true;
         }
         // Get the modify time of the proxy class file and compare with all the source files.
-        $logicalName = $proxy::velm()->name;
+        $logicalName = $proxy::$logicalName;
         $sourceFiles = \Velm::registry()->models()->definitions($logicalName);
         $proxyFile = new \ReflectionClass($proxy)->getFileName();
         $proxyMTime = filemtime($proxyFile);

@@ -24,4 +24,15 @@ class GeneratedPaths
 
         return storage_path($path);
     }
+
+    public static function getModelPathFromClass(string $class): string
+    {
+        $relativePath = str($class)
+            ->replace(config('velm.compiler.generated_namespaces.Models', 'Velm\\Models').'\\', '')
+            ->replace('\\', DIRECTORY_SEPARATOR)
+            ->append('.php')
+            ->toString();
+
+        return self::models($relativePath);
+    }
 }

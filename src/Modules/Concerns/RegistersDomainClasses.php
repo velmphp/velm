@@ -2,6 +2,7 @@
 
 namespace Velm\Core\Modules\Concerns;
 
+use Velm\Core\Compiler\GeneratedPaths;
 use Velm\Core\Domain\Models\VelmModel;
 
 trait RegistersDomainClasses
@@ -169,6 +170,7 @@ trait RegistersDomainClasses
         // Register to model registry
         $modelRegistry = \Velm::registry()->models();
         $modelRegistry->register($models, static::packageName());
+        static::loadModelProxies();
     }
 
     final public static function registerPolicies(): void
@@ -181,5 +183,23 @@ trait RegistersDomainClasses
     {
         $commands = static::getCommands();
         // TODO: Implements
+    }
+
+    final public static function loadModelProxies(): void
+    {
+        $modelRegistry = \Velm::registry()->models();
+        $proxies = $modelRegistry->proxies();
+        // Load each proxy class
+        foreach ($proxies as $proxyClass) {
+            if (class_exists($proxyClass)) {
+                continue;
+            }
+            // get path
+            $path = GeneratedPaths::getModelPathFromClass($proxyClass);
+            if (! file_exists($path)) {
+                continue;
+            }
+            require_once $path;
+        }
     }
 }
