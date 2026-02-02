@@ -322,7 +322,7 @@ class ModuleRegistry
      */
     final public function resolvedFor(string $package, bool $ensureActive = false, bool $installMissing = true): array
     {
-        $packageNames = $this->resolver()->resolveFor($package);
+        $packageNames = velm()->resolver()->resolveFor($package);
         $newInstalls = [];
         if ($installMissing) {
             // Ensure all dependencies are installed
@@ -331,8 +331,11 @@ class ModuleRegistry
                 // If not installed, install
                 $state = $repo->get($packageName, $this->tenant());
                 if (filled($state)) {
+                    velm_utils()->consoleLog("Setting dependencies for module [$packageName]. Already installed.");
+
                     continue;
                 }
+                velm_utils()->consoleLog("Setting dependencies for module [$packageName]. Installing ...");
                 $this->install($packageName, $this->tenant());
                 $newInstalls[] = $packageName;
             }
@@ -340,19 +343,30 @@ class ModuleRegistry
         if (filled($newInstalls)) {
             // Rescan to load newly installed modules
             if (app()->runningInConsole()) {
-                warning('New modules installed: '.implode(', ', $newInstalls).'. Please reload the application to load them properly.');
+                velm_utils()->consoleLog('New modules installed: '.implode(', ', $newInstalls).'. Please reload the application to load them properly.');
             }
         }
 
         // Ensure all of them are activated and throw if some of them are not.
         if ($ensureActive) {
             $inactive = [];
+            $missing = [];
             foreach ($packageNames as $packageName) {
                 $module = $this->modules[$packageName];
                 $state = $module->state($this->tenant());
-                if (! filled($state) || ! $state->isEnabled) {
+                if (! filled($state)) {
+                    $missing[] = $module->slug;
+                } elseif (! $state->isEnabled) {
                     $inactive[] = $module->slug;
                 }
+            }
+            if (filled($missing) && ! $installMissing) {
+                //                throw new RuntimeException(
+                //                    "Cannot resolve module [{$package}] because the following dependencies are not installed: "
+                //                    .implode(', ', $missing)
+                //                );
+                velm_utils()->consoleLog("Cannot resolve module [{$package}] because the following dependencies are not installed: "
+                    .implode(', ', $missing), ConsoleLogType::WARNING);
             }
             if (filled($inactive)) {
                 throw new RuntimeException(
@@ -369,25 +383,31 @@ class ModuleRegistry
      * @throws BindingResolutionException
      * @throws JsonException
      */
-    final public function install(string $package, ?string $tenant = null): ModuleState
+    final public function install(string $package, ?string $tenant = null, $installMissing = false): ?ModuleState
     {
         // First, composer require the package if not present
-        $module = $this->find($package);
-        if (! filled($module)) {
-            // composer install with no interaction
-            $composer = app()->make(ComposerRepo::class);
-            $composer->require($package);
-            $this->scan(true);
-            $module = $this->findOrFail($package);
-        }
+        $plan = velm()->registry()->modules()->resolvedFor($package, true, $installMissing);
+        foreach ($plan as $module) {
+            if (! filled($module)) {
+                // composer install with no interaction
+                $composer = app()->make(ComposerRepo::class);
+                $composer->require($package);
+                $this->scan(true);
+                $module = $this->findOrFail($package);
+            }
 
-        $repo = app()->make(ModuleStateRepository::class);
-        $state = $repo->get($package, $tenant);
-        if (filled($state)) {
-            return $state;
-        }
+            $repo = app()->make(ModuleStateRepository::class);
+            $state = $repo->get($package, $tenant);
+            if (filled($state)) {
+                velm_utils()->consoleLog('Module ['.$package.'] is already installed for tenant ['.$tenant.'].', ConsoleLogType::INFO);
 
-        return $repo->install($package, $tenant);
+                return $state;
+            }
+            $repo->install($module->packageName, $tenant);
+        }
+        $mod = $this->findOrFail($package);
+
+        return $mod->state($tenant);
     }
 
     public function unload(string $package): void

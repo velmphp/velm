@@ -11,7 +11,7 @@ interface ModuleStateRepository
 
     public function get(string $package, ?string $tenant = null): ?ModuleState;
 
-    public function install(string $package, ?string $tenant = null): ModuleState;
+    public function install(string $package, ?string $tenant = null): ?ModuleState;
 
     public function enable(string $package, ?string $tenant = null): void;
 
