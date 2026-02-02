@@ -8,6 +8,8 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmCompileCommand;
+use Velm\Core\Commands\VelmMakeCommand;
+use Velm\Core\Commands\VelmModuleInstallCommand;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
 use Velm\Core\Persistence\Eloquent\EloquentModuleStateRepository;
 use Velm\Core\Support\Constants;
@@ -87,7 +89,18 @@ class VelmServiceProvider extends PackageServiceProvider
         $this->app->singleton('velm', function ($app) {
             return new Velm;
         });
+
         // Bind the Module State Repository
+        // Only bind if DB has velm_modules table
+        if (app()->runningInConsole() && ! \Schema::hasTable('velm_modules')) {
+            // Bind to json repository if table does not exist
+            $this->app->bind(
+                ModuleStateRepository::class,
+                \Velm\Core\Persistence\JsonModuleStateRepository::class
+            );
+
+            return;
+        }
         $this->app->bind(
             ModuleStateRepository::class,
             config('velm.persistence.module_state_repository', EloquentModuleStateRepository::class)
@@ -118,6 +131,8 @@ class VelmServiceProvider extends PackageServiceProvider
         return [
             VelmCompileCommand::class,
             VelmClearCompiledCommand::class,
+            VelmMakeCommand::class,
+            VelmModuleInstallCommand::class,
         ];
     }
 

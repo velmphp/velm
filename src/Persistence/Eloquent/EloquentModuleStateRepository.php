@@ -9,6 +9,7 @@ class EloquentModuleStateRepository implements ModuleStateRepository
 {
     public function all(?string $tenant = null): array
     {
+        // if the velm_modules table does not exist, return an empty array
         $query = VelmModuleRecord::query();
 
         if (filled($tenant)) {
@@ -90,12 +91,12 @@ class EloquentModuleStateRepository implements ModuleStateRepository
         return new ModuleState(
             package: $record->getAttribute('package'),
             version: $record->getAttribute('version'),
-            installedAt: \DateTimeImmutable::createFromMutable($record->getAttribute('created_at')),
+            installedAt: $record->getAttribute('created_at')->toDateTimeImmutable(),
             tenant: $record->getAttribute('tenant'),
             isEnabled: $record->getAttribute('is_enabled'),
-            updatedAt: \DateTimeImmutable::createFromMutable($record->getAttribute('updated_at')),
-            enabledAt: ($enabledAt = $record->getAttribute('enabled_at')) ? \DateTimeImmutable::createFromMutable($enabledAt) : null,
-            disabledAt: ($disabledAt = $record->getAttribute('disabled_at')) ? \DateTimeImmutable::createFromMutable($disabledAt) : null,
+            updatedAt: $record->getAttribute('updated_at')->toDateTimeImmutable(),
+            enabledAt: ($enabledAt = $record->getAttribute('enabled_at')) ? $enabledAt->toDateTimeImmutable() : null,
+            disabledAt: ($disabledAt = $record->getAttribute('disabled_at')) ? $disabledAt->toDateTimeImmutable() : null,
         );
     }
 }
