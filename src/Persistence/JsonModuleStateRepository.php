@@ -2,6 +2,7 @@
 
 namespace Velm\Core\Persistence;
 
+use Carbon\Carbon;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
 
 class JsonModuleStateRepository implements ModuleStateRepository
@@ -25,12 +26,12 @@ class JsonModuleStateRepository implements ModuleStateRepository
                 $result[$package] = new ModuleState(
                     package: $package,
                     version: $state['version'] ?? null,
-                    installedAt: $state['installed_at'] ?? null,
+                    installedAt: ($state['installed_at'] ?? null) ? Carbon::parse($state['installed_at'])->toDateTimeImmutable() : null,
                     tenant: $state['tenant'] ?? null,
                     isEnabled: $state['is_enabled'] ?? false,
-                    updatedAt: $state['updated_at'] ?? null,
-                    enabledAt: $state['is_enabled'] ?? false,
-                    disabledAt: $state['is_disabled'] ?? false,
+                    updatedAt: ($state['updated_at'] ?? null) ? Carbon::parse($state['updated_at'])->toDateTimeImmutable() : null,
+                    enabledAt: ($state['enabled_at'] ?? null) ? Carbon::parse($state['enabled_at'])->toDateTimeImmutable() : null,
+                    disabledAt: ($state['disabled_at'] ?? null) ? Carbon::parse($state['disabled_at'])->toDateTimeImmutable() : null,
                 );
             }
         }
@@ -45,8 +46,9 @@ class JsonModuleStateRepository implements ModuleStateRepository
         return $all[$package] ?? null;
     }
 
-    public function install(string $package, ?string $tenant = null): ModuleState
+    public function install(string $package, ?string $tenant = null): ?ModuleState
     {
+        //        $plan = velm()->registry()->modules()->resolvedFor($package, true);
         // Find existing states
         $existing = $this->get($package, $tenant);
         if ($existing !== null) {
@@ -69,16 +71,7 @@ class JsonModuleStateRepository implements ModuleStateRepository
         ];
         file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
 
-        return new ModuleState(
-            package: $package,
-            version: $data[$package]['version'],
-            installedAt: now(),
-            tenant: $tenant,
-            isEnabled: true,
-            updatedAt: now(),
-            enabledAt: now(),
-            disabledAt: null,
-        );
+        return $this->get($package, $tenant);
     }
 
     public function enable(string $package, ?string $tenant = null): void
