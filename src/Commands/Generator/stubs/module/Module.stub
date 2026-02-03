@@ -1,0 +1,28 @@
+<?php
+
+namespace {{ namespace }};
+
+use Velm\Core\Modules\VelmModule;
+
+class {{studly_name}}Module extends VelmModule
+{
+    public static function slug(): string
+    {
+        return '{{ slug }}';
+    }
+
+    public static function name(): string
+    {
+        return '{{ studly_title }}';
+    }
+
+    public static function description(): string
+    {
+        return 'Module {{ studly_name }} description';
+    }
+
+    public static function documentation(): string
+    {
+        return 'https://docs.velm.dev/modules/{{ slug }}';
+    }
+}

@@ -1,0 +1,12 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ factoryImport }}
+use Velm\Core\Domain\Models\VelmModel;
+
+class {{ class }} extends VelmModel
+{
+    protected static string $_velm_name = '{{dot_class}}';
+    {{ factory }}
+}
