@@ -1,5 +1,6 @@
 <?php
 
+use Velm\Core\Runtime\SuperStack;
 use Velm\Core\Support\Helpers\VelmUtils;
 
 if (! function_exists('velm')) {
@@ -38,5 +39,12 @@ if (! function_exists('velm_app_path')) {
         $module = velm()->registry()->modules()->findOrFail($package);
 
         return $module->entryPoint::getAppPath($path);
+    }
+}
+
+if (! function_exists('super')) {
+    function super(...$args): mixed
+    {
+        return SuperStack::next(...$args);
     }
 }

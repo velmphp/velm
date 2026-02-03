@@ -2,8 +2,8 @@
 
 namespace Velm\Core\Modules\Concerns;
 
-use Velm\Core\Compiler\GeneratedPaths;
-use Velm\Core\Domain\Models\VelmModel;
+use Velm\Core\Compiler\DomainType;
+use Velm\Core\Domain\BaseModel;
 
 trait RegistersDomainClasses
 {
@@ -36,7 +36,7 @@ trait RegistersDomainClasses
                 /** @var \SplFileInfo $file */
                 if ($file->isFile() && $file->getExtension() === 'php') {
                     $class = static::getNamespaceFromPath($file->getRealPath());
-                    if (class_exists($class) && is_subclass_of($class, VelmModel::class)) {
+                    if (class_exists($class) && is_subclass_of($class, BaseModel::class)) {
                         $models[] = $class;
                     }
                 }
@@ -161,9 +161,9 @@ trait RegistersDomainClasses
     {
         $models = static::getModels();
         // Sort models by priority
-        usort($models, function (string|VelmModel $a, string|VelmModel $b) {
-            $priorityA = $a::velm()->priority ?? 0;
-            $priorityB = $b::velm()->priority ?? 0;
+        usort($models, function (string|BaseModel $a, string|BaseModel $b) {
+            $priorityA = $a::$velm_priority ?? 0;
+            $priorityB = $b::$velm_priority ?? 0;
 
             return $priorityB <=> $priorityA;
         });
@@ -190,16 +190,16 @@ trait RegistersDomainClasses
         $modelRegistry = \Velm::registry()->models();
         $proxies = $modelRegistry->proxies();
         // Load each proxy class
-        foreach ($proxies as $proxyClass) {
+        foreach ($proxies as $name => $proxyPath) {
+            $proxyClass = DomainType::Models->namespace($name);
             if (class_exists($proxyClass)) {
                 continue;
             }
             // get path
-            $path = GeneratedPaths::getModelPathFromClass($proxyClass);
-            if (! file_exists($path)) {
+            if (! file_exists($proxyPath)) {
                 continue;
             }
-            require_once $path;
+            require_once $proxyPath;
         }
     }
 }

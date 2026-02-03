@@ -13,6 +13,8 @@ class VelmRegistry
 
     private ?CompilerRegistry $_compilerRegistry = null;
 
+    private ?RuntimeRegistry $runtimeRegistry = null;
+
     public function modules(): ModuleRegistry
     {
         return $this->_moduleRegistry ??= new ModuleRegistry;
@@ -26,6 +28,11 @@ class VelmRegistry
     public function compiler(): CompilerRegistry
     {
         return $this->_compilerRegistry ??= new CompilerRegistry;
+    }
+
+    public function runtime(): RuntimeRegistry
+    {
+        return $this->runtimeRegistry ??= new RuntimeRegistry;
     }
 
     final public function freeze(): void
