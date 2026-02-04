@@ -22,7 +22,7 @@ class DomainCompiler
         $this->compileRuntimeAnchors($logical, $domainType);
         $this->compilePipelines($logical, $domainType);
 
-        if ($domainType->value === DomainType::Models->value) {
+        if ($domainType === DomainType::Models) {
             $this->compileRelationships($logical, $domainType);
         }
     }
@@ -40,17 +40,32 @@ class DomainCompiler
         return $logical;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     protected function compileRuntimeAnchors(array $logical, DomainType $domainType): void
     {
         $namespace = $domainType->namespace();
 
         foreach ($logical as $name => $classes) {
             $path = $domainType->path("{$name}.php");
+
             $imports = 'use Velm\Core\Runtime\PipelineExecutor;';
             $signature = "class {$name}";
+            $traits = 'use PipelineExecutor;';
+            $properties = '';
+
             if ($domainType === DomainType::Models) {
-                $imports .= "\nuse Illuminate\\Database\\Eloquent\\Model;";
-                $signature .= ' extends Model';
+                $imports .= "\nuse Velm\\Core\\Eloquent\\RuntimeModel;";
+                $signature .= ' extends RuntimeModel';
+                $traits = '';
+
+                $attributes = ModelAttributeCompiler::compile($classes);
+
+                foreach ($attributes as $prop => $value) {
+                    $export = var_export($value, true);
+                    $properties .= "    protected \${$prop} = {$export};\n\n";
+                }
             }
 
             file_put_contents($path, <<<PHP
@@ -61,7 +76,8 @@ namespace {$namespace};
 
 {$signature}
 {
-    use PipelineExecutor;
+{$properties}
+    {$traits}
 }
 PHP
             );

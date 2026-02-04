@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Core\Modules\ModuleDescriptor;
+
 use function Laravel\Prompts\select;
 
 trait IntractsWithVelmModules
@@ -17,6 +18,7 @@ trait IntractsWithVelmModules
         if (! $moduleName) {
             $moduleName = $this->askForModuleName();
         }
+
         return \Velm::registry()->modules()->findOrFail($moduleName, bySlug: true);
     }
 
@@ -65,7 +67,8 @@ trait IntractsWithVelmModules
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
         $module = $this->resolveModule();
-        return velm_app_path($module->packageName,str_replace('\\', '/', $name).'.php');
+
+        return velm_app_path($module->packageName, str_replace('\\', '/', $name).'.php');
     }
 
     protected function resolveStubPath($stub): string

@@ -10,6 +10,11 @@ class RuntimeRegistry
 
     public static array $relationships = [];
 
+    public function __construct()
+    {
+        static::load();
+    }
+
     public static function load(): void
     {
         static::$pipelines = require GeneratedPaths::base('pipelines.php');

@@ -8,29 +8,52 @@ class SuperStack
 
     public static function invoke(object $instance, array $stack, string $method, array $args)
     {
-        self::$frames[] = [$instance, $stack, $method, 0];
+        self::$frames[] = [
+            'instance' => $instance,
+            'stack' => $stack,
+            'method' => $method,
+            'index' => 0,
+        ];
 
         return self::next($args);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function next(array $args)
     {
-        [$instance, $stack, $method, $i] = array_pop(self::$frames);
+        $frame = array_pop(self::$frames);
 
-        // If the stack is empty, fall back to calling the Compiled class's method directly.
-        if (empty($stack)) {
-            // Call method on parent class
-            return $instance::{$method}(...$args);
-        }
-
-        if (! isset($stack[$i])) {
+        if (! $frame) {
             return null;
         }
 
-        self::$frames[] = [$instance, $stack, $method, $i + 1];
+        $i = $frame['index'];
+        $stack = $frame['stack'];
 
-        $fragment = new $stack[$i];
+        // 1️⃣ End of pipeline → call parent method
+        if (! isset($stack[$i])) {
+            return $frame['instance']->callParent(
+                $frame['method'],
+                $args
+            );
+        }
 
-        return $fragment->{$method}(...$args);
+        // 2️⃣ Continue pipeline
+        self::$frames[] = [
+            ...$frame,
+            'index' => $i + 1,
+        ];
+
+        $fragmentClass = $stack[$i];
+        $refMethod = new \ReflectionMethod($fragmentClass, $frame['method']);
+        $refMethod->setAccessible(true);
+
+        // 🔑 Create closure from fragment method and bind to runtime instance
+        $closure = $refMethod->getClosure(new $fragmentClass);
+        $closure = $closure->bindTo($frame['instance'], get_class($frame['instance']));
+
+        return $closure(...$args);
     }
 }

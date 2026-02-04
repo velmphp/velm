@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Velm\Core\Commands\Generator\ModelMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmCompileCommand;
 use Velm\Core\Commands\VelmMakeCommand;
@@ -133,6 +134,7 @@ class VelmServiceProvider extends PackageServiceProvider
             VelmClearCompiledCommand::class,
             VelmMakeCommand::class,
             VelmModuleInstallCommand::class,
+            ModelMakeCommand::class,
         ];
     }
 
