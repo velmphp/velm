@@ -9,6 +9,7 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Velm\Core\Commands\Generator\ModelMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmCompileCommand;
+use Velm\Core\Commands\VelmIdeGeneratorCommand;
 use Velm\Core\Commands\VelmMakeCommand;
 use Velm\Core\Commands\VelmModuleInstallCommand;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
@@ -133,6 +134,7 @@ class VelmServiceProvider extends PackageServiceProvider
             VelmClearCompiledCommand::class,
             VelmMakeCommand::class,
             VelmModuleInstallCommand::class,
+            VelmIdeGeneratorCommand::class,
             ModelMakeCommand::class,
         ];
     }
