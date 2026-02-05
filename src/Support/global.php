@@ -48,3 +48,10 @@ if (! function_exists('super')) {
         return SuperStack::next(...$args);
     }
 }
+
+if (! function_exists('velm_model')) {
+    function velm_model(string $logicalName, array $attributes = []): object
+    {
+        return Velm\Core\Models\Model::make($logicalName, $attributes);
+    }
+}

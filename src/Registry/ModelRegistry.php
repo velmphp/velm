@@ -20,6 +20,9 @@ class ModelRegistry
     {
         foreach ((array) $models as $model) {
             $this->_models[$package][class_basename($model)] = $model;
+            // register to the pipeline registry as well
+            velm()->registry()->pipeline()::register(new $model);
+            velm()->registry()->pipeline()::registerStatic($model);
         }
     }
 

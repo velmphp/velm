@@ -2,6 +2,8 @@
 
 namespace Velm\Core\Registry;
 
+use Velm\Core\Pipeline\ClassPipelineRegistry;
+
 class VelmRegistry
 {
     private bool $frozen = false;
@@ -14,6 +16,8 @@ class VelmRegistry
     private ?CompilerRegistry $_compilerRegistry = null;
 
     private ?RuntimeRegistry $runtimeRegistry = null;
+
+    private ?ClassPipelineRegistry $pipelineRegistry = null;
 
     public function modules(): ModuleRegistry
     {
@@ -33,6 +37,11 @@ class VelmRegistry
     public function runtime(): RuntimeRegistry
     {
         return $this->runtimeRegistry ??= new RuntimeRegistry;
+    }
+
+    public function pipeline(): ClassPipelineRegistry
+    {
+        return $this->pipelineRegistry ??= new ClassPipelineRegistry;
     }
 
     final public function freeze(): void

@@ -41,6 +41,7 @@
             "Velm\\Core\\Database\\Factories\\": "database/factories/"
         },
         "files": [
+            "src/Support/velm_helpers.php",
             "src/Support/global.php"
         ]
     },
