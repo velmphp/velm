@@ -56,6 +56,13 @@ final class ClassPipelineRegistry
         return self::staticExtensionsFor($logicalName);
     }
 
+    public function firstExtensionFor(string $logicalName): ?object
+    {
+        $extensions = self::extensionsFor($logicalName);
+
+        return $extensions[0] ?? null;
+    }
+
     final public static function runtime(): ClassPipelineRuntime
     {
         return new ClassPipelineRuntime;
