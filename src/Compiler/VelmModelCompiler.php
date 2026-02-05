@@ -27,7 +27,8 @@ class VelmModelCompiler extends BaseCompiler implements VelmCompilerContract
         foreach ($map as $logicalName => $_) {
             $definitions = \Velm::registry()->models()->definitions($logicalName);
             \Laravel\Prompts\info("Generating proxy for model: {$logicalName}");
-            $this->compileSingle($definitions[0], definitions: $definitions, lazy: $lazy);
+            //            $this->compileSingle($definitions[0], definitions: $definitions, lazy: $lazy);
+            app(DomainCompiler::class)->compile($definitions, domainType: DomainType::Models);
         }
     }
 

@@ -2,7 +2,9 @@
 
 namespace Velm\Core\Registry;
 
-use Velm\Core\Domain\Models\VelmModel;
+use Velm\Core\Compiler\DomainType;
+use Velm\Core\Domain\BaseModel;
+use Velm\Core\Runtime\RuntimeLogicalModel;
 
 class ModelRegistry
 {
@@ -18,14 +20,35 @@ class ModelRegistry
     final public function register($models, string $package): void
     {
         foreach ((array) $models as $model) {
-            $this->_models[$package][$model::velm()->name] = $model;
+            $this->_models[$package][class_basename($model)] = $model;
+            // register to the pipeline registry as well
+            $instance = new $model;
+            velm()->registry()->pipeline()::register(new $model);
+            velm()->registry()->pipeline()::registerStatic($model);
+            // Runtime Model Alias
+            // Create a runtime alias
+            $baseName = class_basename($instance);
+            /**
+             * @var class-string<RuntimeLogicalModel> $fqcn
+             */
+            $fqcn = "Velm\\Models\\$baseName";
+            if (class_exists($fqcn)) {
+                continue;
+            }
+            eval("
+                namespace Velm\Models;
+                use Velm\Core\Runtime\RuntimeLogicalModel;
+                final class {$baseName} extends RuntimeLogicalModel {
+                    public static string \$logicalName = '$baseName';
+                }
+            ");
         }
     }
 
     /**
      * Get all registered models
      *
-     * @return array<string, array<class-string<VelmModel>>> An associative array where keys are package names and values are arrays of model FQCNs
+     * @return array<string, array<class-string<BaseModel>>> An associative array where keys are package names and values are arrays of model FQCNs
      */
     final public function all(): array
     {
@@ -52,7 +75,7 @@ class ModelRegistry
      * Get all extensions instances for a specific model logical Name
      *
      * @param  string  $modelName  The logical name of the model
-     * @return array<class-string<VelmModel>> An array of model FQCNs that match the given logical name
+     * @return array<class-string<BaseModel>> An array of model FQCNs that match the given logical name
      */
     final public function definitions(string $modelName): array
     {
@@ -69,22 +92,21 @@ class ModelRegistry
     }
 
     /**
+     * @deprecated Will be removed in stable release
      * return compiled proxies for a given model name
      */
     final public function proxies(): ?array
     {
-        if (empty($this->_proxies)) {
-            // Boot proxies
-            foreach ($this->definitionsMap() as $package => $models) {
-                if (empty($models)) {
-                    continue;
-                }
-                $this->_proxies[$package] = $models[0]::velm()->proxyCandidateClass;
-            }
+        if (! empty($this->_proxies)) {
+            return $this->_proxies;
+        }
+        $models = $this->definitionsMap();
+        foreach ($models as $modelName => $_) {
+            $proxyClass = DomainType::Models->path(class_basename($modelName).'.php');
+            $this->_proxies[$modelName] = $proxyClass;
         }
 
-        // If no logical name is provided, return all proxies
-        return $this->_proxies;
+        return $this->_proxies ??= [];
     }
 
     final public function proxy(string $modelName): ?string

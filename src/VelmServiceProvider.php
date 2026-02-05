@@ -6,12 +6,13 @@ use Illuminate\Console\Command;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Velm\Core\Commands\Generator\ModelMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmCompileCommand;
 use Velm\Core\Commands\VelmMakeCommand;
 use Velm\Core\Commands\VelmModuleInstallCommand;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
-use Velm\Core\Persistence\Eloquent\EloquentModuleStateRepository;
+use Velm\Core\Persistence\JsonModuleStateRepository;
 use Velm\Core\Support\Constants;
 
 class VelmServiceProvider extends PackageServiceProvider
@@ -93,7 +94,7 @@ class VelmServiceProvider extends PackageServiceProvider
         // Bind the Module State Repository
         // Only bind if DB has velm_modules table
         if (app()->runningInConsole() && ! \Schema::hasTable('velm_modules')) {
-            // Bind to json repository if table does not exist
+            // Bind to JSON repository if table does not exist
             $this->app->bind(
                 ModuleStateRepository::class,
                 \Velm\Core\Persistence\JsonModuleStateRepository::class
@@ -103,18 +104,17 @@ class VelmServiceProvider extends PackageServiceProvider
         }
         $this->app->bind(
             ModuleStateRepository::class,
-            config('velm.persistence.module_state_repository', EloquentModuleStateRepository::class)
+            config('velm.persistence.module_state_repository', JsonModuleStateRepository::class)
         );
-
     }
 
-    public function packageRegistered()
+    public function packageRegistered(): void
     {
         // Register Velm
         $this->app->make('velm')->register();
     }
 
-    public function packageBooted()
+    public function packageBooted(): void
     {
         $this->app->make('velm')->boot();
         if ($this->app->runningInConsole()) {
@@ -133,6 +133,7 @@ class VelmServiceProvider extends PackageServiceProvider
             VelmClearCompiledCommand::class,
             VelmMakeCommand::class,
             VelmModuleInstallCommand::class,
+            ModelMakeCommand::class,
         ];
     }
 

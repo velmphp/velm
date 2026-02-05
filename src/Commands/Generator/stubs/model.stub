@@ -1,0 +1,11 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ factoryImport }}
+use Velm\Core\Domain\BaseModel;
+
+class {{ class }} extends BaseModel
+{
+    {{ factory }}
+}
