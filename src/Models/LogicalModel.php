@@ -4,6 +4,7 @@ namespace Velm\Core\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use LogicException;
+use Str;
 use Velm\Core\Pipeline\ClassPipelineRuntime;
 use Velm\Core\Pipeline\Contracts\Pipelinable;
 
@@ -90,30 +91,6 @@ abstract class LogicalModel extends Model implements Pipelinable
     }
 
     /* ---------------------------------
-     | Attribute access → ALWAYS pipeline
-     *---------------------------------*/
-    public function __get($key)
-    {
-        $this->mergeExtensionProperties();
-
-        return ClassPipelineRuntime::callAttribute($this, $key);
-    }
-
-    public function __set($key, $value)
-    {
-        $this->mergeExtensionProperties();
-        ClassPipelineRuntime::setAttribute($this, $key, $value);
-    }
-
-    /* ---------------------------------
-     | Scopes → pipeline aware
-     *---------------------------------*/
-    public function scope(string $name, ...$args)
-    {
-        return ClassPipelineRuntime::callScope($this, $name, ...$args);
-    }
-
-    /* ---------------------------------
      | Static calls → forbidden
      *---------------------------------*/
     public static function __callStatic($method, $parameters)
@@ -122,5 +99,73 @@ abstract class LogicalModel extends Model implements Pipelinable
             'Static calls are not supported on Velm logical models. '.
             'Use velm_model()->method() instead.'
         );
+    }
+
+    public function hasGetMutator($key)
+    {
+        $method = 'get'.\Str::studly($key).'Attribute';
+
+        // Pipeline accessor?
+        if (ClassPipelineRuntime::hasInstancePipeline(
+            $this->getLogicalName(),
+            $method
+        )) {
+            return true;
+        }
+
+        return parent::hasGetMutator($key);
+    }
+
+    public function getAttributeValue($key)
+    {
+        $method = 'get'.\Str::studly($key).'Attribute';
+
+        if (ClassPipelineRuntime::hasInstancePipeline(
+            $this->getLogicalName(),
+            $method
+        )) {
+            // Call pipeline accessor
+            return ClassPipelineRuntime::call(
+                $this,
+                $method,
+                []
+            );
+        }
+
+        return parent::getAttributeValue($key);
+    }
+
+    public function hasSetMutator($key)
+    {
+        $method = 'set'.Str::studly($key).'Attribute';
+
+        if (ClassPipelineRuntime::hasInstancePipeline(
+            $this->getLogicalName(),
+            $method
+        )) {
+            return true;
+        }
+
+        return parent::hasSetMutator($key);
+    }
+
+    public function setAttribute($key, $value)
+    {
+        $method = 'set'.Str::studly($key).'Attribute';
+
+        if (ClassPipelineRuntime::hasInstancePipeline(
+            $this->getLogicalName(),
+            $method
+        )) {
+            ClassPipelineRuntime::call(
+                $this,
+                $method,
+                [$value]
+            );
+
+            return $this;
+        }
+
+        return parent::setAttribute($key, $value);
     }
 }
