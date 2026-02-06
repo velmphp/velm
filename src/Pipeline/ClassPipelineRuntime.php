@@ -2,8 +2,8 @@
 
 namespace Velm\Core\Pipeline;
 
-use Velm\Core\Pipeline\Contracts\Pipelinable;
 use ReflectionMethod;
+use Velm\Core\Pipeline\Contracts\Pipelinable;
 
 final class ClassPipelineRuntime
 {
@@ -19,8 +19,11 @@ final class ClassPipelineRuntime
         $extensions = array_reverse($extensions);
 
         $handlers = array_values(array_filter($extensions, function ($h) use ($method) {
-            if (! method_exists($h, $method)) return false;
+            if (! method_exists($h, $method)) {
+                return false;
+            }
             $ref = new ReflectionMethod($h, $method);
+
             return $ref->isPublic() || $ref->isProtected();
         }));
 
@@ -44,6 +47,7 @@ final class ClassPipelineRuntime
     public static function callByLogicalName(string $logicalName, string $method, array $args = [])
     {
         $self = \Velm\Core\Runtime\RuntimeLogicalModel::make($logicalName);
+
         return self::call($self, $method, $args);
     }
 
@@ -66,8 +70,11 @@ final class ClassPipelineRuntime
 
             public function next()
             {
-                if (! isset($this->handlers[$this->index])) return null;
+                if (! isset($this->handlers[$this->index])) {
+                    return null;
+                }
                 $class = $this->handlers[$this->index++];
+
                 return $class::{$this->method}(...$this->args);
             }
         };
@@ -75,6 +82,7 @@ final class ClassPipelineRuntime
         $super = new class($cursor)
         {
             public function __construct(private $cursor) {}
+
             public function __call($method, $args)
             {
                 return $this->cursor->next();
@@ -98,9 +106,13 @@ final class ClassPipelineRuntime
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
 
         foreach ($extensions as $ext) {
-            if (! method_exists($ext, $method)) continue;
+            if (! method_exists($ext, $method)) {
+                continue;
+            }
             $ref = new ReflectionMethod($ext, $method);
-            if ($ref->isPublic() || $ref->isProtected()) return true;
+            if ($ref->isPublic() || $ref->isProtected()) {
+                return true;
+            }
         }
 
         return false;
@@ -115,10 +127,14 @@ final class ClassPipelineRuntime
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
 
         foreach ($extensions as $ext) {
-            if (method_exists($ext, $attribute)) return true;
+            if (method_exists($ext, $attribute)) {
+                return true;
+            }
             $getter = 'get'.ucfirst($attribute).'Attribute';
             $setter = 'set'.ucfirst($attribute).'Attribute';
-            if (method_exists($ext, $getter) || method_exists($ext, $setter)) return true;
+            if (method_exists($ext, $getter) || method_exists($ext, $setter)) {
+                return true;
+            }
         }
 
         return false;
@@ -137,7 +153,7 @@ final class ClassPipelineRuntime
         }
 
         // 2️⃣ Accessor method: getXxxAttribute
-        $getter = 'get' . ucfirst($attribute) . 'Attribute';
+        $getter = 'get'.ucfirst($attribute).'Attribute';
         foreach ($extensions as $ext) {
             if (method_exists($ext, $getter)) {
                 return (new $ext)->{$getter}($self);
@@ -158,15 +174,17 @@ final class ClassPipelineRuntime
             $ref = new ReflectionMethod($ext, $attribute);
             if ($ref->getNumberOfParameters() >= 2) {
                 (new $ext)->{$attribute}($self, $value);
+
                 return;
             }
         }
 
         // 2️⃣ Mutator method: setXxxAttribute
-        $setter = 'set' . ucfirst($attribute) . 'Attribute';
+        $setter = 'set'.ucfirst($attribute).'Attribute';
         foreach ($extensions as $ext) {
             if (method_exists($ext, $setter)) {
                 (new $ext)->{$setter}($self, $value);
+
                 return;
             }
         }
@@ -180,14 +198,16 @@ final class ClassPipelineRuntime
      *----------------------------- */
     public static function callScope(Pipelinable $self, string $scope, ...$args)
     {
-        $method = 'scope' . ucfirst($scope);
+        $method = 'scope'.ucfirst($scope);
+
         return self::call($self, $method, $args);
     }
 
     public static function hasScope(string $fqcn, string $scope): bool
     {
-        $method = 'scope' . ucfirst($scope);
-        return static::hasInstancePipeline($fqcn, $method);
+        $method = 'scope'.ucfirst($scope);
+
+        return self::hasInstancePipeline($fqcn, $method);
     }
 
     /* -----------------------------

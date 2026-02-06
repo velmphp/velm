@@ -57,7 +57,7 @@ abstract class LogicalModel extends Model implements Pipelinable
             'primaryKey',
             'keyType',
             'incrementing',
-            'timestamps'
+            'timestamps',
         ]);
     }
 
@@ -95,6 +95,7 @@ abstract class LogicalModel extends Model implements Pipelinable
     public function __get($key)
     {
         $this->mergeExtensionProperties();
+
         return ClassPipelineRuntime::callAttribute($this, $key);
     }
 
