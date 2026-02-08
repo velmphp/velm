@@ -43,7 +43,7 @@ abstract class LogicalModel extends Model implements Pipelinable
 
         $cache = [
             'fillable' => [],
-            'guarded' => null, // null = untouched
+            'guarded' => [],
             'casts' => [],
             'appends' => [],
             'table' => null,
@@ -52,7 +52,6 @@ abstract class LogicalModel extends Model implements Pipelinable
         ];
 
         $hasFillable = false;
-        $guarded = [];
 
         foreach ($extensions as $ext) {
             // For protected properties, use reflection to check if they are declared on the extension class itself

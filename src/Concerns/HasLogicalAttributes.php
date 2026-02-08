@@ -4,6 +4,8 @@ namespace Velm\Core\Concerns;
 
 trait HasLogicalAttributes
 {
+    protected array $velmMeta = [];
+
     protected function initializeHasLogicalAttributes(): void
     {
         velm_utils()->consoleLog("Initializing logical model for logical name {$this->getLogicalName()}...");
@@ -35,19 +37,42 @@ trait HasLogicalAttributes
             );
         }
 
-        // Custom properties
-        foreach ($cache['custom'] as $prop => $value) {
-            $this->{$prop} = $value;
+        // Custom properties will be handled via __get and __set magic methods, so we just store them in the cache for now
+        if (! empty($cache['custom'])) {
+            $this->mergeMeta($cache['custom']);
+        }
+    }
+
+    protected function mergeMeta(array $custom): void
+    {
+        $this->velmMeta = array_merge($this->velmMeta ?? [], $custom);
+    }
+
+    public function getAllMeta(): array
+    {
+        return $this->velmMeta ?? [];
+    }
+
+    public function getMeta(string $key, $default = null)
+    {
+        return $this->velmMeta[$key] ?? $default;
+    }
+
+    public function __get($key)
+    {
+        if (array_key_exists($key, $this->getAllMeta())) {
+            return $this->getMeta($key);
         }
 
-        // dump all properties for debugging
-        velm_utils()->consoleLog("Resolved properties for logical model {$logicalName}:");
-        velm_utils()->consoleLog(collect([
-            'fillable' => $this->getFillable(),
-            'guarded' => $this->getGuarded(),
-            'casts' => $this->casts ?? [],
-            'appends' => $this->appends ?? [],
-            'custom' => $cache['custom'],
-        ]));
+        return parent::__get($key);
+    }
+
+    public function __set($key, $value)
+    {
+        if (array_key_exists($key, $this->getAllMeta())) {
+            $this->mergeMeta([$key => $value]);
+        } else {
+            parent::__set($key, $value);
+        }
     }
 }
