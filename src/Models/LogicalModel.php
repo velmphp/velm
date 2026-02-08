@@ -4,19 +4,121 @@ namespace Velm\Core\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use LogicException;
+use ReflectionClass;
 use Str;
+use Velm\Core\Concerns\HasLogicalAttributes;
 use Velm\Core\Pipeline\ClassPipelineRuntime;
 use Velm\Core\Pipeline\Contracts\Pipelinable;
 
 abstract class LogicalModel extends Model implements Pipelinable
 {
+    use HasLogicalAttributes;
+
     protected static string $logicalName;
+
+    protected static array $velmPropertyCache = [];
+
+    /* -------------------------------------------------
+     | Boot hook — aggregate properties ONCE
+     |-------------------------------------------------*/
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        static::resolveVelmProperties();
+    }
+
+    protected static function resolveVelmProperties(): void
+    {
+        $logicalName = static::$logicalName;
+
+        if (isset(static::$velmPropertyCache[$logicalName])) {
+            return;
+        }
+
+        $extensions = velm()->registry()->pipeline()->find($logicalName);
+        if (empty($extensions)) {
+            return;
+        }
+
+        $cache = [
+            'fillable' => [],
+            'guarded' => null, // null = untouched
+            'casts' => [],
+            'appends' => [],
+            'table' => null,
+            'connection' => null,
+            'custom' => [],
+        ];
+
+        $hasFillable = false;
+        $guarded = [];
+
+        foreach ($extensions as $ext) {
+            // For protected properties, use reflection to check if they are declared on the extension class itself
+            $reflection = new ReflectionClass($ext);
+
+            if (self::isDeclaredOn($ext, 'fillable')) {
+                $hasFillable = true;
+                // get fillabe from reflection
+                $fillable = $ext->getFillable() ?? [];
+                $cache['fillable'] = array_merge($cache['fillable'], $fillable ?? []);
+            }
+
+            if (self::isDeclaredOn($ext, 'guarded')) {
+                $guarded = $ext->getGuarded() ?? [];
+                $cache['guarded'] = array_merge($cache['guarded'], $guarded ?? []);
+            }
+
+            if (self::isDeclaredOn($ext, 'casts')) {
+                $casts = $ext->getCasts() ?? [];
+                $cache['casts'] = array_merge($cache['casts'], $casts ?? []);
+            }
+
+            if (self::isDeclaredOn($ext, 'appends')) {
+                $appends = $ext->getAppends() ?? [];
+                $cache['appends'] = array_merge($cache['appends'], $appends ?? []);
+            }
+
+            foreach (get_object_vars($ext) as $prop => $value) {
+                if (! property_exists(self::class, $prop)) {
+                    $cache['custom'][$prop] = $value;
+                }
+            }
+        }
+
+        if ($hasFillable) {
+            $cache['fillable'] = array_values(array_unique($cache['fillable']));
+            $cache['guarded'] = []; // fillable-mode
+        } elseif (! empty($cache['guarded'])) {
+            $cache['guarded'] = array_values(array_unique($cache['guarded']));
+        }
+
+        static::$velmPropertyCache[$logicalName] = $cache;
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    private static function isDeclaredOn(object $object, string $property): bool
+    {
+        $classRef = new ReflectionClass($object);
+        if (! $classRef->hasProperty($property)) {
+            return false;
+        }
+        $ref = new \ReflectionProperty($object, $property);
+
+        return $ref->getDeclaringClass()->getName() === get_class($object);
+    }
 
     /**
      * Override table resolution to use physical model
      */
     public function getTable()
     {
+        if (isset($this->table)) {
+            return $this->table;
+        }
         $first = $this->getExtensions()[0] ?? null;
 
         return $first
@@ -44,24 +146,6 @@ abstract class LogicalModel extends Model implements Pipelinable
         return static::$logicalName;
     }
 
-    /**
-     * Merge properties from all extensions
-     */
-    protected function mergeExtensionProperties(): void
-    {
-        ClassPipelineRuntime::mergeProperties($this, [
-            'fillable',
-            'casts',
-            'appends',
-            'table',
-            'connection',
-            'primaryKey',
-            'keyType',
-            'incrementing',
-            'timestamps',
-        ]);
-    }
-
     /* ---------------------------------
      | Instance calls → ALWAYS pipeline
      *---------------------------------*/
@@ -71,9 +155,6 @@ abstract class LogicalModel extends Model implements Pipelinable
             "Checking pipeline for logical name {$this->getLogicalName()} and method {$method}..."
         );
         velm_utils()->consoleLog("Table name: {$this->getTable()}");
-
-        // Merge properties first
-        $this->mergeExtensionProperties();
 
         if (ClassPipelineRuntime::hasInstancePipeline($this->getLogicalName(), $method)) {
             velm_utils()->consoleLog(
