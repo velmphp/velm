@@ -160,18 +160,15 @@ abstract class LogicalModel extends Model implements Pipelinable
 
         // 2️⃣ Scope resolution (query builder path)
         if (
-            isset($parameters[0]) &&
-            $parameters[0] instanceof \Illuminate\Database\Eloquent\Builder &&
             ClassPipelineRuntime::hasScope($logicalName, $method)
         ) {
-            ClassPipelineRuntime::callScope(
+            velm_utils()->consoleLog("This is a pipelined scope: {$method} for logical model {$logicalName}.");
+
+            return ClassPipelineRuntime::callScope(
                 $this,
                 $method,
                 $parameters
             );
-
-            // Laravel expects the query back
-            return $parameters[0];
         }
 
         return parent::__call($method, $parameters);
