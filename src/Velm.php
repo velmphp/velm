@@ -97,6 +97,7 @@ final class Velm
 
         // Boot Logic Here
         $this->registry()->modules()->bootModules();
+        $this->registry()->policies()->bootPolicies();
 
         $this->markAsBooted();
     }

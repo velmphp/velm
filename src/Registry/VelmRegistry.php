@@ -19,6 +19,8 @@ class VelmRegistry
 
     private ?ClassPipelineRegistry $pipelineRegistry = null;
 
+    private ?PolicyRegistry $policyRegistry = null;
+
     public function modules(): ModuleRegistry
     {
         return $this->_moduleRegistry ??= new ModuleRegistry;
@@ -42,6 +44,11 @@ class VelmRegistry
     public function pipeline(): ClassPipelineRegistry
     {
         return $this->pipelineRegistry ??= new ClassPipelineRegistry;
+    }
+
+    public function policies(): PolicyRegistry
+    {
+        return $this->policyRegistry ??= new PolicyRegistry;
     }
 
     final public function freeze(): void

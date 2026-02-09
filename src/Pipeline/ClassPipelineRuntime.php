@@ -4,18 +4,15 @@ namespace Velm\Core\Pipeline;
 
 use BadMethodCallException;
 use ReflectionMethod;
-use ReflectionObject;
-use ReflectionProperty;
 use RuntimeException;
 use Velm\Core\Pipeline\Contracts\Pipelinable;
-use Velm\Core\Runtime\RuntimeLogicalModel;
 
 final class ClassPipelineRuntime
 {
     /* -----------------------------
      | Instance method pipeline
      *----------------------------- */
-    public static function call(Pipelinable $self, string $method, array $args = [])
+    public static function call(Pipelinable $self, string $method, array $args = [], bool $injectSelf = true)
     {
         $logicalName = $self->getLogicalName();
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
@@ -36,21 +33,58 @@ final class ClassPipelineRuntime
         }
 
         $cursor = new PipelineCursor($handlers);
-        $super = new SuperProxy($cursor, $self);
+        $super = new SuperProxy($cursor, $injectSelf ? $self : null);
 
         PipelineContext::push($super);
         try {
-            return $cursor->next($method, $self, $args);
+            return $cursor->next($method, $injectSelf ? $self : null, $args);
         } finally {
             PipelineContext::pop();
         }
     }
 
-    public static function callByLogicalName(string $logicalName, string $method, array $args = [])
+    public static function callByLogicalName(string $logicalName, string $method, array $args = [], bool $injectSelf = true)
     {
-        $self = RuntimeLogicalModel::make($logicalName);
+        $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
+        if (empty($extensions)) {
+            throw new \RuntimeException("No registered classes for logical name {$logicalName}");
+        }
 
-        return self::call($self, $method, $args);
+        if ($injectSelf) {
+            // Pick first registered instance as $self
+            /**
+             * @var Pipelinable $self
+             */
+            $self = $extensions[0];
+
+            return self::call($self, $method, $args);
+        } else {
+            // for policies, just pass $args
+            $cursor = new PipelineCursor($extensions);
+            $extensions = array_reverse($extensions);
+            // Check for the handlers and method existence before starting the pipeline
+            // Filter ONLY handlers that implement the method
+            $handlers = array_values(array_filter($extensions, function ($ext) use ($method) {
+                if (! method_exists($ext, $method)) {
+                    return false;
+                }
+
+                $ref = new \ReflectionMethod($ext, $method);
+
+                return $ref->isPublic() || $ref->isProtected();
+            }));
+
+            if (empty($handlers)) {
+                throw new \BadMethodCallException(
+                    "Policy method {$method} not defined for logical policy {$logicalName}"
+                );
+            }
+
+            // Use first valid handler as $self
+            $self = $handlers[0];
+
+            return self::call($self, $method, $args);
+        }
     }
 
     /* -----------------------------
@@ -118,48 +152,6 @@ final class ClassPipelineRuntime
         }
 
         return false;
-    }
-
-    /* -----------------------------
-     | Property merging: fillable, casts, appends, table, connection
-     *----------------------------- */
-    public static function mergeProperties(Pipelinable $self, array $properties)
-    {
-        velm_utils()->consoleLog("Merging properties for logical model {$self->getLogicalName()}...");
-
-        $logicalName = $self->getLogicalName();
-        $extensions = velm()->registry()->pipeline()->find($logicalName);
-
-        $selfRef = new ReflectionObject($self);
-
-        foreach ($properties as $prop) {
-            foreach ($extensions as $ext) {
-                if (! property_exists($ext, $prop)) {
-                    continue;
-                }
-
-                // Read the property from the extension
-                $refProp = new ReflectionProperty($ext, $prop);
-                $refProp->setAccessible(true);
-                $value = $refProp->getValue($ext) ?? [];
-
-                // Write to $self safely using Reflection
-                if ($selfRef->hasProperty($prop)) {
-                    $selfProp = $selfRef->getProperty($prop);
-                    $selfProp->setAccessible(true);
-
-                    if (in_array($prop, ['fillable', 'appends'])) {
-                        $current = $selfProp->getValue($self) ?? [];
-                        $selfProp->setValue($self, array_unique(array_merge($current, $value)));
-                    } elseif ($prop === 'casts') {
-                        $current = $selfProp->getValue($self) ?? [];
-                        $selfProp->setValue($self, array_merge($current, $value));
-                    } else {
-                        $selfProp->setValue($self, $value);
-                    }
-                }
-            }
-        }
     }
 
     public static function hasScope(string $logicalName, string $scope): bool
