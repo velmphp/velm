@@ -2,8 +2,13 @@
 
 namespace Velm\Core\Pipeline;
 
+use BadMethodCallException;
 use ReflectionMethod;
+use ReflectionObject;
+use ReflectionProperty;
+use RuntimeException;
 use Velm\Core\Pipeline\Contracts\Pipelinable;
+use Velm\Core\Runtime\RuntimeLogicalModel;
 
 final class ClassPipelineRuntime
 {
@@ -12,7 +17,6 @@ final class ClassPipelineRuntime
      *----------------------------- */
     public static function call(Pipelinable $self, string $method, array $args = [])
     {
-        velm_utils()->consoleLog('runtime:call invoked from '.get_class($self)." for method {$method}");
         $logicalName = $self->getLogicalName();
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
 
@@ -28,10 +32,8 @@ final class ClassPipelineRuntime
         }));
 
         if (empty($handlers)) {
-            throw new \BadMethodCallException("Method {$method} not found in pipeline for {$logicalName}");
+            throw new BadMethodCallException("Method {$method} not found in pipeline for {$logicalName}");
         }
-
-        velm_utils()->consoleLog('runtime:call found handlers: '.count($handlers));
 
         $cursor = new PipelineCursor($handlers);
         $super = new SuperProxy($cursor, $self);
@@ -46,7 +48,7 @@ final class ClassPipelineRuntime
 
     public static function callByLogicalName(string $logicalName, string $method, array $args = [])
     {
-        $self = \Velm\Core\Runtime\RuntimeLogicalModel::make($logicalName);
+        $self = RuntimeLogicalModel::make($logicalName);
 
         return self::call($self, $method, $args);
     }
@@ -59,7 +61,7 @@ final class ClassPipelineRuntime
         $handlers = ClassPipelineRegistry::staticExtensionsFor($logicalName);
 
         if (empty($handlers)) {
-            throw new \RuntimeException("No registered static classes for logical name {$logicalName}");
+            throw new RuntimeException("No registered static classes for logical name {$logicalName}");
         }
 
         $cursor = new class($handlers, $method, $args)
@@ -128,7 +130,7 @@ final class ClassPipelineRuntime
         $logicalName = $self->getLogicalName();
         $extensions = velm()->registry()->pipeline()->find($logicalName);
 
-        $selfRef = new \ReflectionObject($self);
+        $selfRef = new ReflectionObject($self);
 
         foreach ($properties as $prop) {
             foreach ($extensions as $ext) {
@@ -137,7 +139,7 @@ final class ClassPipelineRuntime
                 }
 
                 // Read the property from the extension
-                $refProp = new \ReflectionProperty($ext, $prop);
+                $refProp = new ReflectionProperty($ext, $prop);
                 $refProp->setAccessible(true);
                 $value = $refProp->getValue($ext) ?? [];
 
