@@ -159,4 +159,34 @@ final class ClassPipelineRuntime
             }
         }
     }
+
+    public static function hasScope(string $logicalName, string $scope): bool
+    {
+        $method = 'scope'.ucfirst($scope);
+
+        foreach (ClassPipelineRegistry::extensionsFor($logicalName) as $ext) {
+            if (method_exists($ext, $method)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function callScope(
+        Pipelinable $self,
+        string $scope,
+        array $args
+    ) {
+        $method = 'scope'.ucfirst($scope);
+
+        // First argument must be the query builder
+        $query = array_shift($args);
+
+        return self::call(
+            $self,
+            $method,
+            array_merge([$query], $args)
+        );
+    }
 }

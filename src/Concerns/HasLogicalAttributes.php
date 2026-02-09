@@ -2,6 +2,8 @@
 
 namespace Velm\Core\Concerns;
 
+use Velm\Core\Pipeline\ClassPipelineRuntime;
+
 trait HasLogicalAttributes
 {
     protected array $velmMeta = [];
@@ -62,6 +64,27 @@ trait HasLogicalAttributes
     {
         if (array_key_exists($key, $this->getAllMeta())) {
             return $this->getMeta($key);
+        }
+
+        // Already loaded
+        if ($this->relationLoaded($key)) {
+            return $this->relations[$key];
+        }
+
+        // Pretend the method exists
+        if (ClassPipelineRuntime::hasInstancePipeline(
+            $this->getLogicalName(),
+            $key
+        )) {
+            // Laravel normally calls: $this->$key()
+            // We forward that call — pipeline handles it
+            $relation = $this->$key();
+
+            if ($relation instanceof \Illuminate\Database\Eloquent\Relations\Relation) {
+                $this->setRelation($key, $results = $relation->getResults());
+
+                return $results;
+            }
         }
 
         return parent::__get($key);

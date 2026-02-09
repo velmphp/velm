@@ -150,22 +150,29 @@ abstract class LogicalModel extends Model implements Pipelinable
      *---------------------------------*/
     public function __call($method, $parameters)
     {
-        velm_utils()->consoleLog(
-            "Checking pipeline for logical name {$this->getLogicalName()} and method {$method}..."
-        );
-        velm_utils()->consoleLog("Table name: {$this->getTable()}");
-
-        if (ClassPipelineRuntime::hasInstancePipeline($this->getLogicalName(), $method)) {
+        if (ClassPipelineRuntime::hasInstancePipeline($logicalName = $this->getLogicalName(), $method)) {
             velm_utils()->consoleLog(
-                "Method {$method} is pipelined for logical model {$this->getLogicalName()}."
+                "Method {$method} is pipelined for logical model {$logicalName}."
             );
 
             return ClassPipelineRuntime::call($this, $method, $parameters);
         }
 
-        velm_utils()->consoleLog(
-            "Method {$method} is NOT pipelined for logical model {$this->getLogicalName()}, forwarding to parent."
-        );
+        // 2️⃣ Scope resolution (query builder path)
+        if (
+            isset($parameters[0]) &&
+            $parameters[0] instanceof \Illuminate\Database\Eloquent\Builder &&
+            ClassPipelineRuntime::hasScope($logicalName, $method)
+        ) {
+            ClassPipelineRuntime::callScope(
+                $this,
+                $method,
+                $parameters
+            );
+
+            // Laravel expects the query back
+            return $parameters[0];
+        }
 
         return parent::__call($method, $parameters);
     }
