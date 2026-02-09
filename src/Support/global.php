@@ -1,6 +1,8 @@
 <?php
 
-use Velm\Core\Runtime\SuperStack;
+use Velm\Core\Facades\Velm;
+use Velm\Core\Pipeline\PipelineContext;
+use Velm\Core\Pipeline\SuperProxy;
 use Velm\Core\Support\Helpers\VelmUtils;
 
 if (! function_exists('velm')) {
@@ -9,7 +11,7 @@ if (! function_exists('velm')) {
      */
     function velm(): \Velm\Core\Velm
     {
-        return \Velm\Core\Facades\Velm::getFacadeRoot();
+        return Velm::getFacadeRoot();
     }
 }
 if (! function_exists('velm_utils')) {
@@ -43,15 +45,26 @@ if (! function_exists('velm_app_path')) {
 }
 
 if (! function_exists('super')) {
-    function super(...$args): mixed
+    function super(): SuperProxy
     {
-        return SuperStack::next(...$args);
+        return PipelineContext::super();
     }
 }
 
 if (! function_exists('velm_model')) {
     function velm_model(string $logicalName, array $attributes = []): object
     {
-        return Velm\Core\Models\Model::make($logicalName, $attributes);
+        $physical = velm()->registry()->pipeline()->firstExtensionFor($logicalName);
+        if (! $physical) {
+            throw new RuntimeException("No model found for logical name '{$logicalName}'");
+        }
+        // Return the alias
+        $base = class_basename($physical);
+        $fqcn = "Velm\\Models\\{$base}";
+        if (! class_exists($fqcn)) {
+            throw new RuntimeException("Model class '{$fqcn}' does not exist. Make sure it is compiled and autoloaded.");
+        }
+
+        return new $fqcn($attributes);
     }
 }

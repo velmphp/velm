@@ -2,28 +2,27 @@
 
 namespace Velm\Core\Pipeline;
 
+use ReflectionMethod;
 use Velm\Core\Pipeline\Contracts\Pipelinable;
 
 final class ClassPipelineRuntime
 {
-    /**
-     * Instance pipeline
-     */
+    /* -----------------------------
+     | Instance method pipeline
+     *----------------------------- */
     public static function call(Pipelinable $self, string $method, array $args = [])
     {
         velm_utils()->consoleLog('runtime:call invoked from '.get_class($self)." for method {$method}");
         $logicalName = $self->getLogicalName();
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
 
-        // Last defined should be first called
         $extensions = array_reverse($extensions);
 
-        // Only public/protected methods
         $handlers = array_values(array_filter($extensions, function ($h) use ($method) {
             if (! method_exists($h, $method)) {
                 return false;
             }
-            $ref = new \ReflectionMethod($h, $method);
+            $ref = new ReflectionMethod($h, $method);
 
             return $ref->isPublic() || $ref->isProtected();
         }));
@@ -31,7 +30,9 @@ final class ClassPipelineRuntime
         if (empty($handlers)) {
             throw new \BadMethodCallException("Method {$method} not found in pipeline for {$logicalName}");
         }
+
         velm_utils()->consoleLog('runtime:call found handlers: '.count($handlers));
+
         $cursor = new PipelineCursor($handlers);
         $super = new SuperProxy($cursor, $self);
 
@@ -43,24 +44,16 @@ final class ClassPipelineRuntime
         }
     }
 
-    /**
-     * Instance pipeline by logical name (no base app instance needed)
-     */
     public static function callByLogicalName(string $logicalName, string $method, array $args = [])
     {
-        $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
-        if (empty($extensions)) {
-            throw new \RuntimeException("No registered classes for logical name {$logicalName}");
-        }
-
-        $self = $extensions[0]; // first registered instance
+        $self = \Velm\Core\Runtime\RuntimeLogicalModel::make($logicalName);
 
         return self::call($self, $method, $args);
     }
 
-    /**
-     * Static pipeline
-     */
+    /* -----------------------------
+     | Static pipeline
+     *----------------------------- */
     public static function callStatic(string $logicalName, string $method, array $args = [])
     {
         $handlers = ClassPipelineRegistry::staticExtensionsFor($logicalName);
@@ -104,9 +97,9 @@ final class ClassPipelineRuntime
         }
     }
 
-    /**
-     * @param  class-string  $fqcn
-     */
+    /* -----------------------------
+     | Pipeline existence
+     *----------------------------- */
     public static function hasInstancePipeline(string $fqcn, string $method): bool
     {
         $logicalName = class_basename($fqcn);
@@ -116,13 +109,84 @@ final class ClassPipelineRuntime
             if (! method_exists($ext, $method)) {
                 continue;
             }
-
-            $ref = new \ReflectionMethod($ext, $method);
+            $ref = new ReflectionMethod($ext, $method);
             if ($ref->isPublic() || $ref->isProtected()) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /* -----------------------------
+     | Property merging: fillable, casts, appends, table, connection
+     *----------------------------- */
+    public static function mergeProperties(Pipelinable $self, array $properties)
+    {
+        velm_utils()->consoleLog("Merging properties for logical model {$self->getLogicalName()}...");
+
+        $logicalName = $self->getLogicalName();
+        $extensions = velm()->registry()->pipeline()->find($logicalName);
+
+        $selfRef = new \ReflectionObject($self);
+
+        foreach ($properties as $prop) {
+            foreach ($extensions as $ext) {
+                if (! property_exists($ext, $prop)) {
+                    continue;
+                }
+
+                // Read the property from the extension
+                $refProp = new \ReflectionProperty($ext, $prop);
+                $refProp->setAccessible(true);
+                $value = $refProp->getValue($ext) ?? [];
+
+                // Write to $self safely using Reflection
+                if ($selfRef->hasProperty($prop)) {
+                    $selfProp = $selfRef->getProperty($prop);
+                    $selfProp->setAccessible(true);
+
+                    if (in_array($prop, ['fillable', 'appends'])) {
+                        $current = $selfProp->getValue($self) ?? [];
+                        $selfProp->setValue($self, array_unique(array_merge($current, $value)));
+                    } elseif ($prop === 'casts') {
+                        $current = $selfProp->getValue($self) ?? [];
+                        $selfProp->setValue($self, array_merge($current, $value));
+                    } else {
+                        $selfProp->setValue($self, $value);
+                    }
+                }
+            }
+        }
+    }
+
+    public static function hasScope(string $logicalName, string $scope): bool
+    {
+        $method = 'scope'.ucfirst($scope);
+
+        foreach (ClassPipelineRegistry::extensionsFor($logicalName) as $ext) {
+            if (method_exists($ext, $method)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function callScope(
+        Pipelinable $self,
+        string $scope,
+        array $args
+    ) {
+        $method = 'scope'.ucfirst($scope);
+
+        // First argument must be the query builder
+        $query = array_shift($args);
+
+        return self::call(
+            $self,
+            $method,
+            array_merge([$query], $args)
+        );
     }
 }

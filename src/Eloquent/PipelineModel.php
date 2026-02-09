@@ -15,6 +15,7 @@ abstract class PipelineModel extends Model implements Pipelinable
 
     public function __call($method, $parameters)
     {
+        velm_utils()->consoleLog("[PipelineModel] __call invoked for method: $method");
         // 1️⃣ If pipeline has this method, use it
         if (ClassPipelineRuntime::hasInstancePipeline(static::class, $method)) {
             velm_utils()->consoleLog('[PipelineModel] Calling pipeline method: '.static::class.'::'.$method);
@@ -23,11 +24,6 @@ abstract class PipelineModel extends Model implements Pipelinable
         }
 
         // 2️⃣ If method exists on $physical class or parent, call it normally
-        if (method_exists($this, $method)) {
-            return $this->{$method}(...$parameters);
-        }
-
-        // 2️⃣ If method exists on this class or parent, call it normally
         if (method_exists($this, $method)) {
             return $this->{$method}(...$parameters);
         }

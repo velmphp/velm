@@ -2,7 +2,6 @@
 
 namespace Velm\Core\Support;
 
-use Velm\Core\Eloquent\PipelineModel;
 use Velm\Core\Pipeline\PipelineContext;
 
 function super(): object
@@ -17,16 +16,19 @@ if ((! function_exists('\\Velm\\Core\\Support\\model'))) {
      * @param  string  $logicalName  The logical name of the model.
      * @return object The model instance.
      */
-    function model(string $logicalName): object
+    function model(string $logicalName, array $attributes = []): object
     {
-        // Make a concrete of the abstract PipelineModel class, then instantiate it and return the instance.
-        // The concrete should have a static property $_velm_name set to $logicalName, and should be registered in the ClassPipelineRegistry with the same logical name.
-        $class = get_class(new class extends PipelineModel
-        {
-            public static string $velm_name = '';
-        });
-        $class::$velm_name = $logicalName;
+        $physical = velm()->registry()->pipeline()->firstExtensionFor($logicalName);
+        if (! $physical) {
+            throw new \RuntimeException("No model found for logical name '{$logicalName}'");
+        }
+        // Return the alias
+        $base = class_basename($physical);
+        $fqcn = "Velm\\Models\\{$base}";
+        if (! class_exists($fqcn)) {
+            throw new \RuntimeException("Model class '{$fqcn}' does not exist. Make sure it is compiled and autoloaded.");
+        }
 
-        return new $class;
+        return new $fqcn($attributes);
     }
 }

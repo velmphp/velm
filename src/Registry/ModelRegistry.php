@@ -4,6 +4,7 @@ namespace Velm\Core\Registry;
 
 use Velm\Core\Compiler\DomainType;
 use Velm\Core\Domain\BaseModel;
+use Velm\Core\Runtime\RuntimeLogicalModel;
 
 class ModelRegistry
 {
@@ -21,8 +22,26 @@ class ModelRegistry
         foreach ((array) $models as $model) {
             $this->_models[$package][class_basename($model)] = $model;
             // register to the pipeline registry as well
+            $instance = new $model;
             velm()->registry()->pipeline()::register(new $model);
             velm()->registry()->pipeline()::registerStatic($model);
+            // Runtime Model Alias
+            // Create a runtime alias
+            $baseName = class_basename($instance);
+            /**
+             * @var class-string<RuntimeLogicalModel> $fqcn
+             */
+            $fqcn = "Velm\\Models\\$baseName";
+            if (class_exists($fqcn)) {
+                continue;
+            }
+            eval("
+                namespace Velm\Models;
+                use Velm\Core\Runtime\RuntimeLogicalModel;
+                final class {$baseName} extends RuntimeLogicalModel {
+                    public static string \$logicalName = '$baseName';
+                }
+            ");
         }
     }
 
