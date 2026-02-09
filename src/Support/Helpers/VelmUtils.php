@@ -36,4 +36,64 @@ class VelmUtils
             };
         }
     }
+
+    public function inspectDynamicClass(string $fqcn): string
+    {
+        $classPath = $fqcn;
+        if (! class_exists($classPath)) {
+            return "Class {$classPath} does not exist.";
+        }
+
+        $reflection = new \ReflectionClass($classPath);
+        $output = [];
+
+        // 1. Namespace
+        if ($reflection->inNamespace()) {
+            $output[] = 'namespace '.$reflection->getNamespaceName().';';
+        }
+
+        // 2. Class Declaration
+        $declaration = 'class '.$reflection->getShortName();
+
+        if ($parent = $reflection->getParentClass()) {
+            $declaration .= ' extends \\'.$parent->getName();
+        }
+
+        $interfaces = $reflection->getInterfaceNames();
+        if (! empty($interfaces)) {
+            $declaration .= ' implements '.implode(', ', array_map(fn ($i) => "\\$i", $interfaces));
+        }
+
+        $output[] = $declaration."\n{";
+
+        // 3. Traits
+        foreach ($reflection->getTraitNames() as $trait) {
+            $output[] = "    use \\{$trait};";
+        }
+
+        // 4. Properties
+        foreach ($reflection->getProperties() as $prop) {
+            $modifiers = implode(' ', \Reflection::getModifierNames($prop->getModifiers()));
+            $output[] = "    {$modifiers} \${$prop->getName()};";
+        }
+
+        // 5. Methods (Signatures only)
+        foreach ($reflection->getMethods() as $method) {
+            $modifiers = implode(' ', \Reflection::getModifierNames($method->getModifiers()));
+            $params = [];
+            foreach ($method->getParameters() as $param) {
+                $paramStr = ($param->hasType() ? $param->getType().' ' : '').'$'.$param->getName();
+                if ($param->isDefaultValueAvailable()) {
+                    $paramStr .= ' = '.var_export($param->getDefaultValue(), true);
+                }
+                $params[] = $paramStr;
+            }
+            $output[] = "\n    {$modifiers} function {$method->getName()}(".implode(', ', $params).')';
+            $output[] = "    { \n        // Body is inaccessible for eval'd code \n    }";
+        }
+
+        $output[] = '}';
+
+        return implode("\n", $output);
+    }
 }

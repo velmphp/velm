@@ -6,7 +6,7 @@ final class SuperProxy
 {
     public function __construct(
         private PipelineCursor $cursor,
-        private object $self
+        private ?object $self
     ) {}
 
     public function __call(string $method, array $args)

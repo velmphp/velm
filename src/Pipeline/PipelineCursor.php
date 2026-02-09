@@ -8,13 +8,16 @@ final class PipelineCursor
 
     public function __construct(private array $handlers) {}
 
-    public function next(string $method, object $self, array $args)
+    public function next(string $method, ?object $self, array $args)
     {
         if (! isset($this->handlers[$this->index])) {
             return null;
         }
 
         $handler = $this->handlers[$this->index++];
+        if (! $self) {
+            return $handler->$method(...$args);
+        }
 
         return $handler->$method($self, ...$args);
     }

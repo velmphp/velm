@@ -2,6 +2,7 @@
 
 namespace Velm\Core\Registry;
 
+use Illuminate\Support\Facades\Gate;
 use Velm\Core\Compiler\DomainType;
 use Velm\Core\Domain\BaseModel;
 use Velm\Core\Runtime\RuntimeLogicalModel;
@@ -25,6 +26,25 @@ class ModelRegistry
             $instance = new $model;
             velm()->registry()->pipeline()::register(new $model);
             velm()->registry()->pipeline()::registerStatic($model);
+            // register policy for the model
+            $policy = Gate::getPolicyFor($model);
+            if ($policy) {
+                velm()->registry()->pipeline()::register($policy);
+                velm()->registry()->pipeline()::registerStatic(get_class($policy));
+
+                // create the policy alias
+                $policyBaseName = class_basename($policy);
+                $policyFqcn = "Velm\\Policies\\$policyBaseName";
+                if (! class_exists($policyFqcn)) {
+                    eval("
+                        namespace Velm\Policies;
+                        use Velm\Core\Runtime\RuntimeLogicalPolicy;
+                        final class {$policyBaseName} extends RuntimeLogicalPolicy {
+                            public static string \$logicalName = '$policyBaseName';
+                        }
+                    ");
+                }
+            }
             // Runtime Model Alias
             // Create a runtime alias
             $baseName = class_basename($instance);
