@@ -88,44 +88,48 @@ class ModelStubsGenerator
 
         $methodsDoc = implode("\n * ", $methods);
 
-        $stub = <<<PHP
-<?php
-
-namespace Velm\Models;
-
-use Velm\Core\Runtime\RuntimeLogicalModel;
-
-/**
- * IDE stub for Velm logical model {$logicalName}
- *
- * {$methodsDoc}
- */
-class {$logicalName} extends RuntimeLogicalModel
-{
-    // IDE only; runtime is handled via pipeline
-}
-
-PHP;
-
-        $this->writeStubFile($logicalName, $stub);
+        $this->writeStub($logicalName, ['methodsDoc' => $methodsDoc, 'class' => $logicalName]);
     }
 
     /**
      * Write the stub file to storage
      */
-    protected function writeStubFile(string $logicalName, string $content): void
+    protected function writeStub(string $logicalName, array $replacements): void
     {
-        $dir = "{$this->outputPath}";
+        $dir = $this->getOutputPath($logicalName);
         if (! is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
 
         $file = "{$dir}/{$logicalName}.php";
+        $content = $this->getStub($logicalName, $replacements);
 
         // Atomic write to prevent race conditions
         $tempFile = tempnam(sys_get_temp_dir(), 'stub');
         file_put_contents($tempFile, $content);
         rename($tempFile, $file);
+    }
+
+    protected function getStubPath(string $logicalName): string
+    {
+        $relative = 'model';
+        if (str_ends_with($logicalName, 'Policy')) {
+            $relative = 'policy';
+        } elseif (str_ends_with($logicalName, 'Service')) {
+            $relative = 'service';
+        }
+
+        return __DIR__."/stubs/{$relative}.stub";
+    }
+
+    protected function getStub(string $logicalName, array $replacements): string
+    {
+        $stub = file_get_contents(__DIR__.'/stubs/model.stub');
+        foreach ($replacements as $key => $value) {
+            $stub = str_replace("{{ {$key} }}", $value, $stub);
+        }
+
+        return $stub;
     }
 
     private function processType(?\ReflectionType $type): string
@@ -162,5 +166,17 @@ PHP;
         }
 
         return $type->getName();
+    }
+
+    protected function getOutputPath(string $logicalName): string
+    {
+        $relative = 'models';
+        if (str_ends_with($logicalName, 'Policy')) {
+            $relative = 'policies';
+        } elseif (str_contains($logicalName, 'Service')) {
+            $relative = 'services';
+        }
+
+        return GeneratedPaths::base("ide-stubs/{$relative}");
     }
 }

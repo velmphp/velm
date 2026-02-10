@@ -1,0 +1,12 @@
+<?php
+namespace Velm\Services;
+
+/**
+ * IDE stub for Velm service {$serviceName}
+ *
+ * {methodsDoc}
+ */
+class {class} extends \Velm\Core\Runtime\LogicalService
+{
+    // IDE only; runtime is handled via pipeline
+}
