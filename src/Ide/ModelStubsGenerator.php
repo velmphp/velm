@@ -8,13 +8,6 @@ use Velm\Core\Compiler\GeneratedPaths;
 
 class ModelStubsGenerator
 {
-    protected string $outputPath;
-
-    public function __construct(?string $outputPath = null)
-    {
-        $this->outputPath = $outputPath ?? GeneratedPaths::base('ide-stubs/models');
-    }
-
     /**
      * Generate all IDE stubs for all logical models
      */
@@ -35,7 +28,6 @@ class ModelStubsGenerator
         if (empty($extensions)) {
             $extensions = velm()->registry()->pipeline()->findStatic($logicalName);
         }
-        $extensions = velm()->registry()->pipeline()->findStatic($logicalName);
 
         $methods = [];
         foreach ($extensions as $extensionClass) {
@@ -88,44 +80,54 @@ class ModelStubsGenerator
 
         $methodsDoc = implode("\n * ", $methods);
 
-        $stub = <<<PHP
-<?php
-
-namespace Velm\Models;
-
-use Velm\Core\Runtime\RuntimeLogicalModel;
-
-/**
- * IDE stub for Velm logical model {$logicalName}
- *
- * {$methodsDoc}
- */
-class {$logicalName} extends RuntimeLogicalModel
-{
-    // IDE only; runtime is handled via pipeline
-}
-
-PHP;
-
-        $this->writeStubFile($logicalName, $stub);
+        $this->writeStub($logicalName, ['methodsDoc' => $methodsDoc, 'class' => $logicalName]);
     }
 
     /**
      * Write the stub file to storage
      */
-    protected function writeStubFile(string $logicalName, string $content): void
+    protected function writeStub(string $logicalName, array $replacements): void
     {
-        $dir = "{$this->outputPath}";
+        $dir = $this->getOutputPath($logicalName);
         if (! is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
 
         $file = "{$dir}/{$logicalName}.php";
+        $content = $this->getStub($logicalName, $replacements);
 
         // Atomic write to prevent race conditions
         $tempFile = tempnam(sys_get_temp_dir(), 'stub');
         file_put_contents($tempFile, $content);
         rename($tempFile, $file);
+    }
+
+    protected function getStubPath(string $logicalName): string
+    {
+        $relative = 'model';
+        if (str_ends_with($logicalName, 'Policy')) {
+            $relative = 'policy';
+        } elseif (str_ends_with($logicalName, 'Service')) {
+            $relative = 'service';
+        } else {
+            // Fallback
+            // Get the plural of the last part of the logical name in kebab case e.g ProductForm -> forms
+            $relative = str($logicalName)->studly()->kebab()->afterLast('-')->toString();
+        }
+
+        return __DIR__."/stubs/{$relative}.stub";
+    }
+
+    protected function getStub(string $logicalName, array $replacements): string
+    {
+        $stub = file_get_contents($this->getStubPath($logicalName));
+
+        // All replacements, considering both {{placeholder}} and {{ placeholder }} formats
+        foreach ($replacements as $key => $value) {
+            $stub = str_replace(["{{{$key}}}", "{{ {$key} }}"], $value, $stub);
+        }
+
+        return $stub;
     }
 
     private function processType(?\ReflectionType $type): string
@@ -151,16 +153,27 @@ PHP;
             return '';
         }
 
-        // If type is a class in the same namespace, we can use a relative class name in the docblock
-        if (str_starts_with($type->getName(), 'Velm\\Models\\')) {
-            return class_basename($type->getName());
-        }
-
         // if type is a class namespace, prepend \\ to make it a fully qualified class name in the docblock
         if (str_contains($type->getName(), '\\') && ! str_starts_with($type->getName(), '\\')) {
             return '\\'.$type->getName();
         }
 
         return $type->getName();
+    }
+
+    protected function getOutputPath(string $logicalName): string
+    {
+        $relative = 'models';
+        if (str_ends_with($logicalName, 'Policy')) {
+            $relative = 'policies';
+        } elseif (str_contains($logicalName, 'Service')) {
+            $relative = 'services';
+        } else {
+            // Fallback
+            // Get the plural of the last part of the logical name in kebab case e.g ProductForm -> forms
+            $relative = str($logicalName)->pluralStudly()->kebab()->afterLast('-')->toString();
+        }
+
+        return GeneratedPaths::base("ide-stubs/{$relative}");
     }
 }

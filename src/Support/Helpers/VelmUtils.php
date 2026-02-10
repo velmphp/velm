@@ -18,6 +18,8 @@ enum ConsoleLogType: string
     case INTRO = 'intro';
     case OUTRO = 'outro';
     case ERROR = 'error';
+
+    case SUCCESS = 'success';
 }
 class VelmUtils
 {
@@ -26,12 +28,13 @@ class VelmUtils
         if (app()->runningInConsole()) {
             match ($type) {
                 ConsoleLogType::INFO => \Laravel\Prompts\info($message),
-                ConsoleLogType::WARNING => warning($message),
-                ConsoleLogType::ALERT => alert($message),
-                ConsoleLogType::NOTE => note($message),
+                ConsoleLogType::WARNING => warning("⚠️ {$message}"),
+                ConsoleLogType::ALERT => alert("🚨 {$message}"),
+                ConsoleLogType::NOTE => note("📝 {$message}"),
                 ConsoleLogType::INTRO => intro($message),
                 ConsoleLogType::OUTRO => outro($message),
-                ConsoleLogType::ERROR => error($message),
+                ConsoleLogType::ERROR => error("❌ {$message}"),
+                ConsoleLogType::SUCCESS => outro("✅ {$message}"),
                 default => note($message),
             };
         }

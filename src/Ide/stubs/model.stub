@@ -1,0 +1,13 @@
+<?php
+
+namespace Velm\Models;
+
+/**
+ * IDE stub for Velm logical model {{class}}.
+ * {{propertiesDoc}}
+ * {{methodsDoc}}
+ */
+class {{class}} extends \Velm\Core\Runtime\RuntimeLogicalModel
+{
+    // IDE only; runtime is handled via pipeline
+}
