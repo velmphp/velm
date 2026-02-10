@@ -8,7 +8,6 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Velm\Core\Commands\Generator\ModelMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
-use Velm\Core\Commands\VelmCompileCommand;
 use Velm\Core\Commands\VelmIdeGeneratorCommand;
 use Velm\Core\Commands\VelmMakeCommand;
 use Velm\Core\Commands\VelmModuleInstallCommand;
@@ -120,17 +119,16 @@ class VelmServiceProvider extends PackageServiceProvider
         $this->app->make('velm')->boot();
         if ($this->app->runningInConsole()) {
             $this->optimizes(
-                optimize: 'velm:compile',
+                optimize: 'velm:ide',
                 clear: 'velm:clear-compiled'
             );
-            $this->reloads(reload: 'velm:compile');
+            $this->reloads(reload: 'velm:ide');
         }
     }
 
     public static function getCommands(): array
     {
         return [
-            VelmCompileCommand::class,
             VelmClearCompiledCommand::class,
             VelmMakeCommand::class,
             VelmModuleInstallCommand::class,

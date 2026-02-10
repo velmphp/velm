@@ -8,13 +8,6 @@ use Velm\Core\Compiler\GeneratedPaths;
 
 class ModelStubsGenerator
 {
-    protected string $outputPath;
-
-    public function __construct(?string $outputPath = null)
-    {
-        $this->outputPath = $outputPath ?? GeneratedPaths::base('ide-stubs/models');
-    }
-
     /**
      * Generate all IDE stubs for all logical models
      */
@@ -35,7 +28,6 @@ class ModelStubsGenerator
         if (empty($extensions)) {
             $extensions = velm()->registry()->pipeline()->findStatic($logicalName);
         }
-        $extensions = velm()->registry()->pipeline()->findStatic($logicalName);
 
         $methods = [];
         foreach ($extensions as $extensionClass) {
@@ -117,6 +109,10 @@ class ModelStubsGenerator
             $relative = 'policy';
         } elseif (str_ends_with($logicalName, 'Service')) {
             $relative = 'service';
+        } else {
+            // Fallback
+            // Get the plural of the last part of the logical name in kebab case e.g ProductForm -> forms
+            $relative = str($logicalName)->studly()->kebab()->afterLast('-')->toString();
         }
 
         return __DIR__."/stubs/{$relative}.stub";
@@ -124,9 +120,11 @@ class ModelStubsGenerator
 
     protected function getStub(string $logicalName, array $replacements): string
     {
-        $stub = file_get_contents(__DIR__.'/stubs/model.stub');
+        $stub = file_get_contents($this->getStubPath($logicalName));
+
+        // All replacements, considering both {{placeholder}} and {{ placeholder }} formats
         foreach ($replacements as $key => $value) {
-            $stub = str_replace("{{ {$key} }}", $value, $stub);
+            $stub = str_replace(["{{{$key}}}", "{{ {$key} }}"], $value, $stub);
         }
 
         return $stub;
@@ -155,11 +153,6 @@ class ModelStubsGenerator
             return '';
         }
 
-        // If type is a class in the same namespace, we can use a relative class name in the docblock
-        if (str_starts_with($type->getName(), 'Velm\\Models\\')) {
-            return class_basename($type->getName());
-        }
-
         // if type is a class namespace, prepend \\ to make it a fully qualified class name in the docblock
         if (str_contains($type->getName(), '\\') && ! str_starts_with($type->getName(), '\\')) {
             return '\\'.$type->getName();
@@ -175,6 +168,10 @@ class ModelStubsGenerator
             $relative = 'policies';
         } elseif (str_contains($logicalName, 'Service')) {
             $relative = 'services';
+        } else {
+            // Fallback
+            // Get the plural of the last part of the logical name in kebab case e.g ProductForm -> forms
+            $relative = str($logicalName)->pluralStudly()->kebab()->afterLast('-')->toString();
         }
 
         return GeneratedPaths::base("ide-stubs/{$relative}");
