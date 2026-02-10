@@ -190,7 +190,6 @@ class ModuleRegistry
         // / STEP 2: Set Dependencies and register each instance
         foreach ($this->modules as $package => $module) {
             // Load dependencies from composer.json
-            velm_utils()->consoleLog("Setting dependencies for module [$package]");
             $this->modules[$package]->dependencies = $this->getComposerDependencies($package);
         }
     }
@@ -303,9 +302,6 @@ class ModuleRegistry
     {
         if ($force) {
             $this->_resolved = null;
-        }
-        if (empty($this->_resolved)) {
-            velm_utils()->consoleLog('Resolving modules.', ConsoleLogType::INTRO);
         }
         $resolved = $this->_resolved ??= \Velm::resolver()->resolve();
 

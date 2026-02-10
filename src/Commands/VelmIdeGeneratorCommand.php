@@ -3,7 +3,7 @@
 namespace Velm\Core\Commands;
 
 use Illuminate\Console\Command;
-use Velm\Core\Ide\ModelStubsGenerator;
+use Velm\Core\Ide\IdeGenerator;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -20,8 +20,8 @@ class VelmIdeGeneratorCommand extends Command
     {
         // Generate model stubs
         intro('Generating IDE helper files for Velm projects...');
-        $modelsGenerator = new ModelStubsGenerator;
-        $modelsGenerator->generate();
+        $generator = new IdeGenerator;
+        $generator->generate();
         outro("IDE helper files generated successfully. You may need to refresh your IDE's cache for the changes to take effect.");
     }
 }

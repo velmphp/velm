@@ -1,6 +1,6 @@
 {
     "name": "velm/velm",
-    "description": "This is my package velm-core",
+    "description": "Velm gives you the tools to build a truly modular Laravel application. It provides a solid foundation for building scalable and maintainable applications by promoting separation of concerns and modular architecture.",
     "version": "0.0.1",
     "keywords": [
         "Velm",
@@ -12,7 +12,7 @@
     "authors": [
         {
             "name": "Samson Maosa",
-            "email": "devmaosa@gmail.com",
+            "email": "maosa.sam@gmail.com",
             "role": "Developer"
         }
     ],

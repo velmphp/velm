@@ -151,9 +151,6 @@ abstract class LogicalModel extends Model implements Pipelinable
     public function __call($method, $parameters)
     {
         if (ClassPipelineRuntime::hasInstancePipeline($logicalName = $this->getLogicalName(), $method)) {
-            velm_utils()->consoleLog(
-                "Method {$method} is pipelined for logical model {$logicalName}."
-            );
 
             return ClassPipelineRuntime::call($this, $method, $parameters);
         }
@@ -162,8 +159,6 @@ abstract class LogicalModel extends Model implements Pipelinable
         if (
             ClassPipelineRuntime::hasScope($logicalName, $method)
         ) {
-            velm_utils()->consoleLog("This is a pipelined scope: {$method} for logical model {$logicalName}.");
-
             return ClassPipelineRuntime::callScope(
                 $this,
                 $method,

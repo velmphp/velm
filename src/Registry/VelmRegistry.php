@@ -15,8 +15,6 @@ class VelmRegistry
 
     private ?CompilerRegistry $_compilerRegistry = null;
 
-    private ?RuntimeRegistry $runtimeRegistry = null;
-
     private ?ClassPipelineRegistry $pipelineRegistry = null;
 
     private ?PolicyRegistry $policyRegistry = null;
@@ -34,11 +32,6 @@ class VelmRegistry
     public function compiler(): CompilerRegistry
     {
         return $this->_compilerRegistry ??= new CompilerRegistry;
-    }
-
-    public function runtime(): RuntimeRegistry
-    {
-        return $this->runtimeRegistry ??= new RuntimeRegistry;
     }
 
     public function pipeline(): ClassPipelineRegistry

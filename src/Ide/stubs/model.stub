@@ -2,14 +2,12 @@
 
 namespace Velm\Models;
 
-use Velm\Core\Runtime\RuntimeLogicalModel;
-
 /**
- * IDE stub for Velm logical model {$logicalName}
- *
- * {methodsDoc}
+ * IDE stub for Velm logical model {{class}}.
+ * {{propertiesDoc}}
+ * {{methodsDoc}}
  */
-class {logicalName} extends RuntimeLogicalModel
+class {{class}} extends \Velm\Core\Runtime\RuntimeLogicalModel
 {
     // IDE only; runtime is handled via pipeline
 }

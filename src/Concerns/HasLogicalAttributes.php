@@ -10,7 +10,6 @@ trait HasLogicalAttributes
 
     protected function initializeHasLogicalAttributes(): void
     {
-        velm_utils()->consoleLog("Initializing logical model for logical name {$this->getLogicalName()}...");
         $logicalName = static::$logicalName;
 
         $cache = static::$velmPropertyCache[$logicalName] ?? null;

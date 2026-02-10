@@ -1,12 +1,13 @@
 <?php
+
 namespace Velm\Policies;
 
 /**
- * IDE stub for Velm policy {$policyName}
- *
- * {methodsDoc}
+ * IDE stub for Velm policy {{class}}.
+ * {{propertiesDoc}}
+ * {{methodsDoc}}
  */
-class {class} extends \Velm\Core\Runtime\LogicalPolicy
+class {{class}} extends \Velm\Core\Runtime\RuntimeLogicalPolicy
 {
     // IDE only; runtime is handled via pipeline
 }
