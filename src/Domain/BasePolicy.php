@@ -10,6 +10,6 @@ abstract class BasePolicy implements Pipelinable
     {
         $called = get_called_class();
 
-        return class_basename($called);
+        return str(class_basename($called))->rtrim('Policy')->append('Policy')->toString();
     }
 }

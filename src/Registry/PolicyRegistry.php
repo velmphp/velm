@@ -52,8 +52,6 @@ class PolicyRegistry
             // If instance of LogicalModel, use VelmPolicyDispatcher
             $model = $arguments[0];
             if ($model instanceof LogicalModel) {
-                velm_utils()->consoleLog('[PolicyRegistry] Using VelmPolicyDispatcher for model: '.get_class($model));
-
                 return VelmPolicyDispatcher::authorize($ability, [$user, $model]);
             }
 
