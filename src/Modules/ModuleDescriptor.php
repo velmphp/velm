@@ -15,18 +15,10 @@ final class ModuleDescriptor
          * @var class-string<VelmModule> $entryPoint
          */
         public readonly string $entryPoint,
-        public VelmModule $instance {
-            set(VelmModule $value) {
-                $this->instance = $value;
-            }
-        },
+        public VelmModule $instance,
         public readonly string $version,
         public readonly string $packageName,
-        public array $dependencies {
-            set {
-                $this->dependencies = $value;
-            }
-        },
+        public array $dependencies,
         public array $states = [],
     ) {}
 

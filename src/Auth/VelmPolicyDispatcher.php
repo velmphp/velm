@@ -17,8 +17,6 @@ final class VelmPolicyDispatcher
         // Get the combined class
         $class = "\\Velm\\Policies\\$logicalName";
         if (! class_exists($class)) {
-            velm_utils()->consoleLog("[VelmPolicyDispatcher] No policy class found for logical name: $logicalName");
-
             return false;
         }
 

@@ -21,9 +21,6 @@ class RuntimeLogicalPolicy implements Pipelinable
     public function __call($method, $parameters)
     {
         if (ClassPipelineRuntime::hasInstancePipeline($logicalName = $this->getLogicalName(), $method)) {
-            velm_utils()->consoleLog(
-                "Method {$method} is pipelined for logical model {$logicalName}."
-            );
             try {
                 return ClassPipelineRuntime::call($this, $method, $parameters);
             } catch (\Throwable $exception) {

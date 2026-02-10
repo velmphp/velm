@@ -11,7 +11,6 @@ abstract class VelmModule implements VelmModuleContract
     // register method
     final public function register(): void
     {
-        velm_utils()->consoleLog('Registering module: '.get_called_class()::name());
         $this->registering();
 
         /* ====== Register Domain Classes ====== */
