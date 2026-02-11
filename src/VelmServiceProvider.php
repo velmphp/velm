@@ -122,6 +122,7 @@ class VelmServiceProvider extends PackageServiceProvider
                 optimize: 'velm:ide',
                 clear: 'velm:clear-compiled'
             );
+            // @phpstan-ignore-next-line
             if (method_exists($this, 'reloads')) {
                 $this->reloads(reload: 'velm:ide');
             }
