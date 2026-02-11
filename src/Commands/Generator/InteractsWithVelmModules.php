@@ -10,7 +10,7 @@ use Velm\Core\Modules\ModuleDescriptor;
 
 use function Laravel\Prompts\select;
 
-trait IntractsWithVelmModules
+trait InteractsWithVelmModules
 {
     public function resolveModule(): ModuleDescriptor
     {
@@ -60,7 +60,7 @@ trait IntractsWithVelmModules
 
     protected function rootNamespace(): string
     {
-        return $this->resolveModule()->namespace;
+        return $this->resolveModule()->namespace.'\\';
     }
 
     protected function getPath($name): string
@@ -74,5 +74,21 @@ trait IntractsWithVelmModules
     protected function resolveStubPath($stub): string
     {
         return __DIR__.$stub;
+    }
+
+    protected function qualifyModel(string $model)
+    {
+        $model = ltrim($model, '\\/');
+
+        $model = str_replace('/', '\\', $model);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($model, $rootNamespace)) {
+            return $model;
+        }
+
+        // Proxy namespace to the module's namespace
+        return 'Velm\\Models\\'.$model;
     }
 }
