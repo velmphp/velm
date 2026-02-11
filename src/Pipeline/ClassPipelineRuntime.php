@@ -174,7 +174,7 @@ final class ClassPipelineRuntime
     ) {
         $method = 'scope'.ucfirst($scope);
 
-        $query = $self->getQuery();
+        $query = $self;
 
         return self::call(
             $self,
