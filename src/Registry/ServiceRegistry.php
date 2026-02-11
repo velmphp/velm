@@ -81,4 +81,26 @@ class ServiceRegistry
 
         return $classes;
     }
+
+    public function bootstrap(): void
+    {
+        $services = $this->servicesMap();
+        foreach ($services as $logicalName => $instances) {
+            // Add to pipeline
+            foreach ($instances as $instance) {
+                velm()->registry()->pipeline()::register($instance, $logicalName);
+                velm()->registry()->pipeline()::registerStatic(get_class($instance), $logicalName);
+            }
+            $fqcn = "Velm\\Services\\$logicalName";
+            if (! class_exists($fqcn)) {
+                eval("
+                    namespace Velm\Services;
+                    use Velm\Core\Runtime\RuntimeLogicalService;
+                    final class $logicalName extends RuntimeLogicalService {
+                        public static string \$logicalName = '$logicalName';
+                    }
+                ");
+            }
+        }
+    }
 }

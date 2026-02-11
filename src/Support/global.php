@@ -45,7 +45,10 @@ if (! function_exists('velm_app_path')) {
 }
 
 if (! function_exists('super')) {
-    function super(): SuperProxy
+    /**
+     * @return object<SuperProxy>
+     */
+    function super(): object
     {
         return PipelineContext::super();
     }
@@ -67,5 +70,17 @@ if (! function_exists('velm_model')) {
         }
 
         return new $fqcn($attributes);
+    }
+}
+if (! function_exists('velm_service')) {
+    function velm_service(string $logicalName): object
+    {
+        $baseName = velm_utils()->getBaseClassName($logicalName, 'Service');
+        $fqcn = "Velm\\Services\\$baseName";
+        if (! class_exists($fqcn)) {
+            throw new RuntimeException("Service class '{$fqcn}' does not exist. Make sure it is compiled and autoloaded.");
+        }
+
+        return app($fqcn);
     }
 }

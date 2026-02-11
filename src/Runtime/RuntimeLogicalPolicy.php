@@ -20,7 +20,8 @@ class RuntimeLogicalPolicy implements Pipelinable
 
     public function __call($method, $parameters)
     {
-        if (ClassPipelineRuntime::hasInstancePipeline($logicalName = $this->getLogicalName(), $method)) {
+        $logicalName = $this->getLogicalName();
+        if (ClassPipelineRuntime::hasInstancePipeline(static::class, $method)) {
             try {
                 return ClassPipelineRuntime::call($this, $method, $parameters);
             } catch (\Throwable $exception) {

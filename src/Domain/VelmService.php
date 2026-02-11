@@ -8,6 +8,8 @@ abstract class VelmService implements Pipelinable
 {
     protected static ?string $velm_name = null;
 
+    public static int $velm_priority = 0;
+
     public function getLogicalName(): string
     {
         $name = static::$velm_name ?? class_basename(get_called_class());

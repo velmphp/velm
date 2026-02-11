@@ -229,6 +229,8 @@ class ModuleRegistry
             // Boot
             $moduleInstance->boot();
         }
+        // Bootstrap all services
+        velm()->registry()->services()->bootstrap();
     }
 
     final public function freeze(): void
