@@ -14,6 +14,6 @@ class RuntimeLogicalModel extends LogicalModel
             throw new \RuntimeException("Logical model '".static::class."' does not have a logical name defined.");
         }
 
-        return static::$logicalName;
+        return velm_utils()->formatVelmName(static::$logicalName, 'Model');
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Velm\Core\Pipeline;
 
+use Velm\Core\Pipeline\Contracts\Pipelinable;
+
 final class ClassPipelineRegistry
 {
     /** @var array<string, object[]> */
@@ -13,26 +15,33 @@ final class ClassPipelineRegistry
     // Register instance pipeline
     public static function register(object $instance, ?string $logicalName = null): void
     {
-        $logicalName ??= class_basename($instance);
+        /**
+         * @var Pipelinable $instance
+         */
+        $logicalName ??= $instance->getLogicalName();
         self::$registry[$logicalName][] = $instance;
     }
 
     // Register static pipeline
     public static function registerStatic(string $className, ?string $logicalName = null): void
     {
-        $logicalName ??= class_basename($className);
+        $logicalName ??= (new $className)->getLogicalName();
         self::$staticRegistry[$logicalName][] = $className;
     }
 
     /** @return object[] */
     public static function extensionsFor(string $logicalName): array
     {
+        $logicalName = velm_utils()->formatVelmName($logicalName);
+
         return self::$registry[$logicalName] ?? [];
     }
 
     /** @return string[] */
     public static function staticExtensionsFor(string $logicalName): array
     {
+        $logicalName = velm_utils()->formatVelmName($logicalName);
+
         return self::$staticRegistry[$logicalName] ?? [];
     }
 

@@ -4,7 +4,7 @@ namespace Velm\Core\Domain;
 
 use Velm\Core\Eloquent\PipelineModel;
 
-abstract class BaseModel extends PipelineModel
+abstract class VelmModel extends PipelineModel
 {
     public static int $velm_priority = 0;
 
@@ -13,6 +13,8 @@ abstract class BaseModel extends PipelineModel
 
     public function getLogicalName(): string
     {
-        return static::$velm_name ??= class_basename(get_called_class());
+        $name = static::$velm_name ?? class_basename(static::class);
+
+        return velm_utils()->formatVelmName($name, 'Model');
     }
 }

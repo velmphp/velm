@@ -99,4 +99,30 @@ class VelmUtils
 
         return implode("\n", $output);
     }
+
+    public function formatVelmName(string $logicalName, ?string $suffix = null): string
+    {
+        // Replace dots with dashes and convert to kebab case
+        $baseName = str_replace('.', '-', $logicalName);
+        $baseName = str($baseName)->kebab()->studly();
+        if ($suffix) {
+            $suffix = str($suffix)->studly()->toString();
+            // if string doesn't already end with suffix, append it
+            if (! str_ends_with($baseName, $suffix)) {
+                $baseName = $baseName->append($suffix);
+            }
+        }
+
+        return $baseName->toString();
+    }
+
+    public function getBaseClassName(string $logicalName, ?string $suffix = null): string
+    {
+        $baseName = $this->formatVelmName($logicalName, $suffix);
+        if ((! $suffix || $suffix === 'Model') && str_ends_with($baseName, 'Model')) {
+            return str($baseName)->replaceLast('Model', '')->toString();
+        }
+
+        return $baseName;
+    }
 }

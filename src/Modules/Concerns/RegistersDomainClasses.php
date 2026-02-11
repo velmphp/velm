@@ -2,8 +2,7 @@
 
 namespace Velm\Core\Modules\Concerns;
 
-use Velm\Core\Compiler\DomainType;
-use Velm\Core\Domain\BaseModel;
+use Velm\Core\Domain\VelmModel;
 
 trait RegistersDomainClasses
 {
@@ -36,7 +35,7 @@ trait RegistersDomainClasses
                 /** @var \SplFileInfo $file */
                 if ($file->isFile() && $file->getExtension() === 'php') {
                     $class = static::getNamespaceFromPath($file->getRealPath());
-                    if (class_exists($class) && is_subclass_of($class, BaseModel::class)) {
+                    if (class_exists($class) && is_subclass_of($class, VelmModel::class)) {
                         $models[] = $class;
                     }
                 }
@@ -161,16 +160,15 @@ trait RegistersDomainClasses
     {
         $models = static::getModels();
         // Sort models by priority
-        usort($models, function (string|BaseModel $a, string|BaseModel $b) {
+        usort($models, function (string|VelmModel $a, string|VelmModel $b) {
             $priorityA = $a::$velm_priority ?? 0;
             $priorityB = $b::$velm_priority ?? 0;
 
             return $priorityB <=> $priorityA;
         });
         // Register to model registry
-        $modelRegistry = \Velm::registry()->models();
+        $modelRegistry = velm()->registry()->models();
         $modelRegistry->register($models, static::packageName());
-        static::loadModelProxies();
     }
 
     final public static function registerPolicies(): void
@@ -179,27 +177,14 @@ trait RegistersDomainClasses
         // TODO: Implement
     }
 
+    final public static function registerServices(): void
+    {
+        velm()->registry()->services()->discoverForPackage(static::packageName(), autoRegister: true);
+    }
+
     final public static function registerCommands(): void
     {
         $commands = static::getCommands();
         // TODO: Implements
-    }
-
-    final public static function loadModelProxies(): void
-    {
-        $modelRegistry = \Velm::registry()->models();
-        $proxies = $modelRegistry->proxies();
-        // Load each proxy class
-        foreach ($proxies as $name => $proxyPath) {
-            $proxyClass = DomainType::Models->namespace($name);
-            if (class_exists($proxyClass)) {
-                continue;
-            }
-            // get path
-            if (! file_exists($proxyPath)) {
-                continue;
-            }
-            require_once $proxyPath;
-        }
     }
 }

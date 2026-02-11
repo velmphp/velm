@@ -54,12 +54,13 @@ if (! function_exists('super')) {
 if (! function_exists('velm_model')) {
     function velm_model(string $logicalName, array $attributes = []): object
     {
+        $logicalName = velm_utils()->formatVelmName($logicalName, 'Model');
         $physical = velm()->registry()->pipeline()->firstExtensionFor($logicalName);
         if (! $physical) {
             throw new RuntimeException("No model found for logical name '{$logicalName}'");
         }
         // Return the alias
-        $base = class_basename($physical);
+        $base = velm_utils()->getBaseClassName($logicalName);
         $fqcn = "Velm\\Models\\{$base}";
         if (! class_exists($fqcn)) {
             throw new RuntimeException("Model class '{$fqcn}' does not exist. Make sure it is compiled and autoloaded.");

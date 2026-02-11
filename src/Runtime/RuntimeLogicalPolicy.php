@@ -15,7 +15,7 @@ class RuntimeLogicalPolicy implements Pipelinable
             throw new \RuntimeException("Logical Policy '".static::class."' does not have a logical name defined.");
         }
 
-        return static::$logicalName;
+        return velm_utils()->formatVelmName(static::$logicalName, 'Policy');
     }
 
     public function __call($method, $parameters)

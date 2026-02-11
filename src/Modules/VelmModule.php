@@ -16,6 +16,7 @@ abstract class VelmModule implements VelmModuleContract
         /* ====== Register Domain Classes ====== */
         $this->registerModels();
         $this->registerPolicies();
+        $this->registerServices();
         $this->registerCommands();
         /* ===================================== */
 

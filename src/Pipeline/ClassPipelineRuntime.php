@@ -138,7 +138,7 @@ final class ClassPipelineRuntime
      *----------------------------- */
     public static function hasInstancePipeline(string $fqcn, string $method): bool
     {
-        $logicalName = class_basename($fqcn);
+        $logicalName = (new $fqcn)->getLogicalName();
         $extensions = ClassPipelineRegistry::extensionsFor($logicalName);
 
         foreach ($extensions as $ext) {
@@ -174,13 +174,13 @@ final class ClassPipelineRuntime
     ) {
         $method = 'scope'.ucfirst($scope);
 
-        // First argument must be the query builder
-        $query = array_shift($args);
+        $query = $self->getQuery();
 
         return self::call(
             $self,
             $method,
-            array_merge([$query], $args)
+            array_merge([$query], $args),
+            injectSelf: false
         );
     }
 }

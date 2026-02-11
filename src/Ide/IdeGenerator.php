@@ -111,7 +111,7 @@ class IdeGenerator
         $this->writeStub($logicalName, [
             'methodsDoc' => $methodsDoc,
             'propertiesDoc' => $propertiesDoc,
-            'class' => $logicalName,
+            'class' => velm_utils()->getBaseClassName($logicalName),
         ]);
     }
 
@@ -207,7 +207,8 @@ class IdeGenerator
             mkdir($dir, 0775, true);
         }
 
-        $file = "{$dir}/{$logicalName}.php";
+        $className = velm_utils()->getBaseClassName($logicalName);
+        $file = "{$dir}/{$className}.php";
         $content = $this->getStub($logicalName, $replacements);
 
         // Atomic write to prevent race conditions
@@ -275,11 +276,14 @@ class IdeGenerator
 
     protected function getOutputPath(string $logicalName): string
     {
-        $relative = 'Models';
         if (str_ends_with($logicalName, 'Policy')) {
             $relative = 'Policies';
         } elseif (str_contains($logicalName, 'Service')) {
             $relative = 'Services';
+        } elseif (str_ends_with($logicalName, 'Model')) {
+            $relative = 'Models';
+        } else {
+            $relative = 'Others';
         }
 
         return GeneratedPaths::base("ide-stubs/{$relative}");

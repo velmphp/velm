@@ -303,7 +303,7 @@ class ModuleRegistry
         if ($force) {
             $this->_resolved = null;
         }
-        $resolved = $this->_resolved ??= \Velm::resolver()->resolve();
+        $resolved = $this->_resolved ??= velm()->resolver()->resolve();
 
         // Map to descriptors
         return collect($resolved)->map(fn (string $package) => $this->modules[$package])->all();
