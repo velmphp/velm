@@ -2,6 +2,8 @@
 
 namespace Velm\Core\Support\Repositories;
 
+use Composer\InstalledVersions;
+
 class ComposerRepo
 {
     /** @var array<string, array<string, mixed>>|null */
@@ -39,12 +41,12 @@ class ComposerRepo
         if (empty($installedJson)) {
             return null;
         }
-        $relativePath = $installedJson['install-path'] ?? null;
-        if (empty($relativePath)) {
+        $path = $installedJson['install_path'] ?? null;
+        if (empty($path)) {
             return null;
         }
 
-        return realpath(base_path('vendor/composer/'.$relativePath));
+        return realpath($path);
     }
 
     /**
@@ -52,11 +54,19 @@ class ComposerRepo
      */
     public function getInstalledPackages(): array
     {
-        return $this->_installed ??= collect(json_decode(
-            file_get_contents(base_path('vendor/composer/installed.json')),
-            true,
-            flags: JSON_THROW_ON_ERROR
-        )['packages'] ?? [])->keyBy('name')->toArray();
+        //        return $this->_installed ??= collect(json_decode(
+        //            file_get_contents(base_path('vendor/composer/installed.json')),
+        //            true,
+        //            flags: JSON_THROW_ON_ERROR
+        //        )['packages'] ?? [])->keyBy('name')->toArray();
+
+        // Check if the class exists (it's available in Composer 2.x)
+        if (! class_exists(InstalledVersions::class)) {
+            return [];
+        }
+
+        // This returns all installed packages across the entire project
+        return $this->_installed ??= InstalledVersions::getAllRawData()[0]['versions'] ?? [];
     }
 
     /**
