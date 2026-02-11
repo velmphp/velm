@@ -5,7 +5,8 @@ namespace Velm\Core\Registry;
 use Illuminate\Support\Facades\Gate;
 use Velm\Core\Domain\VelmModel;
 use Velm\Core\Domain\VelmPolicy;
-use Velm\Core\Runtime\RuntimeLogicalModel;
+use Velm\Core\Runtime\ModelManager;
+use Velm\Core\Runtime\PolicyManager;
 
 use function Pest\Laravel\get;
 
@@ -35,38 +36,13 @@ class ModelRegistry
                 velm()->registry()->pipeline()::register($policy, $policy->getLogicalName());
                 velm()->registry()->pipeline()::registerStatic(get_class($policy), $policy->getLogicalName());
 
-                // create the policy alias
-                $policyBaseName = $policy->getLogicalName();
-                $policyFqcn = "Velm\\Policies\\$policyBaseName";
-                if (! class_exists($policyFqcn)) {
-                    eval("
-                        namespace Velm\Policies;
-                        use Velm\Core\Runtime\RuntimeLogicalPolicy;
-                        final class {$policyBaseName} extends RuntimeLogicalPolicy {
-                            public static string \$logicalName = '$policyBaseName';
-                        }
-                    ");
-                }
+                // Cache Warmup, will generate the class if it is not there.
+                (new PolicyManager)->instance($policy->getLogicalName());
             }
             // Runtime Model Alias
             // Create a runtime alias
             $logicalName = $instance->getLogicalName();
-            // Remove the 'Model' suffix from the logical name if it exists, to get the base name for the runtime model
-            $baseName = velm_utils()->getBaseClassName($logicalName);
-            /**
-             * @var class-string<RuntimeLogicalModel> $fqcn
-             */
-            $fqcn = "Velm\\Models\\$baseName";
-            if (class_exists($fqcn)) {
-                continue;
-            }
-            eval("
-                namespace Velm\Models;
-                use Velm\Core\Runtime\RuntimeLogicalModel;
-                final class {$baseName} extends RuntimeLogicalModel {
-                    public static string \$logicalName = '$logicalName';
-                }
-            ");
+            (new ModelManager)->instance($logicalName);
         }
     }
 

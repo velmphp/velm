@@ -3,6 +3,7 @@
 namespace Velm\Core\Registry;
 
 use Velm\Core\Domain\VelmService;
+use Velm\Core\Runtime\ServiceManager;
 
 class ServiceRegistry
 {
@@ -91,16 +92,7 @@ class ServiceRegistry
                 velm()->registry()->pipeline()::register($instance, $logicalName);
                 velm()->registry()->pipeline()::registerStatic(get_class($instance), $logicalName);
             }
-            $fqcn = "Velm\\Services\\$logicalName";
-            if (! class_exists($fqcn)) {
-                eval("
-                    namespace Velm\Services;
-                    use Velm\Core\Runtime\RuntimeLogicalService;
-                    final class $logicalName extends RuntimeLogicalService {
-                        public static string \$logicalName = '$logicalName';
-                    }
-                ");
-            }
+            (new ServiceManager)->instance($logicalName);
         }
     }
 }

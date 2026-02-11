@@ -86,13 +86,20 @@ class ComposerRepo
         return true;
     }
 
-    public function require(string $package, string $version = '*'): void
+    public function require(string $package, string $version = '^0.0.1'): void
     {
         // run composer require command
-        $command = sprintf('composer require %s:%s', escapeshellarg($package), escapeshellarg($version));
-        exec($command, $output, $returnVar);
-        if ($returnVar !== 0) {
-            throw new \RuntimeException('Failed to require package: '.implode("\n", $output));
+        $command = sprintf('composer require %s:%s', escapeshellarg($package), $version);
+
+        // Use symfony process for better handling of the command execution
+        $process = new \Symfony\Component\Process\Process(explode(' ', $command));
+        $process->setTimeout(300);
+        $process->enableOutput(); // Set a timeout for the process
+
+        $process->run();
+        $errorOutput = $process->getErrorOutput();
+        if (! $process->isSuccessful()) {
+            throw new \RuntimeException('Failed to require package: '.$errorOutput);
         }
     }
 
@@ -100,9 +107,21 @@ class ComposerRepo
     {
         // run composer remove command
         $command = sprintf('composer remove %s', escapeshellarg($package));
-        exec($command, $output, $returnVar);
-        if ($returnVar !== 0) {
-            throw new \RuntimeException('Failed to remove package: '.implode("\n", $output));
+        $res = $this->runShellCommand($command);
+    }
+
+    public function runShellCommand(string $command): string
+    {
+        $process = new \Symfony\Component\Process\Process(explode(' ', $command));
+        $process->setTimeout(300);
+        $process->enableOutput();
+
+        $process->run();
+        $errorOutput = $process->getErrorOutput();
+        if (! $process->isSuccessful()) {
+            throw new \RuntimeException('Command failed: '.$errorOutput);
         }
+
+        return $process->getOutput();
     }
 }

@@ -47,7 +47,7 @@ class VelmModuleInstallCommand extends Command implements PromptsForMissingInput
 
             return;
         }
-        $registry->install($package, \Velm::tenant());
+        $registry->install($package, velm()->tenant());
         // First, run composer require if the module is not already installed
         // Next, install it in the persistence layer if needed
         outro("Module $package installed successfully.");
