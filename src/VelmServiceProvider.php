@@ -122,7 +122,9 @@ class VelmServiceProvider extends PackageServiceProvider
                 optimize: 'velm:ide',
                 clear: 'velm:clear-compiled'
             );
-            $this->reloads(reload: 'velm:ide');
+            if (method_exists($this, 'reloads')) {
+                $this->reloads(reload: 'velm:ide');
+            }
         }
     }
 
