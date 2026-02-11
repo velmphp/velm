@@ -77,8 +77,11 @@ final class Velm
 
     public function tenant(): ?string
     {
-        // Get current tenant
-        return null;
+        if (! auth()->check()) {
+            return null;
+        }
+
+        return '';
     }
 
     /**

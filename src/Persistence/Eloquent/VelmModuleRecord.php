@@ -2,7 +2,6 @@
 
 namespace Velm\Core\Persistence\Eloquent;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,8 +24,7 @@ class VelmModuleRecord extends Model
         'disabled_at' => 'datetime',
     ];
 
-    #[Scope]
-    public function findForTenant($query, string $package, ?string $tenant = null): Builder
+    public function scopeFindForTenant($query, string $package, ?string $tenant = null): Builder
     {
         $query->where('package', $package);
 
@@ -41,11 +39,11 @@ class VelmModuleRecord extends Model
 
     public function getEnabledAttribute()
     {
-        return $this->is_enabled;
+        return $this->getAttribute('is_enabled');
     }
 
-    public function getDisabledAttribute()
+    public function getDisabledAttribute(): bool
     {
-        return ! $this->is_enabled;
+        return ! $this->getEnabledAttribute();
     }
 }

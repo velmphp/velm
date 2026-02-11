@@ -41,10 +41,6 @@ abstract class RuntimeLogicalService implements Pipelinable
 
     public static function __callStatic(string $method, array $parameters)
     {
-        $allowed = ['instance', 'make'];
-        if (in_array($method, $allowed)) {
-            static::{$method}($parameters);
-        }
         throw new LogicException(
             'Static calls are not supported on Velm logical services. '.
             'Use velm_service()->method() instead.'

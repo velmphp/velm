@@ -19,7 +19,7 @@ class EloquentModuleStateRepository implements ModuleStateRepository
         $records = $query->get();
 
         return $records->mapWithKeys(function (VelmModuleRecord $record) {
-            return [$record->package => $this->toDomain($record)];
+            return [$record->getAttribute('package') => $this->toDomain($record)];
         })->all();
     }
 

@@ -19,6 +19,6 @@ abstract class VelmService implements Pipelinable
 
     public static function instance(): static
     {
-        return new static;
+        return app(static::class);
     }
 }

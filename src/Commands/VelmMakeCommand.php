@@ -33,7 +33,7 @@ class VelmMakeCommand extends \Illuminate\Console\Command implements \Illuminate
     protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
     {
         // Ask for the package name after the module name is provided
-        if ($this->hasArgument('package') && $input->getArgument('package')) {
+        if ($input->getArgument('package')) {
             return;
         }
         $name = $input->getArgument('name');
@@ -44,7 +44,7 @@ class VelmMakeCommand extends \Illuminate\Console\Command implements \Illuminate
 
     protected function askForPackageName(): string
     {
-        if ($this->hasArgument('package') && $this->argument('package')) {
+        if ($this->argument('package')) {
             return $this->argument('package');
         }
         $name = $this->argument('name');

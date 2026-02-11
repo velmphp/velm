@@ -36,7 +36,7 @@ class VelmModuleInstallCommand extends Command implements PromptsForMissingInput
     public function __invoke()
     {
         $package = $this->argument('package');
-        $registry = \Velm::registry()->modules();
+        $registry = \velm()->registry()->modules();
         $existing = $registry->find($package);
         if (! $existing) {
             $this->warn("Module $package not found in the registry. Running composer require...");

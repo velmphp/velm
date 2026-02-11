@@ -61,22 +61,22 @@ abstract class LogicalModel extends Model implements Pipelinable
                 $hasFillable = true;
                 // get fillabe from reflection
                 $fillable = $ext->getFillable() ?? [];
-                $cache['fillable'] = array_merge($cache['fillable'], $fillable ?? []);
+                $cache['fillable'] = array_merge($cache['fillable'], $fillable);
             }
 
             if (self::isDeclaredOn($ext, 'guarded')) {
                 $guarded = $ext->getGuarded() ?? [];
-                $cache['guarded'] = array_merge($cache['guarded'], $guarded ?? []);
+                $cache['guarded'] = array_merge($cache['guarded'], $guarded);
             }
 
             if (self::isDeclaredOn($ext, 'casts')) {
                 $casts = $ext->getCasts() ?? [];
-                $cache['casts'] = array_merge($cache['casts'], $casts ?? []);
+                $cache['casts'] = array_merge($cache['casts'], $casts);
             }
 
             if (self::isDeclaredOn($ext, 'appends')) {
                 $appends = $ext->getAppends() ?? [];
-                $cache['appends'] = array_merge($cache['appends'], $appends ?? []);
+                $cache['appends'] = array_merge($cache['appends'], $appends);
             }
 
             foreach (get_object_vars($ext) as $prop => $value) {
@@ -127,7 +127,7 @@ abstract class LogicalModel extends Model implements Pipelinable
 
     public function getExtensions(): array
     {
-        return velm()->registry()->pipeline()->find($this->getLogicalName()) ?? [];
+        return velm()->registry()->pipeline()->find($this->getLogicalName());
     }
 
     /**
