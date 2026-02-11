@@ -3,9 +3,11 @@
 namespace Velm\Core\Registry;
 
 use Illuminate\Support\Facades\Gate;
-use Velm\Core\Compiler\DomainType;
-use Velm\Core\Domain\BaseModel;
+use Velm\Core\Domain\VelmModel;
+use Velm\Core\Domain\VelmPolicy;
 use Velm\Core\Runtime\RuntimeLogicalModel;
+
+use function Pest\Laravel\get;
 
 class ModelRegistry
 {
@@ -13,27 +15,28 @@ class ModelRegistry
 
     private array $_definitionsMap = [];
 
-    private array $_proxies = [];
-
     /**
      * Register a model under its corresponding module
      */
     final public function register($models, string $package): void
     {
-        foreach ((array) $models as $model) {
-            $this->_models[$package][class_basename($model)] = $model;
+        $instances = collect((array) $models)->map(function ($model) {
+            return new $model;
+        })->all();
+        foreach ($instances as $instance) {
+            $model = get_class($instance);
+            $this->_models[$package][$instance->getLogicalName()] = $model;
             // register to the pipeline registry as well
-            $instance = new $model;
-            velm()->registry()->pipeline()::register(new $model);
-            velm()->registry()->pipeline()::registerStatic($model);
+            velm()->registry()->pipeline()::register($instance);
+            velm()->registry()->pipeline()::registerStatic($model, $instance->getLogicalName());
             // register policy for the model
             $policy = Gate::getPolicyFor($model);
-            if ($policy) {
-                velm()->registry()->pipeline()::register($policy);
-                velm()->registry()->pipeline()::registerStatic(get_class($policy));
+            if ($policy && is_subclass_of($policy, VelmPolicy::class)) {
+                velm()->registry()->pipeline()::register($policy, $policy->getLogicalName());
+                velm()->registry()->pipeline()::registerStatic(get_class($policy), $policy->getLogicalName());
 
                 // create the policy alias
-                $policyBaseName = class_basename($policy);
+                $policyBaseName = $policy->getLogicalName();
                 $policyFqcn = "Velm\\Policies\\$policyBaseName";
                 if (! class_exists($policyFqcn)) {
                     eval("
@@ -47,7 +50,9 @@ class ModelRegistry
             }
             // Runtime Model Alias
             // Create a runtime alias
-            $baseName = class_basename($instance);
+            $logicalName = $instance->getLogicalName();
+            // Remove the 'Model' suffix from the logical name if it exists, to get the base name for the runtime model
+            $baseName = velm_utils()->getBaseClassName($logicalName);
             /**
              * @var class-string<RuntimeLogicalModel> $fqcn
              */
@@ -59,7 +64,7 @@ class ModelRegistry
                 namespace Velm\Models;
                 use Velm\Core\Runtime\RuntimeLogicalModel;
                 final class {$baseName} extends RuntimeLogicalModel {
-                    public static string \$logicalName = '$baseName';
+                    public static string \$logicalName = '$logicalName';
                 }
             ");
         }
@@ -68,7 +73,7 @@ class ModelRegistry
     /**
      * Get all registered models
      *
-     * @return array<string, array<class-string<BaseModel>>> An associative array where keys are package names and values are arrays of model FQCNs
+     * @return array<string, array<class-string<VelmModel>>> An associative array where keys are package names and values are arrays of model FQCNs
      */
     final public function all(): array
     {
@@ -95,10 +100,11 @@ class ModelRegistry
      * Get all extensions instances for a specific model logical Name
      *
      * @param  string  $modelName  The logical name of the model
-     * @return array<class-string<BaseModel>> An array of model FQCNs that match the given logical name
+     * @return array<class-string<VelmModel>> An array of model FQCNs that match the given logical name
      */
     final public function definitions(string $modelName): array
     {
+        $modelName = velm_utils()->formatVelmName($modelName, 'Model');
         $definitions = [];
         foreach ($this->_models as $packageModels) {
             foreach ($packageModels as $name => $model) {
@@ -109,28 +115,5 @@ class ModelRegistry
         }
 
         return $definitions;
-    }
-
-    /**
-     * @deprecated Will be removed in stable release
-     * return compiled proxies for a given model name
-     */
-    final public function proxies(): ?array
-    {
-        if (! empty($this->_proxies)) {
-            return $this->_proxies;
-        }
-        $models = $this->definitionsMap();
-        foreach ($models as $modelName => $_) {
-            $proxyClass = DomainType::Models->path(class_basename($modelName).'.php');
-            $this->_proxies[$modelName] = $proxyClass;
-        }
-
-        return $this->_proxies ??= [];
-    }
-
-    final public function proxy(string $modelName): ?string
-    {
-        return $this->proxies()[$modelName] ?? null;
     }
 }

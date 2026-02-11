@@ -10,7 +10,7 @@ trait HasLogicalAttributes
 
     protected function initializeHasLogicalAttributes(): void
     {
-        $logicalName = static::$logicalName;
+        $logicalName = $this->getLogicalName();
 
         $cache = static::$velmPropertyCache[$logicalName] ?? null;
         if (! $cache) {
@@ -72,7 +72,7 @@ trait HasLogicalAttributes
 
         // Pretend the method exists
         if (ClassPipelineRuntime::hasInstancePipeline(
-            $this->getLogicalName(),
+            static::class,
             $key
         )) {
             // Laravel normally calls: $this->$key()

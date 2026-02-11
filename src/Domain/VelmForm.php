@@ -2,4 +2,4 @@
 
 namespace Velm\Core\Domain;
 
-abstract class BaseForm {}
+abstract class VelmForm {}

@@ -30,7 +30,7 @@ abstract class LogicalModel extends Model implements Pipelinable
 
     protected static function resolveVelmProperties(): void
     {
-        $logicalName = static::$logicalName;
+        $logicalName = velm_utils()->formatVelmName(static::$logicalName, 'Model');
 
         if (isset(static::$velmPropertyCache[$logicalName])) {
             return;
@@ -127,7 +127,7 @@ abstract class LogicalModel extends Model implements Pipelinable
 
     public function getExtensions(): array
     {
-        return velm()->registry()->pipeline()->find(static::$logicalName) ?? [];
+        return velm()->registry()->pipeline()->find($this->getLogicalName()) ?? [];
     }
 
     /**
@@ -142,7 +142,7 @@ abstract class LogicalModel extends Model implements Pipelinable
             );
         }
 
-        return static::$logicalName;
+        return velm_utils()->formatVelmName(static::$logicalName, 'Model');
     }
 
     /* ---------------------------------
@@ -150,14 +150,14 @@ abstract class LogicalModel extends Model implements Pipelinable
      *---------------------------------*/
     public function __call($method, $parameters)
     {
-        if (ClassPipelineRuntime::hasInstancePipeline($logicalName = $this->getLogicalName(), $method)) {
+        if (ClassPipelineRuntime::hasInstancePipeline(static::class, $method)) {
 
             return ClassPipelineRuntime::call($this, $method, $parameters);
         }
 
         // 2️⃣ Scope resolution (query builder path)
         if (
-            ClassPipelineRuntime::hasScope($logicalName, $method)
+            ClassPipelineRuntime::hasScope($this->getLogicalName(), $method)
         ) {
             return ClassPipelineRuntime::callScope(
                 $this,
@@ -186,7 +186,7 @@ abstract class LogicalModel extends Model implements Pipelinable
 
         // Pipeline accessor?
         if (ClassPipelineRuntime::hasInstancePipeline(
-            $this->getLogicalName(),
+            static::class,
             $method
         )) {
             return true;
@@ -200,7 +200,7 @@ abstract class LogicalModel extends Model implements Pipelinable
         $method = 'get'.\Str::studly($key).'Attribute';
 
         if (ClassPipelineRuntime::hasInstancePipeline(
-            $this->getLogicalName(),
+            static::class,
             $method
         )) {
             // Call pipeline accessor
@@ -219,7 +219,7 @@ abstract class LogicalModel extends Model implements Pipelinable
         $method = 'set'.Str::studly($key).'Attribute';
 
         if (ClassPipelineRuntime::hasInstancePipeline(
-            $this->getLogicalName(),
+            static::class,
             $method
         )) {
             return true;
@@ -233,7 +233,7 @@ abstract class LogicalModel extends Model implements Pipelinable
         $method = 'set'.Str::studly($key).'Attribute';
 
         if (ClassPipelineRuntime::hasInstancePipeline(
-            $this->getLogicalName(),
+            static::class,
             $method
         )) {
             ClassPipelineRuntime::call(
