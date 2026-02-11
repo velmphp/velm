@@ -28,13 +28,13 @@ trait HasLogicalAttributes
 
         // Casts
         if (! empty($cache['casts'])) {
-            $this->casts = array_merge($this->casts ?? [], $cache['casts']);
+            $this->casts = array_merge($this->casts, $cache['casts']);
         }
 
         // Appends
         if (! empty($cache['appends'])) {
             $this->appends = array_unique(
-                array_merge($this->appends ?? [], $cache['appends'])
+                array_merge($this->appends, $cache['appends'])
             );
         }
 

@@ -19,7 +19,7 @@ trait IntractsWithVelmModules
             $moduleName = $this->askForModuleName();
         }
 
-        return \Velm::registry()->modules()->findOrFail($moduleName, bySlug: true);
+        return velm()->registry()->modules()->findOrFail($moduleName, bySlug: true);
     }
 
     protected function getArguments(): array
@@ -38,10 +38,10 @@ trait IntractsWithVelmModules
         $moduleName = $this->argument('module');
         if (! $moduleName) {
             // Suggestions from the installed modules
-            $installed = \Velm::registry()->modules()->resolved();
+            $installed = \velm()->registry()->modules()->resolved();
             $suggestions = collect($installed)->mapWithKeys(function (ModuleDescriptor $item) {
                 return [$item->slug => $item->packageName];
-            });
+            })->all();
 
             $moduleName = select('Module name (e.g., Accounting)', $suggestions);
             $this->input->setArgument('module', $moduleName);

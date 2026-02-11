@@ -52,52 +52,52 @@ abstract class VelmModule implements VelmModuleContract
     public static function path(): string
     {
         /**
-         * @var VelmModuleContract $called
+         * @var class-string<VelmModuleContract> $called
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->path ?? '';
+        return \velm()->registry()->modules()->find($called::slug(), bySlug: true)->path ?? '';
     }
 
     public static function version(): string
     {
         /**
-         * @var VelmModuleContract $called
+         * @var class-string<VelmModuleContract> $called
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->version ?? 'unknown';
+        return \velm()->registry()->modules()->find($called::slug(), bySlug: true)->version ?? 'unknown';
     }
 
     public static function namespace(): string
     {
         /**
-         * @var VelmModuleContract $called
+         * @var class-string<VelmModuleContract> $called
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->namespace ?? '';
+        return \velm()->registry()->modules()->find($called::slug(), bySlug: true)->namespace ?? '';
     }
 
     public static function packageName(): string
     {
         /**
-         * @var VelmModuleContract $called
+         * @var class-string<VelmModuleContract> $called
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->packageName ?? '';
+        return \velm()->registry()->modules()->find($called::slug(), bySlug: true)->packageName ?? '';
     }
 
     final public static function dependencies(): array
     {
         // Get all the classes that the current module depends upon
         /**
-         * @var VelmModuleContract $called
+         * @var class-string<VelmModuleContract> $called
          */
         $called = get_called_class();
 
-        return \Velm::registry()->modules()->find($called::slug(), bySlug: true)?->dependencies ?? [];
+        return \velm()->registry()->modules()->find($called::slug(), bySlug: true)->dependencies ?? [];
     }
 
     final public static function modulePath($subpath = ''): string

@@ -1,5 +1,5 @@
 <?php
 
-use Velm\Core\Velm\Tests\TestCase;
+use Velm\Core\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

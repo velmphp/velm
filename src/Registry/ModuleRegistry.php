@@ -241,7 +241,7 @@ class ModuleRegistry
         $this->frozen = true;
     }
 
-    final public function isActive(string $package, string|int|null $tenant = null): bool
+    final public function isActive(string $package, ?string $tenant = null): bool
     {
         $module = $this->find($package);
         if (! filled($module)) {
@@ -255,10 +255,10 @@ class ModuleRegistry
         return $state->isEnabled;
     }
 
-    final public function tenant(): string|int|null
+    final public function tenant(): ?string
     {
         // Placeholder for getting the current tenant context
-        return null;
+        return velm()->tenant();
     }
 
     final public function repository(): ModuleStateRepository
@@ -268,9 +268,6 @@ class ModuleRegistry
 
     final public function find(string $packageOrSlug, bool $orFail = false, bool $bySlug = false): ?ModuleDescriptor
     {
-        /**
-         * @var ModuleDescriptor|null $module
-         */
         if ($bySlug) {
             $module = collect($this->modules)->where('slug', $packageOrSlug)->first();
         } else {

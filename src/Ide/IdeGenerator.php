@@ -256,6 +256,9 @@ class IdeGenerator
             return implode('&', array_map([$this, 'processType'], $type->getTypes()));
         }
 
+        /**
+         * @var \ReflectionNamedType $type
+         */
         // Void return type can be omitted in the docblock since it's implied
         if ($type->getName() === 'void') {
             return '';

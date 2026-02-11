@@ -2,7 +2,6 @@
 
 use Velm\Core\Facades\Velm;
 use Velm\Core\Pipeline\PipelineContext;
-use Velm\Core\Pipeline\SuperProxy;
 use Velm\Core\Support\Helpers\VelmUtils;
 
 if (! function_exists('velm')) {
@@ -45,9 +44,6 @@ if (! function_exists('velm_app_path')) {
 }
 
 if (! function_exists('super')) {
-    /**
-     * @return object<SuperProxy>
-     */
     function super(): object
     {
         return PipelineContext::super();

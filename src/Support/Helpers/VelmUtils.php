@@ -35,7 +35,6 @@ class VelmUtils
                 ConsoleLogType::OUTRO => outro($message),
                 ConsoleLogType::ERROR => error("❌ {$message}"),
                 ConsoleLogType::SUCCESS => outro("✅ {$message}"),
-                default => note($message),
             };
         }
     }

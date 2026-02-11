@@ -1,10 +1,10 @@
 <?php
 
-namespace Velm\Core\Velm\Tests;
+namespace Velm\Core\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Velm\Core\Velm\VelmServiceProvider;
+use Velm\Core\VelmServiceProvider;
 
 class TestCase extends Orchestra
 {
