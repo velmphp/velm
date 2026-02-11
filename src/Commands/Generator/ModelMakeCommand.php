@@ -4,7 +4,7 @@ namespace Velm\Core\Commands\Generator;
 
 class ModelMakeCommand extends \Illuminate\Foundation\Console\ModelMakeCommand
 {
-    use IntractsWithVelmModules;
+    use InteractsWithVelmModules;
 
     protected $name = 'velm:make:model';
 
@@ -17,14 +17,5 @@ class ModelMakeCommand extends \Illuminate\Foundation\Console\ModelMakeCommand
         }
 
         return $rootNamespace.'\\Models';
-    }
-
-    protected function replaceClass($stub, $name): array|string
-    {
-        $class = str_replace($this->getNamespace($name).'\\', '', $name);
-        $dot_class = str($class)->snake()->replace('_', '.')->toString();
-        $content = parent::replaceClass($stub, $name);
-
-        return str_replace(['{{ dot_class }}', '{{dot_class}}'], $dot_class, $content);
     }
 }
