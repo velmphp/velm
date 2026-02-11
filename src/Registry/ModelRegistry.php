@@ -116,4 +116,32 @@ class ModelRegistry
 
         return $definitions;
     }
+
+    public function discoverForPackage(string $package, bool $autoRegister = false): array
+    {
+        $module = velm()->registry()->modules()->findOrFail($package);
+        // scan the app path for classes that are subclasses of Velm\Core\Domain\VelmModel
+        $models = [];
+        $appPath = $module->entryPoint::getAppPath();
+
+        if (is_dir($appPath)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($appPath)
+            );
+            foreach ($iterator as $file) {
+                /** @var \SplFileInfo $file */
+                if ($file->isFile() && $file->getExtension() === 'php') {
+                    $class = $module->entryPoint::getNamespaceFromPath($file->getRealPath());
+                    if (class_exists($class) && is_subclass_of($class, VelmModel::class)) {
+                        $models[] = $class;
+                    }
+                }
+            }
+        }
+        if ($autoRegister) {
+            $this->register($models, $package);
+        }
+
+        return $models;
+    }
 }

@@ -45,7 +45,10 @@ if (! function_exists('velm_app_path')) {
 }
 
 if (! function_exists('super')) {
-    function super(): SuperProxy
+    /**
+     * @return object<SuperProxy>
+     */
+    function super(): object
     {
         return PipelineContext::super();
     }
