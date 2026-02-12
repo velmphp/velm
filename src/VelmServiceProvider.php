@@ -7,6 +7,7 @@ use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Velm\Core\Commands\Generator\ModelMakeCommand;
+use Velm\Core\Commands\Generator\PolicyMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmIdeGeneratorCommand;
 use Velm\Core\Commands\VelmMakeCommand;
@@ -137,6 +138,7 @@ class VelmServiceProvider extends PackageServiceProvider
             VelmModuleInstallCommand::class,
             VelmIdeGeneratorCommand::class,
             ModelMakeCommand::class,
+            PolicyMakeCommand::class,
         ];
     }
 

@@ -5,8 +5,9 @@ namespace {{ namespace }};
 use Illuminate\Auth\Access\Response;
 use {{ namespacedModel }};
 use {{ namespacedUserModel }};
+use Velm\Core\Domain\VelmPolicy;
 
-class {{ class }}
+class {{ class }} extends VelmPolicy
 {
     /**
      * Determine whether the user can view any models.

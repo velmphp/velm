@@ -3,9 +3,9 @@
 namespace {{ namespace }};
 
 {{ factoryImport }}
-use Velm\Core\Domain\BaseModel;
+use Velm\Core\Domain\VelmModel;
 
-class {{ class }} extends BaseModel
+class {{ class }} extends VelmModel
 {
     {{ factory }}
 }
