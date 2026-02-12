@@ -3,13 +3,14 @@
 namespace Velm\Core\Commands\Generator;
 
 use Illuminate\Console\Command;
+use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand('velm:make:migration', 'Create a new migration file within the current module context')]
-class MigrateMakeCommand extends Command implements PromptsForMissingInput
+class MigrateMakeCommand extends GeneratorCommand implements PromptsForMissingInput
 {
     use InteractsWithVelmModules;
 
@@ -21,7 +22,7 @@ class MigrateMakeCommand extends Command implements PromptsForMissingInput
 
     protected $description = 'Create a new migration file within the current module context';
 
-    public function __invoke(): void
+    public function handle(): ?bool
     {
         $module = $this->resolveModule();
         $path = $this->option('path') ?? '';
@@ -34,6 +35,8 @@ class MigrateMakeCommand extends Command implements PromptsForMissingInput
             '--path' => $absolutePath,
             '--realpath' => true,
         ]);
+
+        return true;
     }
 
     protected function getArguments(): array
@@ -51,5 +54,10 @@ class MigrateMakeCommand extends Command implements PromptsForMissingInput
             new InputOption('table', null, InputOption::VALUE_OPTIONAL, 'The table to migrate'),
             new InputOption('path', null, InputOption::VALUE_OPTIONAL, 'The location where the migration file should be created, relative to the module\'s migrations directory'),
         ];
+    }
+
+    protected function getStub(): string
+    {
+        return __DIR__.'/stubs/migration.stub';
     }
 }

@@ -3,6 +3,7 @@
 namespace Velm\Core\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -12,7 +13,7 @@ use Velm\Core\Persistence\ModuleState;
 use Velm\Core\Support\Helpers\ConsoleLogType;
 
 #[AsCommand('velm:migrate', 'Run database migrations for a single module or all modules')]
-class VelmMigrateCommand extends Command implements PromptsForMissingInput
+class VelmMigrateCommand extends GeneratorCommand implements PromptsForMissingInput
 {
     use InteractsWithVelmModules;
 
@@ -23,21 +24,23 @@ class VelmMigrateCommand extends Command implements PromptsForMissingInput
         return true;
     }
 
-    public function __invoke(): int
+    public function handle(): ?bool
     {
         $this->resolveModule();
 
         if (! $this->allModules) {
-            return $this->call('velm:module:migrate', [
+            $this->call('velm:module:migrate', [
                 'module' => $this->argument('module'),
             ]);
+
+            return true;
         }
         // Loop through all active modules and call module:migrate on each of them
         $modules = velm()->registry()->modules()->installed();
         if (empty($modules)) {
             velm_utils()->consoleLog('No installed modules found. Nothing to migrate.', ConsoleLogType::WARNING);
 
-            return \Symfony\Component\Console\Command\Command::SUCCESS;
+            return true;
         }
         foreach ($modules as $module) {
             velm_utils()->consoleLog("Migrating module: {$module->package}", ConsoleLogType::INTRO);
@@ -50,7 +53,7 @@ class VelmMigrateCommand extends Command implements PromptsForMissingInput
             velm_utils()->consoleLog("Finished migrating module: {$module->package}", ConsoleLogType::SUCCESS);
         }
 
-        return \Symfony\Component\Console\Command\Command::SUCCESS;
+        return true;
     }
 
     protected function getArguments(): array
@@ -75,5 +78,10 @@ class VelmMigrateCommand extends Command implements PromptsForMissingInput
             new InputOption('graceful', null, InputOption::VALUE_NONE, 'Continue running other module migrations even if one fails.'),
             new InputOption('isolated', null, InputOption::VALUE_NONE, 'Run each module migration in a separate process to isolate them from each other.'),
         ];
+    }
+
+    protected function getStub()
+    {
+        return __DIR__.'/Generator/stubs/migration.stub';
     }
 }

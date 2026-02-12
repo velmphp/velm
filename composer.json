@@ -1,7 +1,7 @@
 {
     "name": "velm/velm",
     "description": "Velm gives you the tools to build a truly modular Laravel application. It provides a solid foundation for building scalable and maintainable applications by promoting separation of concerns and modular architecture.",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "keywords": [
         "Velm",
         "laravel",

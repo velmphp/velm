@@ -2,13 +2,13 @@
 
 namespace Velm\Core\Commands;
 
-use Illuminate\Console\Command;
+use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Velm\Core\Commands\Generator\InteractsWithVelmModules;
 
-class VelmModuleMigrateCommand extends Command implements PromptsForMissingInput
+class VelmModuleMigrateCommand extends GeneratorCommand implements PromptsForMissingInput
 {
     use InteractsWithVelmModules;
 
@@ -16,7 +16,7 @@ class VelmModuleMigrateCommand extends Command implements PromptsForMissingInput
 
     protected $description = 'Run migrations for a specific Velm module';
 
-    public function __invoke(): int
+    public function handle(): ?bool
     {
         $module = $this->resolveModule();
         $parameters = [
@@ -43,7 +43,7 @@ class VelmModuleMigrateCommand extends Command implements PromptsForMissingInput
 
         $this->call('migrate', $parameters);
 
-        return \Symfony\Component\Console\Command\Command::SUCCESS;
+        return true;
     }
 
     protected function getArguments(): array
@@ -57,12 +57,12 @@ class VelmModuleMigrateCommand extends Command implements PromptsForMissingInput
         ];
     }
 
-    protected function getSeederClass()
+    public function getSeederClass(): ?string
     {
         if ($this->option('seed')) {
             $module = $this->resolveModule();
 
-            return $module->entryPoint::getSeederClass('DatabaseSeeder');
+            return $module->entryPoint::getSeedersPath('DatabaseSeeder');
         }
 
         return null;
@@ -73,5 +73,10 @@ class VelmModuleMigrateCommand extends Command implements PromptsForMissingInput
         return [
             new InputOption('path', null, InputOption::VALUE_OPTIONAL, 'The location where the migration files are located, relative to the module\'s migrations directory'), new InputOption('force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'), new InputOption('seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'), new InputOption('pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'), new InputOption('graceful', null, InputOption::VALUE_NONE, 'Continue with other migrations even if some fail.'), new InputOption('step', null, InputOption::VALUE_NONE, 'Run migrations so they can be rolled back individually.'), new InputOption('isolated', null, InputOption::VALUE_NONE, 'Run only the migrations for this module without considering dependencies.'),
         ];
+    }
+
+    protected function getStub()
+    {
+        return __DIR__.'/Generator/stubs/migration.stub';
     }
 }
