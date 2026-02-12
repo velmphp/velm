@@ -6,12 +6,15 @@ use Illuminate\Console\Command;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Velm\Core\Commands\Generator\MigrateMakeCommand;
 use Velm\Core\Commands\Generator\ModelMakeCommand;
 use Velm\Core\Commands\Generator\PolicyMakeCommand;
 use Velm\Core\Commands\VelmClearCompiledCommand;
 use Velm\Core\Commands\VelmIdeGeneratorCommand;
 use Velm\Core\Commands\VelmMakeCommand;
+use Velm\Core\Commands\VelmMigrateCommand;
 use Velm\Core\Commands\VelmModuleInstallCommand;
+use Velm\Core\Commands\VelmModuleMigrateCommand;
 use Velm\Core\Persistence\Contracts\ModuleStateRepository;
 use Velm\Core\Persistence\JsonModuleStateRepository;
 use Velm\Core\Support\Constants;
@@ -139,6 +142,9 @@ class VelmServiceProvider extends PackageServiceProvider
             VelmIdeGeneratorCommand::class,
             ModelMakeCommand::class,
             PolicyMakeCommand::class,
+            MigrateMakeCommand::class,
+            VelmModuleMigrateCommand::class,
+            VelmMigrateCommand::class,
         ];
     }
 
