@@ -12,14 +12,25 @@ use function Laravel\Prompts\select;
 
 trait InteractsWithVelmModules
 {
-    public function resolveModule(): ModuleDescriptor
+    protected bool $allModules = false;
+
+    public function resolveModule(): ?ModuleDescriptor
     {
         $moduleName = $this->argument('module');
         if (! $moduleName) {
             $moduleName = $this->askForModuleName();
         }
+        if ($moduleName === '_') {
+            if (! $this->canRunOnAllModules()) {
+                $this->error('This command cannot be run on all modules. Please specify a module.');
+                exit(1);
+            }
+            $this->allModules = true;
 
-        return velm()->registry()->modules()->findOrFail($moduleName, bySlug: true);
+            return null;
+        }
+
+        return velm()->registry()->modules()->findOrFail($moduleName);
     }
 
     protected function getArguments(): array
@@ -33,6 +44,11 @@ trait InteractsWithVelmModules
         ]);
     }
 
+    protected function canRunOnAllModules(): bool
+    {
+        return false;
+    }
+
     protected function askForModuleName(): int|bool|array|string|null
     {
         $moduleName = $this->argument('module');
@@ -40,8 +56,11 @@ trait InteractsWithVelmModules
             // Suggestions from the installed modules
             $installed = \velm()->registry()->modules()->resolved();
             $suggestions = collect($installed)->mapWithKeys(function (ModuleDescriptor $item) {
-                return [$item->slug => $item->packageName];
+                return [$item->packageName => $item->packageName];
             })->all();
+            if ($this->canRunOnAllModules()) {
+                $suggestions = array_merge(['_' => 'All Modules'], $suggestions);
+            }
 
             $moduleName = select('Module name (e.g., Accounting)', $suggestions);
             $this->input->setArgument('module', $moduleName);
@@ -54,17 +73,24 @@ trait InteractsWithVelmModules
 
     protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
     {
-        $this->askForModuleName();
         parent::afterPromptingForMissingArguments($input, $output);
+        $this->askForModuleName();
     }
 
     protected function rootNamespace(): string
     {
+        if ($this->allModules) {
+            return parent::rootNamespace();
+        }
+
         return $this->resolveModule()->namespace.'\\';
     }
 
     protected function getPath($name): string
     {
+        if ($this->allModules) {
+            return parent::getPath($name);
+        }
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
         $module = $this->resolveModule();
 
