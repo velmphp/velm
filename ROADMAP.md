@@ -22,9 +22,10 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Field types: Char, Integer, Boolean, Many2one | Done |
 | `Model` + `Recordset` (`create` / `read` / `write` / `search`) | Done |
 | PDO SQLite adapter + schema builder (tests) | Done |
-| `partners` addon module | Planned |
-| Model registration on module install | Planned |
-| Laravel DB connection + Filament host | Planned |
+| Bundled `partners` module (`res.partner`, `res.country`) | Done |
+| Model registration + schema on `module:install` | Done |
+| Laravel DB connection (`LaravelConnection`) | Done |
+| Filament host | Planned |
 
 ## Phase 2+
 
