@@ -186,6 +186,22 @@ final class Recordset
         }
     }
 
+    public function unlink(): void
+    {
+        if ($this->ids === []) {
+            return;
+        }
+
+        $modelClass = $this->modelClass;
+        $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
+        $sql = 'DELETE FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+        $this->env->connection->execute($sql, $this->ids);
+
+        foreach ($this->ids as $id) {
+            $this->env->cache->forget($modelClass::name(), $id);
+        }
+    }
+
     /**
      * @param  list<mixed>|list<list<mixed>>  $domain
      */

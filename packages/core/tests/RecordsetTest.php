@@ -63,6 +63,17 @@ test('searches with simple domains', function (): void {
         ->and($active->read()[0]['name'])->toBe('Active Co');
 });
 
+test('unlink removes records from the table', function (): void {
+    $env = ormEnvironment();
+    $first = $env->model('res.partner')->create(['name' => 'Keep']);
+    $second = $env->model('res.partner')->create(['name' => 'Remove']);
+
+    $env->browse('res.partner', [$second->ids()[0]])->unlink();
+
+    expect($env->model('res.partner')->search([])->count())->toBe(1)
+        ->and($first->read()[0]['name'])->toBe('Keep');
+});
+
 test('many2one stores foreign key', function (): void {
     $env = ormEnvironment();
     $us = $env->model('res.country')->create(['name' => 'United States', 'code' => 'US']);

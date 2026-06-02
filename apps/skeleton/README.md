@@ -54,7 +54,9 @@ VELM_MENU_LAYOUT=sidebar
 | `/velm` | Filament panel (arch-driven list/form pages) |
 | `/velm/apps` | Module catalog |
 | `/api/views/{module}/{name}` | Resolved view arch JSON |
-| `/api/records?model=&domain=&fields=` | Record rows (JSON API) |
+| `/api/records?model=&domain=&fields=` | List records (GET) |
+| `/api/records?model=` | Create (POST JSON body) |
+| `/api/records/{id}?model=` | Update (PATCH) or delete (DELETE) |
 
 ## Artisan commands
 

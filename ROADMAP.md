@@ -46,6 +46,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | PyVelm-style shell (apps rail + top bar / sidebar layout) | Done |
 | `GET /api/views` | Done |
 | `GET /api/records` | Done |
+| `POST/PATCH/DELETE /api/records` | Done |
 
 ## Phase 2+
 
