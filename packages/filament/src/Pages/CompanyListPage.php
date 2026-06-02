@@ -10,11 +10,7 @@ final class CompanyListPage extends ArchListPage
 {
     use ResolvesStoredView;
 
-    protected static ?string $navigationLabel = 'Companies';
-
-    protected static ?int $navigationSort = 20;
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static function velmViewModule(): string
     {

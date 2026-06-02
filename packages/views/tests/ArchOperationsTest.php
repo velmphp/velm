@@ -63,7 +63,9 @@ test('wildcard sets attribute on a nested field', function () {
 });
 
 test('unknown op throws', function () {
-    ArchOperations::apply(sampleArch(), [
+    $arch = sampleArch();
+
+    ArchOperations::apply($arch, [
         ['op' => 'frobnicate', 'target' => ['sections']],
     ]);
 })->throws(InvalidArgumentException::class);

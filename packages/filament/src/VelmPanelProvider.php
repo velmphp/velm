@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Filament;
 
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,9 +26,23 @@ use Velm\Filament\Pages\CreatePartnerPage;
 use Velm\Filament\Pages\EditCompanyPage;
 use Velm\Filament\Pages\EditPartnerPage;
 use Velm\Filament\Pages\PartnerListPage;
+use Velm\Filament\Support\MenuNavigationRegistrar;
 
 final class VelmPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        Filament::serving(function (): void {
+            $panel = Filament::getCurrentPanel();
+
+            if ($panel?->getId() !== 'velm') {
+                return;
+            }
+
+            app(MenuNavigationRegistrar::class)->register($panel);
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel

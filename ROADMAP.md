@@ -41,7 +41,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Fluent `ListView` / `FormView` / `Field` authoring | Done |
 | `ViewRegistry` + Filament pages load stored arch | Done |
 | `VIEW_INHERITS` + `resolve_arch()` | Done |
-| `ir.ui.menu` + navigation from menus | Planned |
+| `ir.ui.menu` + navigation from menus | Done |
 | `GET /api/views` | Planned |
 
 ## Phase 2+

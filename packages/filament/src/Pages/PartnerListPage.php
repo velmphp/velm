@@ -10,11 +10,7 @@ final class PartnerListPage extends ArchListPage
 {
     use ResolvesStoredView;
 
-    protected static ?string $navigationLabel = 'Partners';
-
-    protected static ?int $navigationSort = 10;
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static function velmViewModule(): string
     {

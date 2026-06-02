@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
 use Velm\Views\Authoring\ListView;
+use Velm\Views\Authoring\Menus;
 use Velm\Views\Data\ViewsData;
+
+$m = new Menus('base');
 
 return ViewsData::make()
     ->views(
@@ -23,4 +26,11 @@ return ViewsData::make()
                 'name',
                 Field::make('active')->toggle(),
             ]),
+    )
+    ->menus(
+        $m->group('administration', 'Administration')->icon('building-office')->sequence(20),
+        $m->item('companies', 'Companies')
+            ->parentRef($m->parentRef('administration'))
+            ->view('company.list')
+            ->sequence(10),
     );
