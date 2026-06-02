@@ -12,6 +12,9 @@ abstract class Model
 {
     protected static ?string $name = null;
 
+    /** @var non-empty-string|null */
+    protected static ?string $inherit = null;
+
     protected static ?string $table = null;
 
     protected static string $recName = 'name';
@@ -33,10 +36,33 @@ abstract class Model
             $fields[$fieldName] = $field->bind($fieldName);
         }
 
+        if (static::isExtension()) {
+            self::$fieldsByClass[$class] = $fields;
+
+            return;
+        }
+
         $fields['id'] = IntegerField::make()->label('ID')->readonly()->bind('id');
         $fields['display_name'] = CharField::make()->label('Display Name')->readonly()->bind('display_name');
 
         self::$fieldsByClass[$class] = $fields;
+    }
+
+    public static function isExtension(): bool
+    {
+        return static::$inherit !== null
+            && static::$inherit !== ''
+            && (static::$name === null || static::$name === '');
+    }
+
+    /**
+     * @return non-empty-string|null
+     */
+    public static function inherit(): ?string
+    {
+        return static::$inherit !== null && static::$inherit !== ''
+            ? static::$inherit
+            : null;
     }
 
     /**
@@ -52,6 +78,43 @@ abstract class Model
      */
     public static function fields(): array
     {
+        if (static::isExtension()) {
+            throw new \RuntimeException(static::class.' is a model extension; use the inherited model class.');
+        }
+
+        static::initialize();
+
+        try {
+            $registry = \Velm\Registry::active();
+
+            if ($registry->hasFieldSet(static::name())) {
+                return $registry->fieldSet(static::name());
+            }
+        } catch (\RuntimeException) {
+        }
+
+        return self::$fieldsByClass[static::class];
+    }
+
+    /**
+     * @return array<string, Field>
+     */
+    public static function baseFields(): array
+    {
+        static::initialize();
+
+        return self::$fieldsByClass[static::class];
+    }
+
+    /**
+     * @return array<string, Field>
+     */
+    public static function extensionFields(): array
+    {
+        if (! static::isExtension()) {
+            throw new \RuntimeException(static::class.' is not a model extension.');
+        }
+
         static::initialize();
 
         return self::$fieldsByClass[static::class];
@@ -59,6 +122,10 @@ abstract class Model
 
     public static function name(): string
     {
+        if (static::isExtension()) {
+            throw new \RuntimeException(static::class.' is a model extension and has no $name.');
+        }
+
         if (static::$name === null || static::$name === '') {
             throw new \RuntimeException(static::class.' is missing $name.');
         }

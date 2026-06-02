@@ -45,7 +45,7 @@ final class Recordset
     public function create(array $values): self
     {
         $modelClass = $this->modelClass;
-        $fields = $modelClass::fields();
+        $fields = $this->modelFields();
         $columns = [];
         $placeholders = [];
         $params = [];
@@ -101,7 +101,7 @@ final class Recordset
         }
 
         $modelClass = $this->modelClass;
-        $fields = $modelClass::fields();
+        $fields = $this->modelFields();
         $fieldNames ??= array_keys(array_filter(
             $fields,
             static fn (Field $field, string $name): bool => $name !== 'display_name',
@@ -156,7 +156,7 @@ final class Recordset
         }
 
         $modelClass = $this->modelClass;
-        $fields = $modelClass::fields();
+        $fields = $this->modelFields();
         $sets = [];
         $params = [];
 
@@ -284,9 +284,23 @@ final class Recordset
         return $domain;
     }
 
+    /**
+     * @return array<string, Field>
+     */
+    private function modelFields(): array
+    {
+        $name = $this->modelClass::name();
+
+        if ($this->env->registry->hasFieldSet($name)) {
+            return $this->env->registry->fieldSet($name);
+        }
+
+        return $this->modelClass::fields();
+    }
+
     private function buildLeafClause(Domain $leaf, array &$params): string
     {
-        $field = $this->modelClass::fields()[$leaf->field] ?? null;
+        $field = $this->modelFields()[$leaf->field] ?? null;
 
         if ($field === null) {
             throw new \InvalidArgumentException("Unknown domain field {$leaf->field}.");

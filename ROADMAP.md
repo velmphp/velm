@@ -55,4 +55,10 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 
 ## Phase 2+
 
-See [PLAN.md](./PLAN.md) phased delivery (ORM parity: `_inherit`, ACL, full schema migrations).
+| Item | Status |
+|------|--------|
+| Model `$inherit` (field extensions, additive schema) | Done |
+| ACL / record rules | Planned |
+| Full schema migrations (`db:diff`, versioned scripts) | Planned |
+
+See [PLAN.md](./PLAN.md) for remaining ORM parity.

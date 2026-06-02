@@ -20,7 +20,11 @@ final class ModuleModelLoader
                 throw new \RuntimeException("{$modelClass} must extend ".Model::class.'.');
             }
 
-            $registry->register($modelClass);
+            if ($modelClass::isExtension()) {
+                $registry->registerExtension($modelClass);
+            } else {
+                $registry->register($modelClass);
+            }
         }
     }
 
