@@ -19,7 +19,7 @@
             x-cloak
             x-show="sidebarOpen"
             x-transition.opacity
-            class="fixed inset-0 z-20 bg-black/30 md:hidden"
+            class="velm-shell-backdrop fixed inset-0 z-20 md:hidden"
             @click="sidebarOpen = false"
         ></div>
 
@@ -89,7 +89,7 @@
                 </div>
             </header>
 
-            <div class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            <div class="velm-shell-main flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <main @class([
                     'fi-main flex-1 px-4 py-5 md:px-6',
                     is_string($maxContentWidth) ? "fi-width-{$maxContentWidth}" : null,

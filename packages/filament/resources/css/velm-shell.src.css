@@ -1,5 +1,5 @@
 /**
- * Velm shell — PyVelm-style layout tokens and navigation.
+ * Velm shell — layout tokens and navigation.
  * Run `npm run build:css` in packages/filament after edits.
  */
 @import 'tailwindcss';
@@ -11,9 +11,30 @@
 
 @source '../views/**/*.blade.php';
 
-/* Sidebar / rail nav (PyVelm layouts/main.html) */
+/* Shell chrome */
+.velm-shell {
+    --velm-shell-backdrop: rgb(0 0 0 / 0.45);
+}
+
+:where(.dark, .dark *) .velm-shell {
+    --velm-shell-backdrop: rgb(0 0 0 / 0.65);
+}
+
+.velm-shell-backdrop {
+    background-color: var(--velm-shell-backdrop);
+}
+
+/* Main content sits on a slightly elevated surface in dark mode */
+:where(.dark, .dark *) .velm-shell-main {
+    background-color: var(--color-neutral-primary);
+}
+
+/* Sidebar / rail nav */
 .nav-item {
     color: var(--color-body);
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 @media (hover: hover) {
@@ -30,11 +51,18 @@
 }
 
 :where(.dark, .dark *) .nav-item:hover {
-    background-color: var(--color-neutral-tertiary);
-    color: var(--color-heading);
+    background-color: var(--color-brand-softer);
+    color: var(--color-fg-brand);
 }
 
 :where(.dark, .dark *) .nav-item.nav-active {
-    background-color: var(--color-brand-softer);
-    color: var(--color-fg-brand);
+    background-color: var(--color-brand-soft);
+    color: var(--color-fg-brand-strong);
+    box-shadow: inset 3px 0 0 0 var(--color-brand);
+}
+
+/* Top bar dropdown links */
+:where(.dark, .dark *) .velm-app-menu a:hover,
+:where(.dark, .dark *) .velm-app-menu button:hover {
+    background-color: var(--color-neutral-tertiary);
 }

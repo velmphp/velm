@@ -1,16 +1,28 @@
-/* PyVelm indigo primary + cool gray secondary (see project-pyvelm/pyvelm/static/tailwind.css). */
+/* Velm brand palette — primary #286291, accent #F1511B */
 @theme {
-    --color-primary-50: oklch(0.941 0.026 281.14);
-    --color-primary-100: oklch(0.882 0.052 280.54);
-    --color-primary-200: oklch(0.771 0.105 278.23);
-    --color-primary-300: oklch(0.656 0.163 273.29);
-    --color-primary-400: oklch(0.547 0.218 267.12);
-    --color-primary-500: oklch(0.424 0.181 265.64);
-    --color-primary-600: oklch(0.371 0.158 265.58);
-    --color-primary-700: oklch(0.311 0.132 265.65);
-    --color-primary-800: oklch(0.258 0.109 265.3);
-    --color-primary-900: oklch(0.193 0.083 265.71);
-    --color-primary-950: oklch(0.154 0.065 265.58);
+    --color-primary-50: #eef3f8;
+    --color-primary-100: #d9e6f0;
+    --color-primary-200: #b3cce0;
+    --color-primary-300: #8db3d1;
+    --color-primary-400: #5e94bc;
+    --color-primary-500: #286291;
+    --color-primary-600: #22527a;
+    --color-primary-700: #1c4363;
+    --color-primary-800: #16344c;
+    --color-primary-900: #102535;
+    --color-primary-950: #0a1822;
+
+    --color-accent-50: #fef0eb;
+    --color-accent-100: #fde0d4;
+    --color-accent-200: #fbc1a9;
+    --color-accent-300: #f9a27e;
+    --color-accent-400: #f67a4c;
+    --color-accent-500: #f1511b;
+    --color-accent-600: #cd4416;
+    --color-accent-700: #a93712;
+    --color-accent-800: #852b0e;
+    --color-accent-900: #611f0a;
+    --color-accent-950: #3d1306;
 
     --color-secondary-50: oklch(0.982 0.002 247.73);
     --color-secondary-100: oklch(0.939 0.006 255.49);
