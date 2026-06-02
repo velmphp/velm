@@ -2,7 +2,7 @@
 
 Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch → PR**.
 
-## Phase 0 — Module runtime (in progress)
+## Phase 0 — Module runtime
 
 | Item | Status |
 |------|--------|
@@ -14,9 +14,17 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Apps catalog UI | Planned |
 | DATA / VIEW sync on install | Phase 3 |
 
-## Phase 1 — Foundation
+## Phase 1 — ORM foundation (in progress)
 
-Environment, Registry, BaseModel, `partners` addon, Filament host.
+| Item | Status |
+|------|--------|
+| `Environment`, `Registry`, `RecordCache` | Done |
+| Field types: Char, Integer, Boolean, Many2one | Done |
+| `Model` + `Recordset` (`create` / `read` / `write` / `search`) | Done |
+| PDO SQLite adapter + schema builder (tests) | Done |
+| `partners` addon module | Planned |
+| Model registration on module install | Planned |
+| Laravel DB connection + Filament host | Planned |
 
 ## Phase 2+
 
