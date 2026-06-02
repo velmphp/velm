@@ -159,9 +159,25 @@ final class ModuleInstaller
         $connection = $this->velmConnection();
         $schema = new SchemaBuilder($connection);
 
-        foreach ($spec->models as $modelClass) {
-            $schema->ensureTable($modelClass);
-        }
+        Registry::with($registry, function () use ($schema, $spec, $registry): void {
+            foreach ($spec->models as $modelClass) {
+                if ($modelClass::isExtension()) {
+                    $inherit = $modelClass::inherit();
+
+                    if ($inherit === null || ! $registry->has($inherit)) {
+                        throw new \RuntimeException(
+                            "Model extension {$modelClass} targets unknown model {$inherit}.",
+                        );
+                    }
+
+                    $schema->ensureTable($registry->modelClass($inherit));
+
+                    continue;
+                }
+
+                $schema->ensureTable($modelClass);
+            }
+        });
 
         $env = new Environment($connection, $registry);
         $this->viewSynchronizer->sync($spec, $env);
