@@ -42,6 +42,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `ViewRegistry` + Filament pages load stored arch | Done |
 | `VIEW_INHERITS` + `resolve_arch()` | Done |
 | `ir.ui.menu` + navigation from menus | Done |
+| PyVelm-style shell (apps rail + top bar / sidebar layout) | Done |
 | `GET /api/views` | Planned |
 
 ## Phase 2+

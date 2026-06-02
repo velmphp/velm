@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Velm\Filament;
 
-use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -19,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Velm\Filament\Http\Middleware\ShareVelmMenuContext;
 use Velm\Filament\Pages\AppsPage;
 use Velm\Filament\Pages\CompanyListPage;
 use Velm\Filament\Pages\CreateCompanyPage;
@@ -26,23 +25,9 @@ use Velm\Filament\Pages\CreatePartnerPage;
 use Velm\Filament\Pages\EditCompanyPage;
 use Velm\Filament\Pages\EditPartnerPage;
 use Velm\Filament\Pages\PartnerListPage;
-use Velm\Filament\Support\MenuNavigationRegistrar;
 
 final class VelmPanelProvider extends PanelProvider
 {
-    public function boot(): void
-    {
-        Filament::serving(function (): void {
-            $panel = Filament::getCurrentPanel();
-
-            if ($panel?->getId() !== 'velm') {
-                return;
-            }
-
-            app(MenuNavigationRegistrar::class)->register($panel);
-        });
-    }
-
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -50,11 +35,12 @@ final class VelmPanelProvider extends PanelProvider
             ->id('velm')
             ->path('velm')
             ->login()
+            ->navigation(false)
+            ->homeUrl(fn (): string => AppsPage::getUrl())
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->pages([
-                Dashboard::class,
                 AppsPage::class,
                 CompanyListPage::class,
                 CreateCompanyPage::class,
@@ -73,6 +59,7 @@ final class VelmPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                ShareVelmMenuContext::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

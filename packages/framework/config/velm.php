@@ -8,4 +8,7 @@ return [
         base_path('addons'),
     ],
     'bootstrap_modules' => ['base', 'admin'],
+
+    /** Shell navigation: "apps" (rail + top bar) or "sidebar" (nested column). */
+    'menu_layout' => env('VELM_MENU_LAYOUT', 'apps'),
 ];

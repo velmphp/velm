@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Velm\Filament\Pages;
 
 use Filament\Actions\Action;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -15,7 +14,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Velm\Environment;
 use Velm\Filament\Arch\ArchTableConfigurator;
 
-abstract class ArchListPage extends Page implements HasTable
+abstract class ArchListPage extends VelmShellPage implements HasTable
 {
     use InteractsWithTable;
 

@@ -7,7 +7,6 @@ namespace Velm\Filament;
 use Illuminate\Support\ServiceProvider;
 use Velm\Filament\Arch\ArchSchemaBuilder;
 use Velm\Filament\Arch\ArchTableConfigurator;
-use Velm\Filament\Support\MenuNavigationRegistrar;
 
 final class FilamentServiceProvider extends ServiceProvider
 {
@@ -15,6 +14,10 @@ final class FilamentServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ArchSchemaBuilder::class);
         $this->app->singleton(ArchTableConfigurator::class);
-        $this->app->singleton(MenuNavigationRegistrar::class);
+    }
+
+    public function boot(): void
+    {
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'velm-filament');
     }
 }
