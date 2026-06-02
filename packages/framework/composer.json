@@ -17,6 +17,9 @@
         "velmphp/filament": "@dev"
     },
     "autoload": { "psr-4": { "Velm\\Framework\\": "src/" } },
+    "autoload-dev": {
+        "psr-4": { "Velm\\Framework\\Tests\\": "tests/" }
+    },
     "extra": {
         "laravel": {
             "providers": ["Velm\\Framework\\VelmServiceProvider"],
