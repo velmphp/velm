@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Velm\Database\Connection;
 use Velm\Environment;
 use Velm\Modules\Database\LaravelConnection;
+use Velm\Modules\Migrations\ModuleMigrationRunner;
+use Velm\Modules\Schema\ModuleSchema;
+use Velm\Modules\ModuleVersion;
 use Velm\Registry;
-use Velm\Schema\SchemaBuilder;
+use Velm\Schema\SchemaDiff;
 use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\ViewSynchronizer;
 
@@ -73,7 +76,7 @@ final class ModuleInstaller
      */
     public function installBootstrap(array $roots, array $bootstrapModules): void
     {
-        $this->installMany($roots, $bootstrapModules);
+        $this->migrateMany($roots, $bootstrapModules);
     }
 
     /**
@@ -81,7 +84,67 @@ final class ModuleInstaller
      */
     public function install(string $moduleName, array $roots): void
     {
-        $this->installMany($roots, [$moduleName]);
+        $this->migrate($moduleName, $roots);
+    }
+
+    /**
+     * Install or upgrade modules (transitive closure).
+     *
+     * @param  list<string>  $roots
+     */
+    public function migrate(string $moduleName, array $roots): void
+    {
+        $this->migrateMany($roots, [$moduleName]);
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    public function diff(string $moduleName, array $roots): SchemaDiff
+    {
+        $specs = $this->discover($roots);
+
+        if (! isset($specs[$moduleName])) {
+            throw new \InvalidArgumentException("Module {$moduleName} was not discovered.");
+        }
+
+        $spec = $specs[$moduleName];
+        $registry = $this->registry($roots, $spec);
+
+        return (new ModuleSchema($this->velmConnection()))->diff($spec, $registry);
+    }
+
+    /**
+     * @return list<array{name: string, installed: string|null, manifest: string, status: string}>
+     */
+    public function schemaStatus(array $roots): array
+    {
+        $rows = [];
+
+        foreach ($this->catalog($roots) as $entry) {
+            if ($entry['state'] !== 'installed') {
+                continue;
+            }
+
+            $specs = $this->discover($roots);
+            $spec = $specs[$entry['name']] ?? null;
+
+            if ($spec === null) {
+                continue;
+            }
+
+            $installed = ModuleVersion::parse($entry['version'] ?? '0.0.0');
+            $status = ModuleVersion::needsUpgrade($installed, $spec->version) ? 'upgrade' : 'ok';
+
+            $rows[] = [
+                'name' => $entry['name'],
+                'installed' => $entry['version'],
+                'manifest' => $spec->versionString(),
+                'status' => $status,
+            ];
+        }
+
+        return $rows;
     }
 
     /**
@@ -99,8 +162,13 @@ final class ModuleInstaller
             throw new \RuntimeException("Module {$moduleName} is not installed. Run module:install first.");
         }
 
-        $env = $this->environment($roots);
         $spec = $specs[$moduleName];
+        $registry = $this->registry($roots, $spec);
+        $connection = $this->velmConnection();
+
+        (new ModuleSchema($connection))->apply($spec, $registry);
+
+        $env = new Environment($connection, $registry);
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
     }
@@ -109,7 +177,7 @@ final class ModuleInstaller
      * @param  list<string>  $roots
      * @param  list<string>  $moduleNames
      */
-    private function installMany(array $roots, array $moduleNames): void
+    private function migrateMany(array $roots, array $moduleNames): void
     {
         $specs = $this->discover($roots);
         $closure = $this->closureFor($moduleNames, $specs);
@@ -120,11 +188,29 @@ final class ModuleInstaller
             }
 
             if ($this->repository->isInstalled($spec->name)) {
+                if ($this->needsUpgrade($spec)) {
+                    $this->upgradeModule($spec, $roots);
+                }
+
                 continue;
             }
 
             $this->installModule($spec, $roots);
         }
+    }
+
+    private function needsUpgrade(ModuleSpec $spec): bool
+    {
+        $installed = $this->repository->installedVersion($spec->name);
+
+        if ($installed === null) {
+            return false;
+        }
+
+        return ModuleVersion::needsUpgrade(
+            ModuleVersion::parse($installed),
+            $spec->version,
+        );
     }
 
     /**
@@ -143,7 +229,7 @@ final class ModuleInstaller
         $registry = new Registry;
         $this->modelLoader->loadInstalled($roots, $registry, $this->discovery, $this->resolver, $this->repository);
 
-        if ($including !== null) {
+        if ($including !== null && ! $this->repository->isInstalled($including->name)) {
             $this->modelLoader->load($including, $registry);
         }
 
@@ -157,31 +243,11 @@ final class ModuleInstaller
     {
         $registry = $this->registry($roots, $spec);
         $connection = $this->velmConnection();
-        $schema = new SchemaBuilder($connection);
-
-        Registry::with($registry, function () use ($schema, $spec, $registry): void {
-            foreach ($spec->models as $modelClass) {
-                if ($modelClass::isExtension()) {
-                    $inherit = $modelClass::inherit();
-
-                    if ($inherit === null || ! $registry->has($inherit)) {
-                        throw new \RuntimeException(
-                            "Model extension {$modelClass} targets unknown model {$inherit}.",
-                        );
-                    }
-
-                    $schema->ensureTable($registry->baseModelClass($inherit));
-
-                    continue;
-                }
-
-                $schema->ensureTable($modelClass);
-            }
-
-            $schema->ensureRelationTables($registry);
-        });
-
         $env = new Environment($connection, $registry);
+
+        (new ModuleMigrationRunner)->run($env, $spec, [], $spec->version);
+        (new ModuleSchema($connection))->apply($spec, $registry);
+
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
 
@@ -190,6 +256,25 @@ final class ModuleInstaller
         if ($spec->name === 'base') {
             $this->seedBase($roots);
         }
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    private function upgradeModule(ModuleSpec $spec, array $roots): void
+    {
+        $installed = ModuleVersion::parse($this->repository->installedVersion($spec->name) ?? '0.0.0');
+        $registry = $this->registry($roots, $spec);
+        $connection = $this->velmConnection();
+        $env = new Environment($connection, $registry);
+
+        (new ModuleMigrationRunner)->run($env, $spec, $installed, $spec->version);
+        (new ModuleSchema($connection))->apply($spec, $registry);
+
+        $this->viewSynchronizer->sync($spec, $env);
+        $this->menuSynchronizer->sync($spec, $env);
+
+        $this->repository->markInstalled($spec);
     }
 
     /**

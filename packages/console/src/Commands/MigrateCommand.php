@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Console\Support\ModuleRoots;
 use Velm\Modules\ModuleInstaller;
 
-#[AsCommand(name: 'migrate', description: 'Install bootstrap Velm modules on a fresh database')]
+#[AsCommand(name: 'migrate', description: 'Install or upgrade Velm modules (schema + migrations)')]
 final class MigrateCommand extends Command
 {
     protected function configure(): void
@@ -35,12 +35,12 @@ final class MigrateCommand extends Command
             $module = $input->getOption('module');
 
             if (is_string($module) && $module !== '') {
-                $installer->install($module, $roots);
-                $output->writeln("<info>Installed {$module} (and dependencies).</info>");
+                $installer->migrate($module, $roots);
+                $output->writeln("<info>Migrated {$module} (and dependencies).</info>");
             } else {
                 $bootstrap = ModuleRoots::bootstrapModules();
                 $installer->installBootstrap($roots, $bootstrap);
-                $output->writeln('<info>Installed bootstrap modules: '.implode(', ', $bootstrap).'.</info>');
+                $output->writeln('<info>Migrated bootstrap modules: '.implode(', ', $bootstrap).'.</info>');
             }
         } catch (\Throwable $exception) {
             $output->writeln('<error>'.$exception->getMessage().'</error>');
