@@ -44,6 +44,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `VIEW_INHERITS` + `resolve_arch()` | Done |
 | `ir.ui.menu` + navigation from menus | Done |
 | PyVelm-style shell (apps rail + top bar / sidebar layout) | Done |
+| Shell UI tokens + layout (PyVelm indigo theme, nav-item styles) | Done |
 | `GET /api/views` | Done |
 | `GET /api/records` | Done |
 | `POST/PATCH/DELETE /api/records` | Done |
