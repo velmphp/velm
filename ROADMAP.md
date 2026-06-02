@@ -1,6 +1,6 @@
 # Velm roadmap
 
-Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch → PR**.
+Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch → PR** (see [CONTEXT.md](./CONTEXT.md) for branch/PR naming).
 
 ## Phase 0 — Module runtime
 

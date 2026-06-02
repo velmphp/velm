@@ -8,6 +8,12 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 `core` → `views` → `modules` → (`console` | `web` → `ui` → `filament`) → `framework`
 
+## Git workflow
+
+- Work lands via **feature branch → PR** (see [ROADMAP.md](./ROADMAP.md)).
+- Branch names: `feature/<short-topic>` (e.g. `feature/partners-module-install`) — **no phase numbers** in branch or PR titles.
+- Phase tracking stays in [ROADMAP.md](./ROADMAP.md) / [PLAN.md](./PLAN.md) only.
+
 ## Key conventions
 
 - Composer vendor: `velmphp/*`
