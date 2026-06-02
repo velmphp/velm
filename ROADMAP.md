@@ -57,7 +57,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 
 | Item | Status |
 |------|--------|
-| Model `$inherit` (field extensions, additive schema) | Done |
+| Model `$inherit` (field extensions, `parent::`, stacked extensions) | Done |
 | ACL / record rules | Planned |
 | Full schema migrations (`db:diff`, versioned scripts) | Planned |
 

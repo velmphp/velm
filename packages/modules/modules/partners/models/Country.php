@@ -7,7 +7,7 @@ namespace Velm\Modules\Partners\Models;
 use Velm\Fields\CharField;
 use Velm\Models\Model;
 
-final class Country extends Model
+class Country extends Model
 {
     protected static ?string $name = 'res.country';
 

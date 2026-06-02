@@ -8,7 +8,7 @@ use Velm\Fields\BooleanField;
 use Velm\Fields\CharField;
 use Velm\Models\Model;
 
-final class Company extends Model
+class Company extends Model
 {
     protected static ?string $name = 'res.company';
 

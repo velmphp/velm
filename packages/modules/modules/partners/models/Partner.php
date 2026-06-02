@@ -9,7 +9,7 @@ use Velm\Fields\CharField;
 use Velm\Fields\Many2oneField;
 use Velm\Models\Model;
 
-final class Partner extends Model
+class Partner extends Model
 {
     protected static ?string $name = 'res.partner';
 

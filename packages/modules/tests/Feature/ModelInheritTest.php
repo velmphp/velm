@@ -33,5 +33,6 @@ test('installing a module with model inherit adds columns and exposes merged fie
         'ref' => 'ACME-001',
     ]);
 
-    expect($partner->read()[0]['ref'])->toBe('ACME-001');
+    expect($partner->read()[0]['ref'])->toBe('ACME-001')
+        ->and($partner->read()[0]['display_name'])->toBe('Acme (ACME-001)');
 });

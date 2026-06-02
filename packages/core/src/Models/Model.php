@@ -50,9 +50,14 @@ abstract class Model
 
     public static function isExtension(): bool
     {
-        return static::$inherit !== null
-            && static::$inherit !== ''
-            && (static::$name === null || static::$name === '');
+        if (static::$inherit === null || static::$inherit === '') {
+            return false;
+        }
+
+        return (new \ReflectionClass(static::class))
+            ->getProperty('inherit')
+            ->getDeclaringClass()
+            ->getName() === static::class;
     }
 
     /**
@@ -78,19 +83,19 @@ abstract class Model
      */
     public static function fields(): array
     {
-        if (static::isExtension()) {
-            throw new \RuntimeException(static::class.' is a model extension; use the inherited model class.');
-        }
-
         static::initialize();
 
-        try {
-            $registry = \Velm\Registry::active();
+        $modelName = static::isExtension() ? static::inherit() : static::name();
 
-            if ($registry->hasFieldSet(static::name())) {
-                return $registry->fieldSet(static::name());
+        if ($modelName !== null && $modelName !== '') {
+            try {
+                $registry = \Velm\Registry::active();
+
+                if ($registry->hasFieldSet($modelName)) {
+                    return $registry->fieldSet($modelName);
+                }
+            } catch (\RuntimeException) {
             }
-        } catch (\RuntimeException) {
         }
 
         return self::$fieldsByClass[static::class];
@@ -123,7 +128,13 @@ abstract class Model
     public static function name(): string
     {
         if (static::isExtension()) {
-            throw new \RuntimeException(static::class.' is a model extension and has no $name.');
+            $inherit = static::inherit();
+
+            if ($inherit === null) {
+                throw new \RuntimeException(static::class.' is missing $inherit.');
+            }
+
+            return $inherit;
         }
 
         if (static::$name === null || static::$name === '') {
