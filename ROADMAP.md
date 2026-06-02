@@ -51,6 +51,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `GET /api/m2o/search` | Done |
 | PyVelm-style list search toolbar (search, filters, group by, columns) | Done |
 | Arch form many2one combobox (`Many2oneSearch`) | Done |
+| `POST /api/m2o/quick-create` | Done |
 
 ## Phase 2+
 
