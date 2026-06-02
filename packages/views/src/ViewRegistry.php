@@ -24,7 +24,7 @@ final class ViewRegistry
         ]);
 
         if ($view->count() === 0) {
-            throw new \RuntimeException("View {$module}.{$name} was not found.");
+            throw ViewNotFoundException::forView($module, $name);
         }
 
         $row = $view->read()[0];
@@ -34,6 +34,41 @@ final class ViewRegistry
             'view_type' => $row['view_type'],
             'model' => $row['model'],
             ...$inner,
+        ];
+    }
+
+    /**
+     * JSON API payload (PyVelm {@code GET /api/views/{module}/{name}} parity).
+     *
+     * @return array{
+     *     id: int,
+     *     module: string,
+     *     name: string,
+     *     model: string,
+     *     view_type: string,
+     *     arch: array<string, mixed>
+     * }
+     */
+    public function apiPayload(Environment $env, string $module, string $name): array
+    {
+        $view = $env->model('ir.ui.view')->search([
+            ['module', '=', $module],
+            ['name', '=', $name],
+        ]);
+
+        if ($view->count() === 0) {
+            throw ViewNotFoundException::forView($module, $name);
+        }
+
+        $row = $view->read()[0];
+
+        return [
+            'id' => (int) $row['id'],
+            'module' => (string) $row['module'],
+            'name' => (string) $row['name'],
+            'model' => (string) $row['model'],
+            'view_type' => (string) $row['view_type'],
+            'arch' => $this->resolver->resolveRecord($env, $row),
         ];
     }
 }
