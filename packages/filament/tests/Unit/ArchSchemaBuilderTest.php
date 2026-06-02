@@ -38,18 +38,18 @@ test('normalizes string field shorthand to field refs', function (): void {
 });
 
 test('builds table columns from partner list arch', function (): void {
-    $columns = (new ArchSchemaBuilder)->buildTableColumns(PartnerArch::list());
+    $columns = (new ArchSchemaBuilder)->buildTableColumns(PartnerArch::list(), $this->env);
 
-    expect($columns)->toHaveCount(3)
+    expect($columns)->toHaveCount(5)
         ->and($columns[0])->toBeInstanceOf(TextColumn::class)
-        ->and($columns[1])->toBeInstanceOf(ToggleColumn::class)
-        ->and($columns[2])->toBeInstanceOf(TextColumn::class);
+        ->and($columns[1])->toBeInstanceOf(ToggleColumn::class);
 });
 
 test('builds form schema from partner form arch', function (): void {
     $schema = (new ArchSchemaBuilder)->buildFormSchema(PartnerArch::form(), $this->env);
 
-    expect($schema)->toHaveCount(2)
+    expect($schema)->toHaveCount(3)
         ->and($schema[0])->toBeInstanceOf(Section::class)
-        ->and($schema[1])->toBeInstanceOf(Section::class);
+        ->and($schema[1])->toBeInstanceOf(Section::class)
+        ->and($schema[2])->toBeInstanceOf(Section::class);
 });

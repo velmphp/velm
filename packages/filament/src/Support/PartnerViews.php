@@ -22,8 +22,10 @@ final class PartnerViews
             'form_view' => 'partner.form',
             'fields' => [
                 'name',
-                ['name' => 'active', 'widget' => 'toggle'],
+                ['name' => 'is_company', 'widget' => 'toggle'],
+                'company_id',
                 'country_id',
+                ['name' => 'active', 'widget' => 'toggle'],
             ],
         ];
     }
@@ -42,8 +44,14 @@ final class PartnerViews
                     'title' => 'Identity',
                     'fields' => [
                         'name',
+                        ['name' => 'is_company', 'widget' => 'toggle'],
                         ['name' => 'active', 'widget' => 'toggle'],
                     ],
+                ],
+                [
+                    'name' => 'organization',
+                    'title' => 'Organization',
+                    'fields' => ['company_id'],
                 ],
                 [
                     'name' => 'address',

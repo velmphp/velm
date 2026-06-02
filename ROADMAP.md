@@ -28,7 +28,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Arch → Filament schema bridge (list + form spike) | Done |
 | `VelmManager` + `Environment` container binding | Done |
 | Filament panel + `ArchListPage` / partner list | Done |
-| Partner form page + save actions | Planned |
+| `res.company` on base module + default company on install | Done |
+| Partner/company form pages + save via recordset | Done |
 
 ## Phase 2+
 

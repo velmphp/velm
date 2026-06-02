@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Filament\Pages;
 
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
@@ -23,6 +24,40 @@ abstract class ArchListPage extends Page implements HasTable
      */
     abstract protected static function arch(): array;
 
+    /**
+     * @return class-string<ArchCreatePage>|null
+     */
+    protected static function createPage(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @return class-string<ArchEditPage>|null
+     */
+    protected static function editPage(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @return list<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        $createPage = static::createPage();
+
+        if ($createPage === null) {
+            return [];
+        }
+
+        return [
+            Action::make('create')
+                ->label('New')
+                ->url($createPage::getUrl()),
+        ];
+    }
+
     public function getTitle(): string|Htmlable
     {
         $title = static::arch()['title'] ?? null;
@@ -36,11 +71,21 @@ abstract class ArchListPage extends Page implements HasTable
 
     public function table(Table $table): Table
     {
-        return app(ArchTableConfigurator::class)->configure(
+        $table = app(ArchTableConfigurator::class)->configure(
             $table,
             static::arch(),
             app(Environment::class),
         );
+
+        $editPage = static::editPage();
+
+        if ($editPage !== null) {
+            $table->recordUrl(
+                static fn (array $record): string => $editPage::getUrl(['record' => $record['id']]),
+            );
+        }
+
+        return $table;
     }
 
     public function content(Schema $schema): Schema

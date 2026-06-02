@@ -20,6 +20,8 @@ final class Partner extends Model
         return [
             'name' => CharField::make(required: true),
             'active' => BooleanField::make(default: true),
+            'is_company' => BooleanField::make('Is a company', default: false),
+            'company_id' => Many2oneField::make('res.company'),
             'country_id' => Many2oneField::make('res.country'),
         ];
     }
