@@ -10,5 +10,6 @@ return Manifest::make('partners')
     ->version(0, 1, 0)
     ->depends('base')
     ->models(Country::class, Partner::class)
+    ->data('views/partner.php')
     ->summary('Contacts and addresses — partners, countries.')
     ->category('Sales');

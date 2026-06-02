@@ -16,6 +16,7 @@ use Velm\Environment;
 use Velm\Fields\BooleanField;
 use Velm\Fields\Field;
 use Velm\Fields\Many2oneField;
+use Velm\Views\Arch\ArchNormalizer;
 
 final class ArchSchemaBuilder
 {

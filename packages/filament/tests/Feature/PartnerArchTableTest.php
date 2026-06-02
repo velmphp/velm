@@ -30,7 +30,7 @@ test('table configurator loads partner rows from the recordset', function (): vo
         'country_id' => 1,
     ]);
 
-    $records = (new ArchTableConfigurator)->fetchRecords(PartnerArch::list(), $this->env);
+    $records = (new ArchTableConfigurator)->fetchRecords(PartnerArch::list($this->env), $this->env);
 
     expect($records)->toHaveCount(1)
         ->and($records->first()['name'])->toBe('Velm SA')

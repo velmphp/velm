@@ -9,12 +9,14 @@ use Velm\Environment;
 use Velm\Filament\FilamentServiceProvider;
 use Velm\Framework\VelmManager;
 use Velm\Modules\ModulesServiceProvider;
+use Velm\Views\ViewsServiceProvider;
 
 final class VelmServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->register(ModulesServiceProvider::class);
+        $this->app->register(ViewsServiceProvider::class);
         $this->app->register(FilamentServiceProvider::class);
         $this->mergeConfigFrom(__DIR__.'/../config/velm.php', 'velm');
 

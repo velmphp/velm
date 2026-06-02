@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-use Velm\Filament\Support\CompanyViews;
-use Velm\Filament\Support\PartnerViews;
 use Velm\Filament\Tests\TestCase;
+use Velm\Views\ViewRegistry;
 
 uses(TestCase::class);
 
@@ -16,6 +15,7 @@ beforeEach(function (): void {
 
 test('partner form arch fields persist on create and write', function (): void {
     $env = $this->app->make(\Velm\Environment::class);
+    $registry = new ViewRegistry;
 
     $company = $env->model('res.company')->create(['name' => 'Velm SA']);
     $partner = $env->model('res.partner')->create([
@@ -26,7 +26,7 @@ test('partner form arch fields persist on create and write', function (): void {
     ]);
 
     expect($partner->read()[0]['company_id'])->toBe($company->ids()[0])
-        ->and(PartnerViews::form()['model'])->toBe('res.partner');
+        ->and($registry->arch($env, 'partners', 'partner.form')['model'])->toBe('res.partner');
 
     $partner->write(['name' => 'Jane Smith']);
 
@@ -35,10 +35,11 @@ test('partner form arch fields persist on create and write', function (): void {
 
 test('company list arch matches res.company model', function (): void {
     $env = $this->app->make(\Velm\Environment::class);
+    $registry = new ViewRegistry;
 
     $before = $env->model('res.company')->search()->count();
     $env->model('res.company')->create(['name' => 'Subsidiary']);
 
-    expect(CompanyViews::list()['model'])->toBe('res.company')
+    expect($registry->arch($env, 'base', 'company.list')['model'])->toBe('res.company')
         ->and($env->model('res.company')->search()->count())->toBe($before + 1);
 });

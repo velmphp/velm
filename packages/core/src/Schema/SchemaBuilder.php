@@ -18,8 +18,17 @@ final class SchemaBuilder
     public function syncRegistry(Registry $registry): void
     {
         foreach ($registry->models() as $modelClass) {
-            $this->createTable($modelClass);
+            $this->ensureTable($modelClass);
         }
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    public function ensureTable(string $modelClass): void
+    {
+        $this->createTable($modelClass);
+        $this->applyColumnDiff($modelClass);
     }
 
     /**
@@ -44,6 +53,69 @@ final class SchemaBuilder
         $this->connection->execute(
             'CREATE TABLE IF NOT EXISTS "'.$table.'" ('.implode(', ', $columns).')',
         );
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    public function applyColumnDiff(string $modelClass): void
+    {
+        $table = $modelClass::table();
+        $existing = $this->existingColumns($table);
+
+        if ($existing === []) {
+            return;
+        }
+
+        foreach ($modelClass::fields() as $field) {
+            if ($field->name === 'id' || $field->name === 'display_name') {
+                continue;
+            }
+
+            if (in_array($field->column, $existing, true)) {
+                continue;
+            }
+
+            $sql = $field->sqlType();
+            $null = $field->required ? ' NOT NULL' : '';
+            $default = $this->defaultSql($field);
+
+            $this->connection->execute(
+                'ALTER TABLE "'.$table.'" ADD COLUMN "'.$field->column.'" '.$sql.$null.$default,
+            );
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function existingColumns(string $table): array
+    {
+        $rows = $this->connection->fetchAll('PRAGMA table_info("'.$table.'")');
+
+        if ($rows !== []) {
+            return array_values(array_map(
+                static fn (array $row): string => (string) $row['name'],
+                $rows,
+            ));
+        }
+
+        $driverRows = $this->connection->fetchAll('SELECT DATABASE() as db');
+        $database = $driverRows[0]['db'] ?? null;
+
+        if ($database === null) {
+            return [];
+        }
+
+        $rows = $this->connection->fetchAll(
+            'SELECT column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ?',
+            [$database, $table],
+        );
+
+        return array_values(array_map(
+            static fn (array $row): string => (string) ($row['column_name'] ?? $row['COLUMN_NAME'] ?? ''),
+            $rows,
+        ));
     }
 
     private function defaultSql(Field $field): string
