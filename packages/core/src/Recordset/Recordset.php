@@ -7,6 +7,7 @@ namespace Velm\Recordset;
 use Velm\Domain\Domain;
 use Velm\Environment;
 use Velm\Fields\Field;
+use Velm\Fields\Many2manyField;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -93,17 +94,16 @@ final class Recordset
      */
     public function create(array $values): self
     {
+        $this->env->checkAccess($this->modelName(), 'create');
+
         $modelClass = $this->modelClass;
+        [$columnValues, $m2mValues] = $this->splitValues($values);
         $fields = $this->modelFields();
         $columns = [];
         $placeholders = [];
         $params = [];
 
-        foreach ($values as $name => $value) {
-            if (! isset($fields[$name]) || $name === 'id' || $name === 'display_name') {
-                throw new \InvalidArgumentException("Unknown field {$name} on {$modelClass::name()}.");
-            }
-
+        foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
             $columns[] = '"'.$field->column.'"';
             $placeholders[] = '?';
@@ -111,7 +111,7 @@ final class Recordset
         }
 
         foreach ($fields as $name => $field) {
-            if ($name === 'id' || $name === 'display_name' || array_key_exists($name, $values)) {
+            if ($name === 'id' || $name === 'display_name' || $field instanceof Many2manyField || array_key_exists($name, $columnValues)) {
                 continue;
             }
 
@@ -136,7 +136,13 @@ final class Recordset
         $id = $this->env->connection->lastInsertId();
         $this->env->cache->forget($modelClass::name(), $id);
 
-        return new self($this->env, $modelClass, [$id]);
+        $created = new self($this->env, $modelClass, [$id]);
+
+        if ($m2mValues !== []) {
+            $created->writeM2m($m2mValues);
+        }
+
+        return $created;
     }
 
     /**
@@ -149,6 +155,8 @@ final class Recordset
             return [];
         }
 
+        $this->env->checkAccess($this->modelName(), 'read');
+
         $modelClass = $this->modelClass;
         $fields = $this->modelFields();
         $fieldNames ??= array_keys(array_filter(
@@ -159,13 +167,22 @@ final class Recordset
         $fieldNames[] = 'display_name';
         $fieldNames = array_values(array_unique($fieldNames));
 
+        $m2mNames = [];
+        foreach ($fieldNames as $name) {
+            $field = $fields[$name] ?? null;
+
+            if ($field instanceof Many2manyField) {
+                $m2mNames[] = $name;
+            }
+        }
+
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
         $sql = 'SELECT "id"';
         foreach ($fieldNames as $name) {
             if ($name === 'id' || $name === 'display_name') {
                 continue;
             }
-            if (! isset($fields[$name])) {
+            if (! isset($fields[$name]) || $fields[$name] instanceof Many2manyField) {
                 continue;
             }
             $sql .= ', "'.$fields[$name]->column.'"';
@@ -173,6 +190,7 @@ final class Recordset
         $sql .= ' FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
 
         $rows = $this->env->connection->fetchAll($sql, $this->ids);
+        $m2mByRecord = $m2mNames !== [] ? $this->loadM2mMaps($m2mNames) : [];
         $result = [];
 
         foreach ($rows as $row) {
@@ -182,6 +200,13 @@ final class Recordset
                     continue;
                 }
                 $field = $fields[$name];
+
+                if ($field instanceof Many2manyField) {
+                    $record[$name] = $m2mByRecord[$name][$record['id']] ?? [];
+
+                    continue;
+                }
+
                 $record[$name] = $field->toPhp($row[$field->column] ?? null);
             }
             $record['display_name'] = Registry::with(
@@ -215,34 +240,35 @@ final class Recordset
             return;
         }
 
+        $this->env->checkAccess($this->modelName(), 'write');
+
+        [$columnValues, $m2mValues] = $this->splitValues($values);
         $modelClass = $this->modelClass;
         $fields = $this->modelFields();
         $sets = [];
         $params = [];
 
-        foreach ($values as $name => $value) {
-            if ($name === 'id' || $name === 'display_name') {
-                continue;
-            }
-            if (! isset($fields[$name])) {
-                throw new \InvalidArgumentException("Unknown field {$name}.");
-            }
+        foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
             $sets[] = '"'.$field->column.'" = ?';
             $params[] = $field->toSql($value);
         }
 
-        if ($sets === []) {
-            return;
+        if ($sets !== []) {
+            $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
+            $sql = 'UPDATE "'.$modelClass::table().'" SET '.implode(', ', $sets).' WHERE "id" IN ('.$placeholders.')';
+            $params = [...$params, ...$this->ids];
+            $this->env->connection->execute($sql, $params);
         }
 
-        $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-        $sql = 'UPDATE "'.$modelClass::table().'" SET '.implode(', ', $sets).' WHERE "id" IN ('.$placeholders.')';
-        $params = [...$params, ...$this->ids];
-        $this->env->connection->execute($sql, $params);
+        if ($m2mValues !== []) {
+            $this->writeM2m($m2mValues);
+        }
 
-        foreach ($this->ids as $id) {
-            $this->env->cache->forget($modelClass::name(), $id);
+        if ($sets !== [] || $m2mValues !== []) {
+            foreach ($this->ids as $id) {
+                $this->env->cache->forget($modelClass::name(), $id);
+            }
         }
     }
 
@@ -251,6 +277,8 @@ final class Recordset
         if ($this->ids === []) {
             return;
         }
+
+        $this->env->checkAccess($this->modelName(), 'unlink');
 
         $modelClass = $this->modelClass;
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
@@ -267,6 +295,10 @@ final class Recordset
      */
     public function search(array $domain = [], int $limit = 0, int $offset = 0, ?string $order = null): self
     {
+        $this->env->checkAccess($this->modelName(), 'read');
+
+        $domain = $this->collectSearchDomain($domain, 'read');
+
         $modelClass = $this->modelClass;
         $sql = 'SELECT "id" FROM "'.$modelClass::table().'"';
         $params = [];
@@ -290,6 +322,21 @@ final class Recordset
         $ids = array_map(static fn (array $row): int => (int) $row['id'], $rows);
 
         return new self($this->env, $modelClass, $ids);
+    }
+
+    /**
+     * @param  list<mixed>|list<list<mixed>>  $userDomain
+     * @return list<mixed>|list<list<mixed>>
+     */
+    private function collectSearchDomain(array $userDomain, string $perm): array
+    {
+        $domain = $userDomain;
+
+        foreach ($this->env->collectRecordRules($this->modelName(), $perm) as $leaf) {
+            $domain[] = $leaf;
+        }
+
+        return $domain;
     }
 
     /**
@@ -366,6 +413,30 @@ final class Recordset
             throw new \InvalidArgumentException("Unknown domain field {$leaf->field}.");
         }
 
+        if ($leaf->value === null || $leaf->value === false) {
+            return match ($leaf->operator) {
+                '=' => '"'.$field->column.'" IS NULL',
+                '!=' => '"'.$field->column.'" IS NOT NULL',
+                default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator} for null."),
+            };
+        }
+
+        if ($leaf->operator === 'in') {
+            $values = is_array($leaf->value) ? $leaf->value : [$leaf->value];
+
+            if ($values === []) {
+                return '0 = 1';
+            }
+
+            $holders = implode(', ', array_fill(0, count($values), '?'));
+
+            foreach ($values as $value) {
+                $params[] = $field->toSql($value);
+            }
+
+            return '"'.$field->column.'" IN ('.$holders.')';
+        }
+
         $sql = match ($leaf->operator) {
             '=' => '"'.$field->column.'" = ?',
             '!=' => '"'.$field->column.'" <> ?',
@@ -379,5 +450,126 @@ final class Recordset
         $params[] = $field->toSql($leaf->value);
 
         return $sql;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array{0: array<string, mixed>, 1: array<string, list<int>>}
+     */
+    private function splitValues(array $values): array
+    {
+        $fields = $this->modelFields();
+        $columnValues = [];
+        $m2mValues = [];
+
+        foreach ($values as $name => $value) {
+            if ($name === 'id' || $name === 'display_name') {
+                continue;
+            }
+
+            if (! isset($fields[$name])) {
+                throw new \InvalidArgumentException("Unknown field {$name} on {$this->modelName()}.");
+            }
+
+            $field = $fields[$name];
+
+            if ($field instanceof Many2manyField) {
+                $m2mValues[$name] = $this->normalizeM2mIds($value);
+
+                continue;
+            }
+
+            $columnValues[$name] = $value;
+        }
+
+        return [$columnValues, $m2mValues];
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function normalizeM2mIds(mixed $value): array
+    {
+        if ($value instanceof self) {
+            return $value->ids();
+        }
+
+        if (! is_array($value)) {
+            throw new \InvalidArgumentException('Many2many values must be a list of ids.');
+        }
+
+        return array_values(array_map(intval(...), $value));
+    }
+
+    /**
+     * @param  array<string, list<int>>  $m2mValues
+     */
+    private function writeM2m(array $m2mValues): void
+    {
+        $fields = $this->modelFields();
+
+        foreach ($m2mValues as $name => $peerIds) {
+            $field = $fields[$name];
+
+            if (! $field instanceof Many2manyField) {
+                continue;
+            }
+
+            [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
+            $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
+            $this->env->connection->execute(
+                'DELETE FROM "'.$relation.'" WHERE "'.$col1.'" IN ('.$ownerPlaceholders.')',
+                $this->ids,
+            );
+
+            foreach ($this->ids as $ownerId) {
+                foreach ($peerIds as $peerId) {
+                    $this->env->connection->execute(
+                        'INSERT INTO "'.$relation.'" ("'.$col1.'", "'.$col2.'") VALUES (?, ?)',
+                        [$ownerId, $peerId],
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param  list<string>  $m2mNames
+     * @return array<string, array<int, list<int>>>
+     */
+    private function loadM2mMaps(array $m2mNames): array
+    {
+        $fields = $this->modelFields();
+        $maps = [];
+
+        foreach ($m2mNames as $name) {
+            $field = $fields[$name];
+
+            if (! $field instanceof Many2manyField) {
+                continue;
+            }
+
+            [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
+            $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
+            $rows = $this->env->connection->fetchAll(
+                'SELECT "'.$col1.'" AS owner_id, "'.$col2.'" AS peer_id FROM "'.$relation.'" '
+                .'WHERE "'.$col1.'" IN ('.$ownerPlaceholders.') ORDER BY "'.$col2.'"',
+                $this->ids,
+            );
+            $map = [];
+
+            foreach ($this->ids as $id) {
+                $map[$id] = [];
+            }
+
+            foreach ($rows as $row) {
+                $ownerId = (int) $row['owner_id'];
+                $map[$ownerId][] = (int) $row['peer_id'];
+            }
+
+            $maps[$name] = $map;
+        }
+
+        return $maps;
     }
 }
