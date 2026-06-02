@@ -10,6 +10,7 @@ final readonly class ModuleSpec
      * @param  list<int>  $version
      * @param  list<string>  $depends
      * @param  list<string>  $data
+     * @param  list<class-string>  $models
      */
     public function __construct(
         public string $name,
@@ -17,6 +18,7 @@ final readonly class ModuleSpec
         public array $depends,
         public string $path,
         public array $data = [],
+        public array $models = [],
         public string $summary = '',
         public string $description = '',
         public string $category = '',
@@ -40,6 +42,7 @@ final readonly class ModuleSpec
         $version = array_map(static fn (mixed $part): int => (int) $part, $manifest['VERSION']);
         $depends = array_values(array_map('strval', $manifest['DEPENDS'] ?? []));
         $data = array_values(array_map('strval', $manifest['DATA'] ?? []));
+        $models = array_values(array_map('strval', $manifest['MODELS'] ?? []));
 
         return new self(
             name: $manifest['NAME'],
@@ -47,6 +50,7 @@ final readonly class ModuleSpec
             depends: $depends,
             path: $path,
             data: $data,
+            models: $models,
             summary: (string) ($manifest['SUMMARY'] ?? ''),
             description: (string) ($manifest['DESCRIPTION'] ?? ''),
             category: (string) ($manifest['CATEGORY'] ?? ''),

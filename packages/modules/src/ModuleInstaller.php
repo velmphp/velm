@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Velm\Modules;
 
+use Illuminate\Support\Facades\DB;
+use Velm\Database\Connection;
+use Velm\Environment;
+use Velm\Modules\Database\LaravelConnection;
+use Velm\Registry;
+use Velm\Schema\SchemaBuilder;
+
 final class ModuleInstaller
 {
     public function __construct(
         private readonly ModuleDiscovery $discovery = new ModuleDiscovery,
         private readonly DependencyResolver $resolver = new DependencyResolver,
         private readonly ModuleRepository $repository = new ModuleRepository,
+        private readonly ModuleModelLoader $modelLoader = new ModuleModelLoader,
+        private readonly ?Connection $connection = null,
     ) {}
 
     /**
@@ -108,8 +117,39 @@ final class ModuleInstaller
                 continue;
             }
 
-            $this->repository->markInstalled($spec);
+            $this->installModule($spec);
         }
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    public function environment(array $roots): Environment
+    {
+        $registry = new Registry;
+        $this->modelLoader->loadInstalled($roots, $registry, $this->discovery, $this->resolver, $this->repository);
+
+        return new Environment($this->velmConnection(), $registry);
+    }
+
+    private function installModule(ModuleSpec $spec): void
+    {
+        $registry = new Registry;
+        $connection = $this->velmConnection();
+        $schema = new SchemaBuilder($connection);
+
+        $this->modelLoader->load($spec, $registry);
+
+        foreach ($spec->models as $modelClass) {
+            $schema->createTable($modelClass);
+        }
+
+        $this->repository->markInstalled($spec);
+    }
+
+    private function velmConnection(): Connection
+    {
+        return $this->connection ?? new LaravelConnection(DB::connection());
     }
 
     /**
