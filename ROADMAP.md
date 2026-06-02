@@ -58,6 +58,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Item | Status |
 |------|--------|
 | Model `$inherit` (field extensions, `static::super()`, stacked extensions) | Done |
+| Model record methods (`$recordset->method()`, MRO dispatch) | Done — [RFC 0001](./docs/rfcs/0001-model-record-methods.md) |
 | ACL / record rules | Planned |
 | Full schema migrations (`db:diff`, versioned scripts) | Planned |
 

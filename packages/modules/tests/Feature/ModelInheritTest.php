@@ -101,3 +101,4 @@ test('multiple extension modules compose display_name through super chain', func
             PartnerChainedExtension::class,
         ]);
 });
+

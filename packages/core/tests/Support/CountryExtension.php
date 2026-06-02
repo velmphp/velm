@@ -6,6 +6,7 @@ namespace Velm\Core\Tests\Support;
 
 use Velm\Fields\CharField;
 use Velm\Models\Model;
+use Velm\Recordset\Recordset;
 
 final class CountryExtension extends Model
 {
@@ -28,5 +29,14 @@ final class CountryExtension extends Model
         }
 
         return $base;
+    }
+
+    public function greetingLabel(Recordset $records): string
+    {
+        $base = static::super($records);
+        $records->ensureOne();
+        $region = $records->read()[0]['region_code'] ?? '';
+
+        return $region === '' ? $base : $base.' ('.$region.')';
     }
 }

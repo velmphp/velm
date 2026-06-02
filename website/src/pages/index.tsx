@@ -22,9 +22,9 @@ const features: FeatureItem[] = [
   },
   {
     icon: '🔁',
-    title: 'Registry MRO & super()',
+    title: 'Extension order & super()',
     description:
-      'Deterministic extension order with static::super() — PyVelm semantics on plain PHP classes.',
+      'Explicit method resolution order (MRO) across modules, with static::super() to chain behavior without PHP subclass chains.',
   },
   {
     icon: '📦',

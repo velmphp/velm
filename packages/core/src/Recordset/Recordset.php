@@ -40,6 +40,54 @@ final class Recordset
         return count($this->ids);
     }
 
+    public function ensureOne(): void
+    {
+        if ($this->count() !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected a single record on '.$this->modelName().', got '.$this->count().'.',
+            );
+        }
+    }
+
+    /**
+     * Dispatch a public instance method on the model MRO (effective class first).
+     *
+     * @param  list<mixed>  $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
+    {
+        $implementor = $this->resolveRecordMethodClass($name);
+
+        if ($implementor === null) {
+            throw new \BadMethodCallException(
+                "Call to undefined method {$this->modelName()}::{$name}().",
+            );
+        }
+
+        return Registry::with(
+            $this->env->registry,
+            fn (): mixed => $implementor::behavior()->{$name}($this, ...$arguments),
+        );
+    }
+
+    /**
+     * @return class-string<Model>|null
+     */
+    private function resolveRecordMethodClass(string $name): ?string
+    {
+        $chain = $this->env->registry->extensionChainFor($this->modelName());
+
+        for ($index = count($chain) - 1; $index >= 0; $index--) {
+            $class = $chain[$index];
+
+            if ($class::isRecordMethod($name)) {
+                return $class;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param  array<string, mixed>  $values
      */
@@ -138,7 +186,15 @@ final class Recordset
             }
             $record['display_name'] = Registry::with(
                 $this->env->registry,
-                static fn (): string => $modelClass::displayNameFor($record),
+                function () use ($modelClass, $record): string {
+                    $displayClass = Model::resolveStaticHookClass(
+                        $this->env->registry,
+                        $modelClass::name(),
+                        'displayNameFor',
+                    ) ?? Model::class;
+
+                    return $displayClass::displayNameFor($record);
+                },
             );
             $result[] = $record;
 

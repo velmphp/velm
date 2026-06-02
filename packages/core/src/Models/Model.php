@@ -7,6 +7,8 @@ namespace Velm\Models;
 use Velm\Fields\CharField;
 use Velm\Fields\Field;
 use Velm\Fields\IntegerField;
+use Velm\Recordset\Recordset;
+use Velm\Registry;
 
 abstract class Model
 {
@@ -18,6 +20,9 @@ abstract class Model
     protected static ?string $table = null;
 
     protected static string $recName = 'name';
+
+    /** @var array<class-string<static>, static> */
+    private static array $behaviorInstances = [];
 
     /** @var array<class-string<static>, array<string, Field>> */
     private static array $fieldsByClass = [];
@@ -46,6 +51,20 @@ abstract class Model
         $fields['display_name'] = CharField::make()->label('Display Name')->readonly()->bind('display_name');
 
         self::$fieldsByClass[$class] = $fields;
+    }
+
+    /**
+     * Stateless behavior object for instance methods (one per model class).
+     */
+    public static function behavior(): static
+    {
+        $class = static::class;
+
+        if (! isset(self::$behaviorInstances[$class])) {
+            self::$behaviorInstances[$class] = new $class;
+        }
+
+        return self::$behaviorInstances[$class];
     }
 
     public static function isExtension(): bool
@@ -89,7 +108,7 @@ abstract class Model
 
         if ($modelName !== null && $modelName !== '') {
             try {
-                $registry = \Velm\Registry::active();
+                $registry = Registry::active();
 
                 if ($registry->hasFieldSet($modelName)) {
                     return $registry->fieldSet($modelName);
@@ -148,7 +167,7 @@ abstract class Model
     {
         if (static::isExtension()) {
             try {
-                return \Velm\Registry::active()->baseModelClass(static::inherit())::table();
+                return Registry::active()->baseModelClass(static::inherit())::table();
             } catch (\RuntimeException) {
             }
         }
@@ -161,9 +180,56 @@ abstract class Model
     }
 
     /**
+     * Whether this class exposes a public instance method callable on a recordset.
+     */
+    /**
+     * Nearest class in the MRO that declares a public static hook (not inherited from Model).
+     *
+     * @return class-string<Model>|null
+     */
+    public static function resolveStaticHookClass(Registry $registry, string $modelName, string $method): ?string
+    {
+        $chain = $registry->extensionChainFor($modelName);
+
+        for ($index = count($chain) - 1; $index >= 0; $index--) {
+            $class = $chain[$index];
+
+            if (! method_exists($class, $method)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionMethod($class, $method);
+
+            if ($reflection->isStatic()
+                && $reflection->isPublic()
+                && $reflection->getDeclaringClass()->getName() !== Model::class) {
+                return $class;
+            }
+        }
+
+        return null;
+    }
+
+    public static function isRecordMethod(string $method): bool
+    {
+        if (! method_exists(static::class, $method)) {
+            return false;
+        }
+
+        $reflection = new \ReflectionMethod(static::class, $method);
+
+        if ($reflection->isStatic() || ! $reflection->isPublic()) {
+            return false;
+        }
+
+        return $reflection->getDeclaringClass()->getName() !== Model::class;
+    }
+
+    /**
      * Call the next class in the registry MRO (PyVelm-style super()).
      *
-     * Preferred: {@code static::super(...$args)} — infers the caller method.
+     * Static hooks: {@code static::super(...$args)} — infers the caller method.
+     * Instance methods: {@code static::super($recordset, ...$args)} with the recordset first.
      * Legacy: {@code static::super(__FUNCTION__, ...$args)} still works.
      */
     protected static function super(mixed ...$args): mixed
@@ -172,22 +238,74 @@ abstract class Model
         $method = $frame['function'] ?? null;
 
         if (! is_string($method) || $method === '') {
-            throw new \LogicException('Could not resolve caller for static::super().');
+            throw new \LogicException('Could not resolve caller for super().');
         }
 
         if ($args !== [] && is_string($args[0]) && $args[0] === $method) {
             array_shift($args);
         }
 
-        $parent = \Velm\Registry::active()->superClass(static::class);
+        $callingClass = static::class;
+        $wantInstance = $args !== [] && $args[0] instanceof Recordset;
+        $parent = static::resolveSuperImplementor($callingClass, $method, $wantInstance);
 
         if ($parent === null) {
             throw new \LogicException(
-                static::class." has no parent in the model MRO for {$method}().",
+                "{$callingClass} has no parent in the model MRO for {$method}().",
             );
         }
 
-        return $parent::$method(...$args);
+        $parentMethod = new \ReflectionMethod($parent, $method);
+
+        if ($parentMethod->isStatic()) {
+            return $parent::$method(...$args);
+        }
+
+        if ($args === [] || ! $args[0] instanceof Recordset) {
+            throw new \LogicException(
+                'Instance super() requires a Recordset as the first argument.',
+            );
+        }
+
+        return $parent::behavior()->{$method}(...$args);
+    }
+
+    /**
+     * @return class-string<Model>|null
+     */
+    private static function resolveSuperImplementor(
+        string $callingClass,
+        string $method,
+        bool $wantInstance,
+    ): ?string {
+        $registry = Registry::active();
+        $modelName = $callingClass::isExtension() ? $callingClass::inherit() : $callingClass::name();
+        $chain = $registry->extensionChainFor($modelName);
+        $index = array_search($callingClass, $chain, true);
+
+        if ($index === false) {
+            return null;
+        }
+
+        for ($i = $index - 1; $i >= 0; $i--) {
+            $class = $chain[$i];
+
+            if (! method_exists($class, $method)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionMethod($class, $method);
+
+            if ($wantInstance && ! $reflection->isStatic()) {
+                return $class;
+            }
+
+            if (! $wantInstance && $reflection->isStatic()) {
+                return $class;
+            }
+        }
+
+        return null;
     }
 
     public static function recNameField(): string

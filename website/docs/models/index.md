@@ -14,8 +14,39 @@ Velm models are plain PHP classes backed by a **registry**, an **environment** (
 | `$table` | SQL table name (defaults to dots → underscores). |
 | `defineFields()` | Returns `Velm\Fields\*` descriptors bound to columns. |
 | `$inherit` | Extend an existing model from another module — no new table. |
-| Registry MRO | Ordered list of base + extensions; drives field merge and `super()`. |
-| `static::super(...)` | Call the previous layer's method in the MRO. |
+| [Extension order (MRO)](#extension-order-mro) | Which module's class runs first when several extend the same model. |
+| `static::super(...)` | Call the next implementor of the same method down the MRO. |
+| `$recordset->method()` | Dispatch a public instance method on the model behavior object. |
+
+## Extension order (MRO)
+
+**MRO** means **method resolution order**: the sequence Velm uses to decide *which class implements a method* when more than one module extends the same model (for example `res.partner`).
+
+Velm does **not** rely on PHP `extends` between addon classes. Each extension is `class X extends Model` with `$inherit = 'res.partner'`. The **registry** keeps an explicit ordered list instead:
+
+```text
+MRO for res.partner (example):
+
+  [0] partners\Partner              ← base (owns the table)
+  [1] partners_ext\PartnerExtension
+  [2] partners_tags\PartnerTagsExtension   ← effective (top) class
+```
+
+| Term | Meaning |
+|------|---------|
+| **MRO chain** | The full list above, in load order. |
+| **Effective class** | The last entry — what `env->model('res.partner')` uses for dispatch. |
+| **Previous class** | The entry before yours in the chain — what `static::super()` calls. |
+
+**Load order** comes from manifest `depends()` (topological sort). If module B depends on module A, A's extension is always earlier in the MRO than B's.
+
+That order drives three behaviors:
+
+1. **Fields** — merged in chain order; a later module can override the same field name.
+2. **`static::super()`** — your method runs first; `super()` delegates to the previous class's method with the same name.
+3. **Runtime dispatch** — framework code calls the effective class, not the base alone.
+
+This is the same idea as Python's MRO on a subclass stack, but Velm builds the list at **module install** time so independent addons never need to `extend` each other's PHP classes.
 
 ## In this section
 
@@ -39,7 +70,7 @@ discover manifests → topo-sort DEPENDS → for each module:
   sync views & menus
 ```
 
-Extension models call `registerExtension()` instead of `register()`. The registry merges fields and appends the class to the MRO chain. The **effective** model class (top of the chain) is what `env->model('res.partner')` uses for recordset dispatch.
+Extension models call `registerExtension()` instead of `register()`. The registry merges fields and appends the class to the [MRO chain](#extension-order-mro). The **effective** model class (top of the chain) is what `env->model('res.partner')` uses for recordset dispatch.
 
 ## Related APIs
 
