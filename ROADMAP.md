@@ -45,6 +45,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `ir.ui.menu` + navigation from menus | Done |
 | PyVelm-style shell (apps rail + top bar / sidebar layout) | Done |
 | `GET /api/views` | Done |
+| `GET /api/records` | Done |
 
 ## Phase 2+
 

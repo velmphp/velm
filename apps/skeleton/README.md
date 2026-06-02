@@ -54,6 +54,7 @@ VELM_MENU_LAYOUT=sidebar
 | `/velm` | Filament panel (arch-driven list/form pages) |
 | `/velm/apps` | Module catalog |
 | `/api/views/{module}/{name}` | Resolved view arch JSON |
+| `/api/records?model=&domain=&fields=` | Record rows (JSON API) |
 
 ## Artisan commands
 
