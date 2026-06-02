@@ -1,0 +1,246 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Velm\Recordset;
+
+use Velm\Domain\Domain;
+use Velm\Environment;
+use Velm\Fields\Field;
+use Velm\Models\Model;
+
+final class Recordset
+{
+    /**
+     * @param  class-string<Model>  $modelClass
+     * @param  list<int>  $ids
+     */
+    public function __construct(
+        private readonly Environment $env,
+        private readonly string $modelClass,
+        private array $ids,
+    ) {}
+
+    public function modelName(): string
+    {
+        return $this->modelClass::name();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function ids(): array
+    {
+        return $this->ids;
+    }
+
+    public function count(): int
+    {
+        return count($this->ids);
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public function create(array $values): self
+    {
+        $modelClass = $this->modelClass;
+        $fields = $modelClass::fields();
+        $columns = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($values as $name => $value) {
+            if (! isset($fields[$name]) || $name === 'id' || $name === 'display_name') {
+                throw new \InvalidArgumentException("Unknown field {$name} on {$modelClass::name()}.");
+            }
+
+            $field = $fields[$name];
+            $columns[] = '"'.$field->column.'"';
+            $placeholders[] = '?';
+            $params[] = $field->toSql($value);
+        }
+
+        foreach ($fields as $name => $field) {
+            if ($name === 'id' || $name === 'display_name' || array_key_exists($name, $values)) {
+                continue;
+            }
+
+            if ($field->default === null) {
+                continue;
+            }
+
+            $columns[] = '"'.$field->column.'"';
+            $placeholders[] = '?';
+            $params[] = $field->toSql($field->default);
+        }
+
+        if ($columns === []) {
+            $this->env->connection->execute(
+                'INSERT INTO "'.$modelClass::table().'" DEFAULT VALUES',
+            );
+        } else {
+            $sql = 'INSERT INTO "'.$modelClass::table().'" ('.implode(', ', $columns).') VALUES ('.implode(', ', $placeholders).')';
+            $this->env->connection->execute($sql, $params);
+        }
+
+        $id = $this->env->connection->lastInsertId();
+        $this->env->cache->forget($modelClass::name(), $id);
+
+        return new self($this->env, $modelClass, [$id]);
+    }
+
+    /**
+     * @param  list<string>|null  $fieldNames
+     * @return list<array<string, mixed>>
+     */
+    public function read(?array $fieldNames = null): array
+    {
+        if ($this->ids === []) {
+            return [];
+        }
+
+        $modelClass = $this->modelClass;
+        $fields = $modelClass::fields();
+        $fieldNames ??= array_keys(array_filter(
+            $fields,
+            static fn (Field $field, string $name): bool => $name !== 'display_name',
+            ARRAY_FILTER_USE_BOTH,
+        ));
+        $fieldNames[] = 'display_name';
+        $fieldNames = array_values(array_unique($fieldNames));
+
+        $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
+        $sql = 'SELECT "id"';
+        foreach ($fieldNames as $name) {
+            if ($name === 'id' || $name === 'display_name') {
+                continue;
+            }
+            if (! isset($fields[$name])) {
+                continue;
+            }
+            $sql .= ', "'.$fields[$name]->column.'"';
+        }
+        $sql .= ' FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+
+        $rows = $this->env->connection->fetchAll($sql, $this->ids);
+        $result = [];
+
+        foreach ($rows as $row) {
+            $record = ['id' => (int) $row['id']];
+            foreach ($fieldNames as $name) {
+                if ($name === 'id' || $name === 'display_name') {
+                    continue;
+                }
+                $field = $fields[$name];
+                $record[$name] = $field->toPhp($row[$field->column] ?? null);
+            }
+            $record['display_name'] = $modelClass::displayNameFor($record);
+            $result[] = $record;
+
+            foreach ($record as $fname => $fvalue) {
+                $this->env->cache->set($modelClass::name(), $record['id'], $fname, $fvalue);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public function write(array $values): void
+    {
+        if ($this->ids === []) {
+            return;
+        }
+
+        $modelClass = $this->modelClass;
+        $fields = $modelClass::fields();
+        $sets = [];
+        $params = [];
+
+        foreach ($values as $name => $value) {
+            if ($name === 'id' || $name === 'display_name') {
+                continue;
+            }
+            if (! isset($fields[$name])) {
+                throw new \InvalidArgumentException("Unknown field {$name}.");
+            }
+            $field = $fields[$name];
+            $sets[] = '"'.$field->column.'" = ?';
+            $params[] = $field->toSql($value);
+        }
+
+        if ($sets === []) {
+            return;
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
+        $sql = 'UPDATE "'.$modelClass::table().'" SET '.implode(', ', $sets).' WHERE "id" IN ('.$placeholders.')';
+        $params = [...$params, ...$this->ids];
+        $this->env->connection->execute($sql, $params);
+
+        foreach ($this->ids as $id) {
+            $this->env->cache->forget($modelClass::name(), $id);
+        }
+    }
+
+    /**
+     * @param  list<mixed>|list<list<mixed>>  $domain
+     */
+    public function search(array $domain = [], int $limit = 0, int $offset = 0): self
+    {
+        $modelClass = $this->modelClass;
+        $sql = 'SELECT "id" FROM "'.$modelClass::table().'"';
+        $params = [];
+        $clauses = $this->buildWhere($domain, $params);
+
+        if ($clauses !== '') {
+            $sql .= ' WHERE '.$clauses;
+        }
+
+        $sql .= ' ORDER BY "id"';
+
+        if ($limit > 0) {
+            $sql .= ' LIMIT '.$limit;
+        }
+
+        if ($offset > 0) {
+            $sql .= ' OFFSET '.$offset;
+        }
+
+        $rows = $this->env->connection->fetchAll($sql, $params);
+        $ids = array_map(static fn (array $row): int => (int) $row['id'], $rows);
+
+        return new self($this->env, $modelClass, $ids);
+    }
+
+    /**
+     * @param  list<mixed>|list<list<mixed>>  $domain
+     * @param  list<mixed>  $params
+     */
+    private function buildWhere(array $domain, array &$params): string
+    {
+        $parts = [];
+
+        foreach (Domain::parseList($domain) as $leaf) {
+            $field = $this->modelClass::fields()[$leaf->field] ?? null;
+
+            if ($field === null) {
+                throw new \InvalidArgumentException("Unknown domain field {$leaf->field}.");
+            }
+
+            $parts[] = match ($leaf->operator) {
+                '=' => '"'.$field->column.'" = ?',
+                '!=' => '"'.$field->column.'" <> ?',
+                '>' => '"'.$field->column.'" > ?',
+                '<' => '"'.$field->column.'" < ?',
+                default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
+            };
+            $params[] = $field->toSql($leaf->value);
+        }
+
+        return implode(' AND ', $parts);
+    }
+}

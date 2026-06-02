@@ -5,6 +5,9 @@
     "type": "library",
     "require": { "php": "^8.3" },
     "autoload": { "psr-4": { "Velm\\": "src/" } },
+    "autoload-dev": {
+        "psr-4": { "Velm\\Core\\Tests\\": "tests/" }
+    },
     "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
     "minimum-stability": "dev"
 }
