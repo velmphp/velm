@@ -72,6 +72,18 @@ test('orphan extensions that only extend Model are accepted', function (): void 
     });
 });
 
+test('isRecordMethod identifies public instance methods on model classes', function (): void {
+    Registry::using(function (Registry $registry): void {
+        $registry->register(Country::class);
+        $registry->registerExtension(CountryExtension::class);
+
+        expect(Country::isRecordMethod('greetingLabel'))->toBeTrue()
+            ->and(CountryExtension::isRecordMethod('greetingLabel'))->toBeTrue()
+            ->and(Country::isRecordMethod('displayNameFor'))->toBeFalse()
+            ->and(Country::isRecordMethod('super'))->toBeFalse();
+    });
+});
+
 test('extension chain preserves registration order', function (): void {
     Registry::using(function (Registry $registry): void {
         $registry->register(Country::class);

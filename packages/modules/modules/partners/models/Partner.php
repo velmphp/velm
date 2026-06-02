@@ -8,6 +8,7 @@ use Velm\Fields\BooleanField;
 use Velm\Fields\CharField;
 use Velm\Fields\Many2oneField;
 use Velm\Models\Model;
+use Velm\Recordset\Recordset;
 
 class Partner extends Model
 {
@@ -24,5 +25,12 @@ class Partner extends Model
             'company_id' => Many2oneField::make()->comodel('res.company'),
             'country_id' => Many2oneField::make()->comodel('res.country'),
         ];
+    }
+
+    public function badge(Recordset $records): string
+    {
+        $records->ensureOne();
+
+        return (string) ($records->read()[0]['name'] ?? '');
     }
 }

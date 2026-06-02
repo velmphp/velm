@@ -6,6 +6,7 @@ namespace Velm\Modules\Tests\Support;
 
 use Velm\Fields\CharField;
 use Velm\Models\Model;
+use Velm\Recordset\Recordset;
 
 final class PartnerChainedExtension extends Model
 {
@@ -24,5 +25,14 @@ final class PartnerChainedExtension extends Model
         $tag = (string) ($values['chain_tag'] ?? '');
 
         return $tag === '' ? $base : $base.' #'.$tag;
+    }
+
+    public function badge(Recordset $records): string
+    {
+        $base = static::super($records);
+        $records->ensureOne();
+        $ref = (string) ($records->read()[0]['ref'] ?? '');
+
+        return $ref === '' ? $base : $base.' · '.$ref;
     }
 }

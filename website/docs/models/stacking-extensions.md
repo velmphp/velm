@@ -6,6 +6,8 @@ sidebar_position: 5
 
 Several modules can extend the same model. Each registers an extension class; Velm appends it to the **MRO chain** in module load order.
 
+**MRO** (*method resolution order*) is explained in the [Models overview](index.md#extension-order-mro). In short: it is the ordered list of classes (base first, extensions after), used for field merge and `static::super()`.
+
 This is the most involved model-inheritance topic: multiple addons, explicit `depends`, and chained `super()` calls.
 
 ## Scenario
@@ -18,7 +20,7 @@ This is the most involved model-inheritance topic: multiple addons, explicit `de
 
 All three use `extends Model` and `$inherit = 'res.partner'`. None subclasses another extension.
 
-## MRO after install
+## Extension order after install
 
 Assuming manifest dependencies order loads `partners` → `partners_ext` → `partners_tags`:
 
