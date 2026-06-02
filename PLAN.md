@@ -1528,9 +1528,9 @@ Apps never require `velmphp/core` directly unless building low-level tooling —
   "type": "library",
   "require": {
     "php": "^8.3",
-    "laravel/framework": "^12.0",
-    "filament/filament": "^4.0",
-    "livewire/livewire": "^3.0",
+    "laravel/framework": "^13.0",
+    "filament/filament": "^5.0",
+    "livewire/livewire": "^4.0",
     "velmphp/core": "^1.0",
     "velmphp/views": "^1.0",
     "velmphp/modules": "^1.0",
@@ -1621,7 +1621,7 @@ Core org stays lean: **framework + skeleton + docs + plugin**.
     "velmphp/framework": "@dev"
   },
   "require-dev": {
-    "orchestra/testbench": "^10.0",
+    "orchestra/testbench": "^11.0",
     "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^2.0"
   },
@@ -1702,9 +1702,9 @@ Apps depend on one entry point — not six packages manually:
 {
   "require": {
     "php": "^8.3",
-    "laravel/framework": "^12.0",
-    "filament/filament": "^4.0",
-    "livewire/livewire": "^3.0",
+    "laravel/framework": "^13.0",
+    "filament/filament": "^5.0",
+    "livewire/livewire": "^4.0",
     "velmphp/framework": "^1.0"
   }
 }
