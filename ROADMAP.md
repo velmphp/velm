@@ -49,6 +49,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `GET /api/records` | Done |
 | `POST/PATCH/DELETE /api/records` | Done |
 | `GET /api/m2o/search` | Done |
+| PyVelm-style list search toolbar (search, filters, group by, columns) | Done |
 
 ## Phase 2+
 

@@ -74,6 +74,21 @@ test('searches with simple domains', function (): void {
         ->and($active->read()[0]['name'])->toBe('Active Co');
 });
 
+test('searches with ilike and or groups', function (): void {
+    $env = ormEnvironment();
+    $env->model('res.partner')->create(['name' => 'Acme Corp', 'active' => true]);
+    $env->model('res.partner')->create(['name' => 'Other LLC', 'active' => true]);
+
+    $matches = $env->model('res.partner')->search([
+        ['__or__', 'ilike', [
+            ['name', 'ilike', '%acme%'],
+        ]],
+    ]);
+
+    expect($matches->count())->toBe(1)
+        ->and($matches->read()[0]['name'])->toBe('Acme Corp');
+});
+
 test('unlink removes records from the table', function (): void {
     $env = ormEnvironment();
     $first = $env->model('res.partner')->create(['name' => 'Keep']);

@@ -240,24 +240,70 @@ final class Recordset
     {
         $parts = [];
 
-        foreach (Domain::parseList($domain) as $leaf) {
-            $field = $this->modelClass::fields()[$leaf->field] ?? null;
+        foreach ($this->expandDomain($domain) as $leaf) {
+            if ($leaf[0] === '__or__') {
+                $subParts = [];
+                $subs = is_array($leaf[2]) ? $leaf[2] : [];
 
-            if ($field === null) {
-                throw new \InvalidArgumentException("Unknown domain field {$leaf->field}.");
+                foreach ($subs as $sub) {
+                    if (! is_array($sub) || count($sub) !== 3) {
+                        continue;
+                    }
+
+                    $subParts[] = $this->buildLeafClause(Domain::fromArray($sub), $params);
+                }
+
+                if ($subParts !== []) {
+                    $parts[] = '('.implode(' OR ', $subParts).')';
+                }
+
+                continue;
             }
 
-            $parts[] = match ($leaf->operator) {
-                '=' => '"'.$field->column.'" = ?',
-                '!=' => '"'.$field->column.'" <> ?',
-                '>' => '"'.$field->column.'" > ?',
-                '<' => '"'.$field->column.'" < ?',
-                'like', 'ilike' => 'LOWER(CAST("'.$field->column.'" AS TEXT)) LIKE LOWER(?)',
-                default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
-            };
-            $params[] = $field->toSql($leaf->value);
+            $parts[] = $this->buildLeafClause(Domain::fromArray($leaf), $params);
         }
 
         return implode(' AND ', $parts);
+    }
+
+    /**
+     * @param  list<mixed>|list<list<mixed>>  $domain
+     * @return list<list<mixed>>
+     */
+    private function expandDomain(array $domain): array
+    {
+        if ($domain === []) {
+            return [];
+        }
+
+        if (! is_array($domain[0])) {
+            return [$domain];
+        }
+
+        /** @var list<list<mixed>> $domain */
+        return $domain;
+    }
+
+    private function buildLeafClause(Domain $leaf, array &$params): string
+    {
+        $field = $this->modelClass::fields()[$leaf->field] ?? null;
+
+        if ($field === null) {
+            throw new \InvalidArgumentException("Unknown domain field {$leaf->field}.");
+        }
+
+        $sql = match ($leaf->operator) {
+            '=' => '"'.$field->column.'" = ?',
+            '!=' => '"'.$field->column.'" <> ?',
+            '>' => '"'.$field->column.'" > ?',
+            '<' => '"'.$field->column.'" < ?',
+            '>=' => '"'.$field->column.'" >= ?',
+            '<=' => '"'.$field->column.'" <= ?',
+            'like', 'ilike' => 'LOWER(CAST("'.$field->column.'" AS TEXT)) LIKE LOWER(?)',
+            default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
+        };
+        $params[] = $field->toSql($leaf->value);
+
+        return $sql;
     }
 }

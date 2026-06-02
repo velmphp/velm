@@ -11,9 +11,25 @@
 
 @source '../views/**/*.blade.php';
 
+/* List toolbar (PyVelm-style search / filters) */
+.velm-list-toolbar .text-2xs {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+}
+
 /* Shell chrome */
 .velm-shell {
     --velm-shell-backdrop: rgb(0 0 0 / 0.45);
+    --velm-shell-header-height: 60px;
+}
+
+.velm-shell-header {
+    min-height: var(--velm-shell-header-height);
+}
+
+.velm-shell-sidebar-header {
+    height: var(--velm-shell-header-height);
+    min-height: var(--velm-shell-header-height);
 }
 
 :where(.dark, .dark *) .velm-shell {

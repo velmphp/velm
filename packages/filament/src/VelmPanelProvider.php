@@ -13,6 +13,7 @@ use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Illuminate\Http\RedirectResponse;
+use Velm\Filament\Support\VelmBrandColors;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -50,8 +51,8 @@ final class VelmPanelProvider extends PanelProvider
                 })->name('home');
             })
             ->colors([
-                'primary' => Color::hex('#286291'),
-                'warning' => Color::hex('#F1511B'),
+                'primary' => Color::Amber,
+                'warning' => VelmBrandColors::accent(),
             ])
             ->assets([
                 Css::make('velm-shell', __DIR__.'/../resources/css/velm-shell.css'),

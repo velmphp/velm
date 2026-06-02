@@ -72,14 +72,14 @@ final class ArchSchemaBuilder
         $velmField = $this->velmField($env, $model, $name);
 
         if ($widget === 'toggle' || $velmField instanceof BooleanField) {
-            return ToggleColumn::make($name);
+            return ToggleColumn::make($name)->toggleable();
         }
 
         if ($velmField instanceof Many2oneField) {
             $comodel = $velmField->comodel;
 
             return TextColumn::make($name)
-                ->searchable()
+                ->toggleable()
                 ->sortable()
                 ->formatStateUsing(static function (mixed $state) use ($env, $comodel): string {
                     if ($state === null || $state === '') {
@@ -92,7 +92,7 @@ final class ArchSchemaBuilder
                 });
         }
 
-        return TextColumn::make($name)->searchable()->sortable();
+        return TextColumn::make($name)->toggleable()->sortable();
     }
 
     /**
