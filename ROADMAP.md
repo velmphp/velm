@@ -61,6 +61,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Model record methods (`$recordset->method()`, MRO dispatch) | Done — [RFC 0001](./docs/rfcs/0001-model-record-methods.md) |
 | ACL (`ir.model.access`, superuser bypass, Recordset gates) | Done |
 | Record rules (`ir.rule`, domain injection) | Done — [RFC 0002](./docs/rfcs/0002-record-rules.md) |
-| Schema migrations (`db:diff`, `db:status`, versioned scripts, upgrade on migrate) | Done (slice 1) |
+| Schema migrations (`db:diff`, `db:status`, versioned scripts, upgrade on migrate) | Done (slices 1–2) |
+| `INSTALL_HOOK` / `SYNC_HOOK`, Velm `Schema` API, `ir.cron` + `velm:cron:run` | Done |
 
 See [PLAN.md](./PLAN.md) for remaining ORM parity.

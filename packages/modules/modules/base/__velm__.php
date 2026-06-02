@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use Velm\Modules\Base\BaseInstallHooks;
 use Velm\Modules\Base\Models\Company;
+use Velm\Modules\Base\Models\Cron;
 use Velm\Modules\Base\Models\Group;
 use Velm\Modules\Base\Models\ModelAccess;
 use Velm\Modules\Base\Models\Rule;
+use Velm\Modules\Base\Models\ServerAction;
 use Velm\Modules\Base\Models\UiMenu;
 use Velm\Modules\Base\Models\UiView;
 use Velm\Modules\Base\Models\User;
@@ -23,9 +26,12 @@ return Manifest::make('base')
         User::class,
         ModelAccess::class,
         Rule::class,
+        ServerAction::class,
+        Cron::class,
         UiView::class,
         UiMenu::class,
     )
+    ->installHook(BaseInstallHooks::class)
     ->data('views/company.php')
     ->summary('Framework primitives — users, groups, views, menus, modules.')
     ->category('Administration');

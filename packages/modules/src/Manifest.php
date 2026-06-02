@@ -41,6 +41,8 @@ final class Manifest
 
     private ?string $syncHook = null;
 
+    private ?string $installHook = null;
+
     private function __construct(
         private readonly string $name,
     ) {}
@@ -158,6 +160,16 @@ final class Manifest
     }
 
     /**
+     * @param  class-string  $class
+     */
+    public function installHook(string $class, string $method = 'install'): self
+    {
+        $this->installHook = $class.'::'.$method;
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -199,6 +211,10 @@ final class Manifest
 
         if ($this->syncHook !== null) {
             $manifest['SYNC_HOOK'] = $this->syncHook;
+        }
+
+        if ($this->installHook !== null) {
+            $manifest['INSTALL_HOOK'] = $this->installHook;
         }
 
         return $manifest;

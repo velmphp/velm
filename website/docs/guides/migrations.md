@@ -34,6 +34,42 @@ Or in a plain array manifest: `'SYNC_HOOK' => PartnersHooks::class.'::sync'`.
 
 Use this to backfill required columns before `SET NOT NULL` can apply, or to drop orphan columns safely.
 
+## INSTALL_HOOK
+
+Runs **once** on first install, after schema apply and before views/menus sync:
+
+```php
+return Manifest::make('base')
+    ->installHook(BaseInstallHooks::class);
+```
+
+The bundled `base` module uses this to seed groups, admin user, and ACL rows.
+
+## Velm Schema API (migration scripts)
+
+Versioned scripts can use `Velm\Migrations\Schema` instead of raw SQL:
+
+```php
+use Velm\Environment;
+use Velm\Migrations\Schema;
+
+return static function (Environment $env): void {
+    Schema::make($env)->table('res_partner', static function ($table): void {
+        $table->string('code', 64);
+    });
+};
+```
+
+## Scheduled jobs
+
+`ir.cron` and `ir.actions.server` live on the `base` module. Run due jobs via Laravel Scheduler:
+
+```bash
+php artisan velm:cron:run
+```
+
+Register `Schedule::command('velm:cron:run')->everyMinute();` in your app's `routes/console.php`.
+
 ## Versioned migration files
 
 Place scripts under `your_module/migrations/` using the naming convention:

@@ -25,6 +25,7 @@ final readonly class ModuleSpec
         public string $author = '',
         public string $icon = '',
         public ?string $syncHook = null,
+        public ?string $installHook = null,
     ) {}
 
     /**
@@ -58,6 +59,7 @@ final readonly class ModuleSpec
             author: (string) ($manifest['AUTHOR'] ?? ''),
             icon: (string) ($manifest['ICON'] ?? ''),
             syncHook: isset($manifest['SYNC_HOOK']) ? (string) $manifest['SYNC_HOOK'] : null,
+            installHook: isset($manifest['INSTALL_HOOK']) ? (string) $manifest['INSTALL_HOOK'] : null,
         );
     }
 
