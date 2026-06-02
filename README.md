@@ -66,6 +66,19 @@ CLI without a Laravel app:
 php packages/console/bin/velm module:list --discovered-only
 ```
 
+### Runnable skeleton app
+
+Manual E2E (Filament panel, module install, API):
+
+```bash
+cd apps/skeleton
+composer install
+composer run setup
+composer run dev
+```
+
+Sign in at `/velm` with `admin@velm.test` / `password`. See **[apps/skeleton/README.md](./apps/skeleton/README.md)**.
+
 ## Status
 
 Early development — module runtime, recordset ORM, partners addon, and Filament arch bridge are landing incrementally. See **[ROADMAP.md](./ROADMAP.md)**.
