@@ -7,6 +7,7 @@ modules/
   base/
     __velm__.php      # Manifest::make(...) — module metadata and MODELS list
     models/           # PHP model classes (optional)
+    views/            # ViewsData::make()->views(...) — declarative UI arch
   partners/
     __velm__.php
     models/

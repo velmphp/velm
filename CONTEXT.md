@@ -20,7 +20,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - PHP namespace: `Velm\`
 - Module manifests: `__velm__.php` — use `Velm\Modules\Manifest::make('name')->version(…)->…` (fluent builder; plain arrays still supported)
 - Model fields: prefer fluent setters on `Velm\Fields\*` (e.g. `CharField::make()->required()->maxLength(2)`); constructor/`make()` args still work
-- Views: ship `VIEWS` in module `DATA` PHP files (`views/*.php`); synced to `ir.ui.view` on install/sync; Filament reads via `ViewRegistry`
+- Views: module `DATA` files (`views/*.php`) return `ViewsData::make()->views(…)->inherits(…)` (like `Manifest`); plain arrays still work; synced to `ir.ui.view` on install/sync
 - Bundled module **code** lives under `packages/modules/modules/{name}/` (`models/`, `data/`, …); package **runtime** lives in `packages/modules/src/` (see `packages/modules/modules/README.md`)
 - Module install state: `ir.module` (not Composer)
 - CLI: `php velm …` (Artisan-style colon commands)

@@ -40,9 +40,13 @@ final class DataFileLoader
 
             $exported = require $path;
 
+            if ($exported instanceof ViewsData) {
+                $exported = $exported->toArray();
+            }
+
             if (! is_array($exported)) {
                 throw new \RuntimeException(
-                    "Module {$spec->name}: data file {$relativePath} must return an array.",
+                    "Module {$spec->name}: data file {$relativePath} must return ViewsData or an array.",
                 );
             }
 

@@ -5,9 +5,10 @@ declare(strict_types=1);
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
 use Velm\Views\Authoring\ListView;
+use Velm\Views\Data\ViewsData;
 
-return [
-    'VIEWS' => [
+return ViewsData::make()
+    ->views(
         ListView::make('partner.list')
             ->model('res.partner')
             ->title('Partners')
@@ -19,7 +20,6 @@ return [
                 'country_id',
                 Field::make('active')->toggle(),
             ]),
-
         FormView::make('partner.form')
             ->model('res.partner')
             ->section('identity', 'Identity', [
@@ -29,5 +29,4 @@ return [
             ])
             ->section('organization', 'Organization', ['company_id'])
             ->section('address', 'Address', ['country_id']),
-    ],
-];
+    );
