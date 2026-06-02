@@ -40,7 +40,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | View sync on `module:install` / `module:sync` | Done |
 | Fluent `ListView` / `FormView` / `Field` authoring | Done |
 | `ViewRegistry` + Filament pages load stored arch | Done |
-| `VIEW_INHERITS` + `resolve_arch()` | Planned |
+| `VIEW_INHERITS` + `resolve_arch()` | Done |
 | `ir.ui.menu` + navigation from menus | Planned |
 | `GET /api/views` | Planned |
 

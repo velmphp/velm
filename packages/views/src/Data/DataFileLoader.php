@@ -85,6 +85,12 @@ final class DataFileLoader
         $inherits = [];
 
         foreach ($declarations as $declaration) {
+            if ($declaration instanceof ViewDeclaration) {
+                $inherits[] = $declaration->toArray();
+
+                continue;
+            }
+
             if (is_array($declaration)) {
                 $inherits[] = $declaration;
             }
