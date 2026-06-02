@@ -18,7 +18,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 - Composer vendor: `velmphp/*`
 - PHP namespace: `Velm\`
-- Module manifests: `__velm__.php`
+- Module manifests: `__velm__.php` — use `Velm\Modules\Manifest::make('name')->version(…)->…` (fluent builder; plain arrays still supported)
 - Module install state: `ir.module` (not Composer)
 - CLI: `php velm …` (Artisan-style colon commands)
 - Cron: Laravel Scheduler + `velm:cron:run`
