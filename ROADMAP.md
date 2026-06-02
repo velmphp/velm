@@ -25,7 +25,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Bundled `partners` module (`res.partner`, `res.country`) | Done |
 | Model registration + schema on `module:install` | Done |
 | Laravel DB connection (`LaravelConnection`) | Done |
-| Filament host | Planned |
+| Arch → Filament schema bridge (list + form spike) | Done |
+| Filament panel / Livewire pages | Planned |
 
 ## Phase 2+
 

@@ -25,7 +25,8 @@
         "psr-4": {
             "Velm\\Tests\\": "tests/",
             "Velm\\Modules\\Tests\\": "packages/modules/tests/",
-            "Velm\\Core\\Tests\\": "packages/core/tests/"
+            "Velm\\Core\\Tests\\": "packages/core/tests/",
+            "Velm\\Filament\\Tests\\": "packages/filament/tests/"
         }
     },
     "scripts": {
