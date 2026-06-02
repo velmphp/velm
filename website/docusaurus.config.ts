@@ -1,10 +1,10 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 /** GitHub Pages project site: https://velmphp.github.io/velm/ */
 const siteUrl = process.env.DOCUSAURUS_URL ?? 'http://localhost:3000';
-const baseUrl = process.env.DOCUSAURUS_BASE_URL ?? '/';
+const baseUrl = process.env.DOCUSAURUS_BASE_URL ?? '/velm/';
 
 const config: Config = {
   title: 'Velm',
@@ -85,16 +85,16 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {label: 'Introduction', to: '/docs/intro'},
-            {label: 'Installation', to: '/docs/guides/installation'},
-            {label: 'Extending models', to: '/docs/models/extending-a-model'},
+            { label: 'Introduction', to: '/docs/intro' },
+            { label: 'Installation', to: '/docs/guides/installation' },
+            { label: 'Extending models', to: '/docs/models/extending-a-model' },
           ],
         },
         {
           title: 'Community',
           items: [
-            {label: 'GitHub', href: 'https://github.com/velmphp/velm'},
-            {label: 'PyVelm', href: 'https://github.com/coolsam726/pyvelm'},
+            { label: 'GitHub', href: 'https://github.com/velmphp/velm' },
+            { label: 'PyVelm', href: 'https://github.com/coolsam726/pyvelm' },
           ],
         },
       ],
