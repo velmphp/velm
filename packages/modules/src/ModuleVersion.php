@@ -71,6 +71,27 @@ final class ModuleVersion
     }
 
     /**
+     * @param  list<int>  $version
+     * @return list<int>
+     */
+    public static function nextMinorVersion(array $version): array
+    {
+        $parts = array_values($version);
+
+        while (count($parts) < 2) {
+            $parts[] = 0;
+        }
+
+        $parts[1]++;
+
+        if (count($parts) >= 3) {
+            $parts[2] = 0;
+        }
+
+        return $parts;
+    }
+
+    /**
      * @return array{0: list<int>, 1: list<int>}|null
      */
     public static function parseMigrationFilename(string $stem): ?array

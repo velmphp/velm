@@ -22,6 +22,7 @@ foreach ($autoloadCandidates as $autoload) {
 }
 
 use Symfony\Component\Console\Application;
+use Velm\Console\Commands\DbAutogenCommand;
 use Velm\Console\Commands\DbDiffCommand;
 use Velm\Console\Commands\DbStatusCommand;
 use Velm\Console\Commands\ListCommand;
@@ -39,6 +40,7 @@ $app = new Application('Velm', '0.1.0-dev');
 $app->addCommands([
     new ListCommand,
     new DbDiffCommand,
+    new DbAutogenCommand,
     new DbStatusCommand,
     new ModuleListCommand,
     new ModuleInstallCommand,

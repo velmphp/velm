@@ -48,3 +48,15 @@ test('schema differ reports orphan columns', function (): void {
 
     expect($diff->orphanColumns)->toBe([['res_country', 'legacy']]);
 });
+
+test('schema differ counts null rows for set_not_null columns', function (): void {
+    $connection = PdoConnection::sqliteMemory();
+    $connection->execute(
+        'CREATE TABLE "res_country" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT NOT NULL, "code" TEXT)',
+    );
+    $connection->execute('INSERT INTO "res_country" ("name", "code") VALUES (\'France\', NULL)');
+
+    $differ = new SchemaDiffer($connection);
+
+    expect($differ->countNullRows('res_country', 'code'))->toBe(1);
+});

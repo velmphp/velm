@@ -8,6 +8,7 @@ use Velm\Database\Connection;
 use Velm\Models\Model;
 use Velm\Modules\ModuleSpec;
 use Velm\Registry;
+use Velm\Schema\SchemaApplyResult;
 use Velm\Schema\SchemaDiff;
 use Velm\Schema\SchemaDiffer;
 
@@ -22,7 +23,7 @@ final class ModuleSchema
         return (new SchemaDiffer($this->connection))->compute($registry, $this->ownedModelClasses($spec, $registry));
     }
 
-    public function apply(ModuleSpec $spec, Registry $registry): SchemaDiff
+    public function apply(ModuleSpec $spec, Registry $registry): SchemaApplyResult
     {
         $differ = new SchemaDiffer($this->connection);
 

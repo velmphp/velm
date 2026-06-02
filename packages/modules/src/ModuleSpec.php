@@ -24,6 +24,7 @@ final readonly class ModuleSpec
         public string $category = '',
         public string $author = '',
         public string $icon = '',
+        public ?string $syncHook = null,
     ) {}
 
     /**
@@ -56,6 +57,7 @@ final readonly class ModuleSpec
             category: (string) ($manifest['CATEGORY'] ?? ''),
             author: (string) ($manifest['AUTHOR'] ?? ''),
             icon: (string) ($manifest['ICON'] ?? ''),
+            syncHook: isset($manifest['SYNC_HOOK']) ? (string) $manifest['SYNC_HOOK'] : null,
         );
     }
 

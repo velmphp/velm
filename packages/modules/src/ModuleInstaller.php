@@ -13,6 +13,7 @@ use Velm\Modules\Schema\ModuleSchema;
 use Velm\Modules\ModuleVersion;
 use Velm\Registry;
 use Velm\Schema\SchemaDiff;
+use Velm\Schema\SchemaDiffer;
 use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\ViewSynchronizer;
 
@@ -25,6 +26,7 @@ final class ModuleInstaller
         private readonly ModuleModelLoader $modelLoader = new ModuleModelLoader,
         private readonly ViewSynchronizer $viewSynchronizer = new ViewSynchronizer,
         private readonly MenuSynchronizer $menuSynchronizer = new MenuSynchronizer,
+        private readonly ModuleHookRunner $hookRunner = new ModuleHookRunner,
         private readonly ?Connection $connection = null,
     ) {}
 
@@ -114,6 +116,11 @@ final class ModuleInstaller
         return (new ModuleSchema($this->velmConnection()))->diff($spec, $registry);
     }
 
+    public function countNullRows(string $table, string $column): int
+    {
+        return (new SchemaDiffer($this->velmConnection()))->countNullRows($table, $column);
+    }
+
     /**
      * @return list<array{name: string, installed: string|null, manifest: string, status: string}>
      */
@@ -165,10 +172,11 @@ final class ModuleInstaller
         $spec = $specs[$moduleName];
         $registry = $this->registry($roots, $spec);
         $connection = $this->velmConnection();
+        $env = new Environment($connection, $registry);
 
+        $this->hookRunner->runSyncHook($spec->syncHook, $env);
         (new ModuleSchema($connection))->apply($spec, $registry);
 
-        $env = new Environment($connection, $registry);
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
     }
@@ -246,7 +254,7 @@ final class ModuleInstaller
         $env = new Environment($connection, $registry);
 
         (new ModuleMigrationRunner)->run($env, $spec, [], $spec->version);
-        (new ModuleSchema($connection))->apply($spec, $registry);
+        $this->applySchema($spec, $connection, $registry, $env);
 
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
@@ -269,7 +277,7 @@ final class ModuleInstaller
         $env = new Environment($connection, $registry);
 
         (new ModuleMigrationRunner)->run($env, $spec, $installed, $spec->version);
-        (new ModuleSchema($connection))->apply($spec, $registry);
+        $this->applySchema($spec, $connection, $registry, $env);
 
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
@@ -358,6 +366,16 @@ final class ModuleInstaller
             'perm_create' => false,
             'perm_unlink' => false,
         ]);
+    }
+
+    private function applySchema(
+        ModuleSpec $spec,
+        Connection $connection,
+        Registry $registry,
+        Environment $env,
+    ): void {
+        $this->hookRunner->runSyncHook($spec->syncHook, $env);
+        (new ModuleSchema($connection))->apply($spec, $registry);
     }
 
     private function velmConnection(): Connection
