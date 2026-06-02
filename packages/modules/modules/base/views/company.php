@@ -28,9 +28,12 @@ return ViewsData::make()
             ]),
     )
     ->menus(
-        $m->group('administration', 'Administration')->icon('building-office')->sequence(20),
-        $m->item('companies', 'Companies')
-            ->parentRef($m->parentRef('administration'))
-            ->view('company.list')
-            ->sequence(10),
+        $m->group('administration', 'Administration')
+            ->icon('building-office')
+            ->sequence(20)
+            ->children(
+                $m->item('companies', 'Companies')
+                    ->view('company.list')
+                    ->sequence(10),
+            ),
     );
