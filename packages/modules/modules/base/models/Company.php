@@ -17,8 +17,8 @@ final class Company extends Model
     public static function defineFields(): array
     {
         return [
-            'name' => CharField::make(required: true),
-            'active' => BooleanField::make(default: true),
+            'name' => CharField::make()->required()->label('Name'),
+            'active' => BooleanField::make()->default(true)->label('Active'),
         ];
     }
 }

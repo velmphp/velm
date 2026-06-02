@@ -18,9 +18,9 @@ final class Partner extends Model
     public static function defineFields(): array
     {
         return [
-            'name' => CharField::make(required: true),
-            'active' => BooleanField::make(default: true),
-            'country_id' => Many2oneField::make('res.country'),
+            'name' => CharField::make()->required(),
+            'active' => BooleanField::make()->default(true),
+            'country_id' => Many2oneField::make()->comodel('res.country'),
         ];
     }
 }

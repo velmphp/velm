@@ -33,8 +33,8 @@ abstract class Model
             $fields[$fieldName] = $field->bind($fieldName);
         }
 
-        $fields['id'] = IntegerField::make('ID', readonly: true)->bind('id');
-        $fields['display_name'] = CharField::make('Display Name', readonly: true)->bind('display_name');
+        $fields['id'] = IntegerField::make()->label('ID')->readonly()->bind('id');
+        $fields['display_name'] = CharField::make()->label('Display Name')->readonly()->bind('display_name');
 
         self::$fieldsByClass[$class] = $fields;
     }

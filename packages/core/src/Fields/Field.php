@@ -10,13 +10,13 @@ abstract class Field
 
     public string $column = '';
 
-    public readonly ?string $string;
+    public ?string $string = null;
 
-    public readonly mixed $default;
+    public mixed $default = null;
 
-    public readonly bool $required;
+    public bool $required = false;
 
-    public readonly bool $readonly;
+    public bool $readonly = false;
 
     public function __construct(
         ?string $string = null,
@@ -29,6 +29,47 @@ abstract class Field
         $this->default = $default;
         $this->required = $required;
         $this->readonly = $readonly;
+
+        if ($column !== null && $column !== '') {
+            $this->column = $column;
+        }
+    }
+
+    public function label(?string $string): static
+    {
+        $this->string = $string;
+
+        return $this;
+    }
+
+    public function default(mixed $default): static
+    {
+        $this->default = $default;
+
+        return $this;
+    }
+
+    public function required(bool $required = true): static
+    {
+        $this->required = $required;
+
+        return $this;
+    }
+
+    public function readonly(bool $readonly = true): static
+    {
+        $this->readonly = $readonly;
+
+        return $this;
+    }
+
+    public function column(?string $column): static
+    {
+        if ($column !== null && $column !== '') {
+            $this->column = $column;
+        }
+
+        return $this;
     }
 
     public function bind(string $name): static

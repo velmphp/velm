@@ -19,6 +19,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Composer vendor: `velmphp/*`
 - PHP namespace: `Velm\`
 - Module manifests: `__velm__.php` — use `Velm\Modules\Manifest::make('name')->version(…)->…` (fluent builder; plain arrays still supported)
+- Model fields: prefer fluent setters on `Velm\Fields\*` (e.g. `CharField::make()->required()->maxLength(2)`); constructor/`make()` args still work
 - Bundled module **code** lives under `packages/modules/modules/{name}/` (`models/`, `data/`, …); package **runtime** lives in `packages/modules/src/` (see `packages/modules/modules/README.md`)
 - Module install state: `ir.module` (not Composer)
 - CLI: `php velm …` (Artisan-style colon commands)
