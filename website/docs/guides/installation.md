@@ -47,6 +47,7 @@ php artisan velm:module:install partners       # alias path: velm:migrate --modu
 php artisan velm:module:sync partners
 php artisan velm:db:diff --module=partners
 php artisan velm:db:status
+php artisan velm:make:module my_module       # scaffold under addons/
 ```
 
 Installing a module:

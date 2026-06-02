@@ -63,5 +63,6 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Record rules (`ir.rule`, domain injection) | Done — [RFC 0002](./docs/rfcs/0002-record-rules.md) |
 | Schema migrations (`db:diff`, `db:status`, versioned scripts, upgrade on migrate) | Done (slices 1–2) |
 | `INSTALL_HOOK` / `SYNC_HOOK`, Velm `Schema` API, `ir.cron` + `velm:cron:run` | Done (`php artisan velm:cron:run`) |
+| `velm:make:module` scaffold | Done |
 
-See [PLAN.md](./PLAN.md) for remaining ORM parity.
+See [PLAN.md](./PLAN.md) for remaining ORM parity (`make:model`, domain OR-groups, computed fields, …).
