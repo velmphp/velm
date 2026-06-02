@@ -8,6 +8,7 @@ use Filament\Support\ArrayRecord;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Velm\Environment;
+use Velm\Views\Arch\ArchNormalizer;
 
 final class ArchTableConfigurator
 {

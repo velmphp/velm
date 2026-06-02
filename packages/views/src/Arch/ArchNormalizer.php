@@ -2,10 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Velm\Filament\Arch;
+namespace Velm\Views\Arch;
 
 final class ArchNormalizer
 {
+    /**
+     * @param  array<string, mixed>  $arch
+     * @return array<string, mixed>
+     */
+    public static function normalize(array $arch, string $viewType): array
+    {
+        return match ($viewType) {
+            'list' => self::normalizeList($arch),
+            'form' => self::normalizeForm($arch),
+            default => $arch,
+        };
+    }
+
     /**
      * @param  array<string, mixed>  $arch
      * @return array<string, mixed>

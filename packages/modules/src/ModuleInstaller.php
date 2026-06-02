@@ -10,6 +10,7 @@ use Velm\Environment;
 use Velm\Modules\Database\LaravelConnection;
 use Velm\Registry;
 use Velm\Schema\SchemaBuilder;
+use Velm\Views\Sync\ViewSynchronizer;
 
 final class ModuleInstaller
 {
@@ -18,6 +19,7 @@ final class ModuleInstaller
         private readonly DependencyResolver $resolver = new DependencyResolver,
         private readonly ModuleRepository $repository = new ModuleRepository,
         private readonly ModuleModelLoader $modelLoader = new ModuleModelLoader,
+        private readonly ViewSynchronizer $viewSynchronizer = new ViewSynchronizer,
         private readonly ?Connection $connection = null,
     ) {}
 
@@ -95,8 +97,7 @@ final class ModuleInstaller
             throw new \RuntimeException("Module {$moduleName} is not installed. Run module:install first.");
         }
 
-        // Phase 0: record sync as a no-op beyond confirming install state.
-        // DATA / VIEW sync lands in later phases.
+        $this->viewSynchronizer->sync($specs[$moduleName], $this->environment($roots));
     }
 
     /**
@@ -126,10 +127,22 @@ final class ModuleInstaller
      */
     public function environment(array $roots): Environment
     {
+        return new Environment($this->velmConnection(), $this->registry($roots));
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    private function registry(array $roots, ?ModuleSpec $including = null): Registry
+    {
         $registry = new Registry;
         $this->modelLoader->loadInstalled($roots, $registry, $this->discovery, $this->resolver, $this->repository);
 
-        return new Environment($this->velmConnection(), $registry);
+        if ($including !== null) {
+            $this->modelLoader->load($including, $registry);
+        }
+
+        return $registry;
     }
 
     /**
@@ -137,15 +150,16 @@ final class ModuleInstaller
      */
     private function installModule(ModuleSpec $spec, array $roots): void
     {
-        $registry = new Registry;
+        $registry = $this->registry($roots, $spec);
         $connection = $this->velmConnection();
         $schema = new SchemaBuilder($connection);
 
-        $this->modelLoader->load($spec, $registry);
-
         foreach ($spec->models as $modelClass) {
-            $schema->createTable($modelClass);
+            $schema->ensureTable($modelClass);
         }
+
+        $env = new Environment($connection, $registry);
+        $this->viewSynchronizer->sync($spec, $env);
 
         $this->repository->markInstalled($spec);
 

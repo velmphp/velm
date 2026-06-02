@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Velm\Filament\Tests\Support;
 
-use Velm\Filament\Support\PartnerViews;
+use Velm\Environment;
+use Velm\Views\ViewRegistry;
 
-/** @deprecated Use {@see PartnerViews} directly. */
 final class PartnerArch
 {
     /**
      * @return array<string, mixed>
      */
-    public static function list(): array
+    public static function list(Environment $env): array
     {
-        return PartnerViews::list();
+        return (new ViewRegistry)->arch($env, 'partners', 'partner.list');
     }
 
     /**
      * @return array<string, mixed>
      */
-    public static function form(): array
+    public static function form(Environment $env): array
     {
-        return PartnerViews::form();
+        return (new ViewRegistry)->arch($env, 'partners', 'partner.form');
     }
 }

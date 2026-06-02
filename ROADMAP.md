@@ -11,26 +11,39 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `ir.module` table + repository | Done |
 | `php velm module:list` / `module:install` / `module:sync` / `migrate` | Done (DB commands need Laravel bootstrap) |
 | Bundled `base` + `admin` manifests | Done |
-| Apps catalog UI | Planned |
-| DATA / VIEW sync on install | Phase 3 |
+| Apps catalog UI (Filament `/velm/apps`) | Done |
+| DATA / VIEW sync on install | Done (base views; inheritance next) |
 
-## Phase 1 — ORM foundation (in progress)
+## Phase 1 — ORM foundation
 
 | Item | Status |
 |------|--------|
 | `Environment`, `Registry`, `RecordCache` | Done |
-| Field types: Char, Integer, Boolean, Many2one | Done |
+| Field types: Char, Integer, Boolean, Text, Many2one | Done |
+| Fluent field + manifest builders | Done |
 | `Model` + `Recordset` (`create` / `read` / `write` / `search`) | Done |
 | PDO SQLite adapter + schema builder (tests) | Done |
+| Additive schema column diff on install | Done |
 | Bundled `partners` module (`res.partner`, `res.country`) | Done |
 | Model registration + schema on `module:install` | Done |
 | Laravel DB connection (`LaravelConnection`) | Done |
-| Arch → Filament schema bridge (list + form spike) | Done |
+| Arch → Filament schema bridge (list + form) | Done |
 | `VelmManager` + `Environment` container binding | Done |
-| Filament panel + `ArchListPage` / partner list | Done |
+| Filament panel + arch list/create/edit pages | Done |
 | `res.company` on base module + default company on install | Done |
-| Partner/company form pages + save via recordset | Done |
+
+## Phase 3 — Views and menus (in progress)
+
+| Item | Status |
+|------|--------|
+| `ir.ui.view` model + DATA file loader | Done |
+| View sync on `module:install` / `module:sync` | Done |
+| Fluent `ListView` / `FormView` / `Field` authoring | Done |
+| `ViewRegistry` + Filament pages load stored arch | Done |
+| `VIEW_INHERITS` + `resolve_arch()` | Planned |
+| `ir.ui.menu` + navigation from menus | Planned |
+| `GET /api/views` | Planned |
 
 ## Phase 2+
 
-See [PLAN.md](./PLAN.md) phased delivery.
+See [PLAN.md](./PLAN.md) phased delivery (ORM parity: `_inherit`, ACL, full schema migrations).

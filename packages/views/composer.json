@@ -8,6 +8,14 @@
         "velmphp/core": "@dev"
     },
     "autoload": { "psr-4": { "Velm\\Views\\": "src/" } },
-    "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
+    "autoload-dev": {
+        "psr-4": { "Velm\\Views\\Tests\\": "tests/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Velm\\Views\\ViewsServiceProvider"]
+        },
+        "branch-alias": { "dev-main": "1.x-dev" }
+    },
     "minimum-stability": "dev"
 }

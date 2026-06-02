@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Velm\Filament\Pages\AppsPage;
 use Velm\Filament\Pages\CompanyListPage;
 use Velm\Filament\Pages\CreateCompanyPage;
 use Velm\Filament\Pages\CreatePartnerPage;
@@ -39,6 +40,7 @@ final class VelmPanelProvider extends PanelProvider
             ])
             ->pages([
                 Dashboard::class,
+                AppsPage::class,
                 CompanyListPage::class,
                 CreateCompanyPage::class,
                 EditCompanyPage::class,

@@ -56,6 +56,11 @@ final class Registry
         $this->models[$name] = $modelClass;
     }
 
+    public function has(string $name): bool
+    {
+        return isset($this->models[$name]);
+    }
+
     /**
      * @return class-string<Model>
      */

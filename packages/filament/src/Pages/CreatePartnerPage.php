@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Velm\Filament\Pages;
 
-use Velm\Filament\Support\PartnerViews;
+use Velm\Filament\Support\ResolvesStoredView;
 
 final class CreatePartnerPage extends ArchCreatePage
 {
+    use ResolvesStoredView;
+
     protected static ?string $slug = 'partners/create';
 
-    /**
-     * @return array<string, mixed>
-     */
-    protected static function arch(): array
+    protected static function velmViewModule(): string
     {
-        return PartnerViews::form();
+        return 'partners';
+    }
+
+    protected static function velmViewName(): string
+    {
+        return 'partner.form';
     }
 
     protected static function listPage(): string

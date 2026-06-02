@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
-use Velm\Filament\Arch\ArchNormalizer;
+use Velm\Views\Arch\ArchNormalizer;
 use Velm\Filament\Arch\ArchSchemaBuilder;
 use Velm\Filament\Tests\Support\PartnerArch;
 use Velm\Modules\ModuleInstaller;
@@ -38,7 +38,7 @@ test('normalizes string field shorthand to field refs', function (): void {
 });
 
 test('builds table columns from partner list arch', function (): void {
-    $columns = (new ArchSchemaBuilder)->buildTableColumns(PartnerArch::list(), $this->env);
+    $columns = (new ArchSchemaBuilder)->buildTableColumns(PartnerArch::list($this->env), $this->env);
 
     expect($columns)->toHaveCount(5)
         ->and($columns[0])->toBeInstanceOf(TextColumn::class)
@@ -46,7 +46,7 @@ test('builds table columns from partner list arch', function (): void {
 });
 
 test('builds form schema from partner form arch', function (): void {
-    $schema = (new ArchSchemaBuilder)->buildFormSchema(PartnerArch::form(), $this->env);
+    $schema = (new ArchSchemaBuilder)->buildFormSchema(PartnerArch::form($this->env), $this->env);
 
     expect($schema)->toHaveCount(3)
         ->and($schema[0])->toBeInstanceOf(Section::class)

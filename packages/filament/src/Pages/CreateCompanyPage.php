@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Velm\Filament\Pages;
 
-use Velm\Filament\Support\CompanyViews;
+use Velm\Filament\Support\ResolvesStoredView;
 
 final class CreateCompanyPage extends ArchCreatePage
 {
+    use ResolvesStoredView;
+
     protected static ?string $slug = 'companies/create';
 
-    /**
-     * @return array<string, mixed>
-     */
-    protected static function arch(): array
+    protected static function velmViewModule(): string
     {
-        return CompanyViews::form();
+        return 'base';
+    }
+
+    protected static function velmViewName(): string
+    {
+        return 'company.form';
     }
 
     protected static function listPage(): string
