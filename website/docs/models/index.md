@@ -76,6 +76,7 @@ Extension models call `registerExtension()` instead of `register()`. The registr
 
 - `env->model('res.partner')->create([...])` — create records.
 - `env->model('res.partner')->search([...])` — domain search.
+- [Security (ACL + record rules)](./security.md) — `ir.model.access`, `ir.rule`, superuser bypass.
 - `GET /api/records?model=res.partner` — HTTP JSON API (`velm-web`).
 
 View inheritance (`VIEW_INHERITS`) will be documented separately when the view guides land on this site.

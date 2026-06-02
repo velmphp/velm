@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Implemented on `feature/acl-record-rules` (awaiting merge) |
+| **Status** | Implemented ([#57](https://github.com/velmphp/velm/pull/57)) |
 | **Authors** | Velm contributors |
 | **Created** | 2026-06-02 |
 
@@ -183,7 +183,7 @@ Velm trades Python’s native MRO for **explicit registry order** so independent
 
 ## Testing
 
-**128 tests** pass (`composer test`), including:
+**136+ tests** pass (`composer test`), including:
 
 - `packages/core/tests/RecordsetMethodTest.php` — dispatch, super skip, args, legacy super, errors, static hook `read()` resolution.
 - `packages/modules/tests/Feature/RecordsetMethodInheritTest.php` — real module install, `Partner::badge`, stacked extensions.

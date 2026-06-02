@@ -6,6 +6,7 @@ namespace Velm\Schema;
 
 use Velm\Database\Connection;
 use Velm\Fields\Field;
+use Velm\Fields\Many2manyField;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -19,6 +20,36 @@ final class SchemaBuilder
     {
         foreach ($registry->models() as $modelClass) {
             $this->ensureTable($modelClass);
+        }
+
+        $this->ensureRelationTables($registry);
+    }
+
+    public function ensureRelationTables(Registry $registry): void
+    {
+        /** @var array<string, true> $created */
+        $created = [];
+
+        foreach ($registry->models() as $modelClass) {
+            foreach ($modelClass::fields() as $field) {
+                if (! $field instanceof Many2manyField) {
+                    continue;
+                }
+
+                [$relation] = $field->resolveSpec($modelClass, $registry);
+
+                if (isset($created[$relation])) {
+                    continue;
+                }
+
+                [$relation, $col1, $col2] = $field->resolveSpec($modelClass, $registry);
+                $this->connection->execute(
+                    'CREATE TABLE IF NOT EXISTS "'.$relation.'" ('
+                    .'"'.$col1.'" INTEGER NOT NULL, "'.$col2.'" INTEGER NOT NULL, '
+                    .'PRIMARY KEY ("'.$col1.'", "'.$col2.'"))',
+                );
+                $created[$relation] = true;
+            }
         }
     }
 
@@ -39,7 +70,7 @@ final class SchemaBuilder
         $columns = ['"id" INTEGER PRIMARY KEY AUTOINCREMENT'];
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name') {
+            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField) {
                 continue;
             }
 
@@ -68,7 +99,7 @@ final class SchemaBuilder
         }
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name') {
+            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField) {
                 continue;
             }
 

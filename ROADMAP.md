@@ -59,7 +59,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |------|--------|
 | Model `$inherit` (field extensions, `static::super()`, stacked extensions) | Done |
 | Model record methods (`$recordset->method()`, MRO dispatch) | Done — [RFC 0001](./docs/rfcs/0001-model-record-methods.md) |
-| ACL / record rules | Planned |
+| ACL (`ir.model.access`, superuser bypass, Recordset gates) | Done |
+| Record rules (`ir.rule`, domain injection) | Done — [RFC 0002](./docs/rfcs/0002-record-rules.md) |
 | Full schema migrations (`db:diff`, versioned scripts) | Planned |
 
 See [PLAN.md](./PLAN.md) for remaining ORM parity.
