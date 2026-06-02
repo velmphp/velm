@@ -69,6 +69,23 @@ final class DbDiffCommand extends Command
 
         foreach ($diff->alterations as $alteration) {
             $output->writeln($alteration->cliLine());
+
+            if ($alteration->kind !== 'set_not_null') {
+                continue;
+            }
+
+            $nulls = $installer->countNullRows($alteration->table, $alteration->column);
+
+            if ($nulls > 0) {
+                $output->writeln(
+                    "      → migrate will not apply SET NOT NULL yet: {$nulls} NULL row(s) in {$alteration->table}.{$alteration->column}",
+                );
+                $output->writeln('      → backfill in SYNC_HOOK or a migration script, then migrate again');
+            } else {
+                $output->writeln(
+                    "      → no NULL rows; migrate should apply SET NOT NULL on {$alteration->table}.{$alteration->column}",
+                );
+            }
         }
 
         return Command::SUCCESS;
