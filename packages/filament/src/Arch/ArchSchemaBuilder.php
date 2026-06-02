@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Velm\Filament\Arch;
 
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
@@ -72,14 +71,14 @@ final class ArchSchemaBuilder
         $velmField = $this->velmField($env, $model, $name);
 
         if ($widget === 'toggle' || $velmField instanceof BooleanField) {
-            return ToggleColumn::make($name);
+            return ToggleColumn::make($name)->toggleable();
         }
 
         if ($velmField instanceof Many2oneField) {
             $comodel = $velmField->comodel;
 
             return TextColumn::make($name)
-                ->searchable()
+                ->toggleable()
                 ->sortable()
                 ->formatStateUsing(static function (mixed $state) use ($env, $comodel): string {
                     if ($state === null || $state === '') {
@@ -92,7 +91,7 @@ final class ArchSchemaBuilder
                 });
         }
 
-        return TextColumn::make($name)->searchable()->sortable();
+        return TextColumn::make($name)->toggleable()->sortable();
     }
 
     /**
@@ -109,20 +108,7 @@ final class ArchSchemaBuilder
         }
 
         if ($velmField instanceof Many2oneField) {
-            $comodel = $velmField->comodel;
-
-            return Select::make($name)
-                ->label($velmField->string ?? $name)
-                ->options(static function () use ($env, $comodel): array {
-                    $options = [];
-                    foreach ($env->model($comodel)->search()->read() as $row) {
-                        $options[(int) $row['id']] = (string) $row['display_name'];
-                    }
-
-                    return $options;
-                })
-                ->searchable()
-                ->nullable();
+            return app(Many2oneSelectBuilder::class)->make($name, $velmField, $env);
         }
 
         $input = TextInput::make($name);

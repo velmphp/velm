@@ -19,7 +19,7 @@ return ViewsData::make()
             ->columns([
                 'name',
                 Field::make('is_company')->toggle(),
-                'company_id',
+                Field::make('company_id'),
                 'country_id',
                 Field::make('active')->toggle(),
             ]),

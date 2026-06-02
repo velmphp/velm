@@ -27,7 +27,7 @@
             class="fixed inset-y-0 start-0 z-30 flex w-64 min-h-screen flex-shrink-0 flex-col bg-neutral-secondary transition-transform duration-200 ease-in-out md:relative md:translate-x-0"
             :class="{ '-translate-x-full': ! sidebarOpen, 'translate-x-0': sidebarOpen }"
         >
-            <div class="relative flex h-[68px] shrink-0 items-center overflow-hidden border-b border-default/60 px-4 pe-10 md:pe-4">
+            <div class="velm-shell-sidebar-header relative flex shrink-0 items-center overflow-hidden border-b border-default/60 px-4 pe-10 md:pe-4">
                 <x-filament-panels::logo class="h-8" />
                 <button
                     type="button"
@@ -55,7 +55,7 @@
 
         <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
             <header
-                class="sticky top-0 z-30 flex min-h-[60px] shrink-0 items-center gap-3 overflow-visible border-b border-default bg-neutral-secondary px-4 md:px-6"
+                class="velm-shell-header sticky top-0 z-30 flex shrink-0 items-center gap-3 overflow-visible border-b border-default bg-neutral-secondary px-4 md:px-6"
             >
                 <button
                     type="button"
