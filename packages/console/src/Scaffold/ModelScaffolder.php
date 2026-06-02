@@ -36,7 +36,7 @@ final class ModelScaffolder
         $table = str_replace('.', '_', $technical);
 
         file_put_contents($target, $this->modelContents($namespace, $className, $technical, $table));
-        $this->patchManifest($modulePath.'/__velm__.php', $fqn, $className);
+        ManifestPatcher::appendModel($modulePath.'/__velm__.php', $fqn, $className);
 
         return [
             'path' => $target,
@@ -119,51 +119,4 @@ class {$className} extends Model
 PHP;
     }
 
-    private function patchManifest(string $manifestPath, string $fqn, string $shortClass): void
-    {
-        if (! is_file($manifestPath)) {
-            throw new \RuntimeException("Manifest not found: {$manifestPath}");
-        }
-
-        $text = file_get_contents($manifestPath);
-
-        if ($text === false) {
-            throw new \RuntimeException("Could not read manifest: {$manifestPath}");
-        }
-
-        if (! str_contains($text, "use {$fqn};")) {
-            $text = preg_replace(
-                '/(declare\(strict_types=1\);\s*\n\s*\n)/',
-                "$1use {$fqn};\n",
-                $text,
-                1,
-            ) ?? $text;
-        }
-
-        if (! str_contains($text, "{$shortClass}::class")) {
-            if (preg_match('/->models\s*\(\s*\n/', $text) === 1) {
-                $text = preg_replace(
-                    '/(->models\s*\(\s*\n(?:.*\n)*?)(\s*\))/s',
-                    "$1        {$shortClass}::class,\n$2",
-                    $text,
-                    1,
-                ) ?? $text;
-            } elseif (preg_match('/->models\(([^)]*)\)/', $text, $matches) === 1) {
-                $inner = trim($matches[1]);
-                $replacement = $inner === ''
-                    ? "->models({$shortClass}::class)"
-                    : "->models({$inner}, {$shortClass}::class)";
-                $text = preg_replace('/->models\([^)]*\)/', $replacement, $text, 1) ?? $text;
-            } else {
-                $text = preg_replace(
-                    '/(->depends\([^)]+\))/',
-                    "$1\n    ->models({$shortClass}::class)",
-                    $text,
-                    1,
-                ) ?? $text;
-            }
-        }
-
-        file_put_contents($manifestPath, $text);
-    }
 }

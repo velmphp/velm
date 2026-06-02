@@ -64,8 +64,8 @@ final class MakeModelCommand extends Command
             );
         }
 
+        $this->line("  php artisan velm:make:view {$result['technical']} --module={$moduleName}");
         $this->line("  php artisan velm:db:autogen {$moduleName}");
-        $this->line('  php artisan velm:make:view (when available)');
 
         return self::SUCCESS;
     }
