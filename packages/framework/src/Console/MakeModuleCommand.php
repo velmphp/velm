@@ -6,7 +6,7 @@ namespace Velm\Framework\Console;
 
 use Illuminate\Console\Command;
 use Velm\Console\Scaffold\ModuleScaffolder;
-use Velm\Console\Support\ModuleRoots;
+use Velm\Console\Scaffold\ModulePathResolver;
 
 final class MakeModuleCommand extends Command
 {
@@ -55,24 +55,8 @@ final class MakeModuleCommand extends Command
     {
         $explicit = $this->option('path');
 
-        if (is_string($explicit) && $explicit !== '') {
-            return $explicit;
-        }
-
-        if (function_exists('base_path')) {
-            $appAddons = base_path('addons');
-
-            if (is_string($appAddons) && $appAddons !== '') {
-                return $appAddons;
-            }
-        }
-
-        foreach (ModuleRoots::resolve() as $path) {
-            if (! str_contains($path, DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR)) {
-                return $path;
-            }
-        }
-
-        return 'addons';
+        return ModulePathResolver::resolveAddonRoot(
+            is_string($explicit) && $explicit !== '' ? $explicit : null,
+        );
     }
 }
