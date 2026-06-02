@@ -1,0 +1,15 @@
+{
+    "name": "velmphp/console",
+    "description": "Velm CLI — bin/velm, make:* generators, module commands",
+    "license": "LGPL-3.0-or-later",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "symfony/console": "^7.0",
+        "velmphp/modules": "@dev"
+    },
+    "autoload": { "psr-4": { "Velm\\Console\\": "src/" } },
+    "bin": ["bin/velm"],
+    "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
+    "minimum-stability": "dev"
+}

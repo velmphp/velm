@@ -1,0 +1,36 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Velm CLI entry point.
+ *
+ * Full command surface: see PLAN.md — CLI section.
+ * Usage: php velm list
+ */
+
+$autoloadCandidates = [
+    __DIR__ . '/../../../vendor/autoload.php', // monorepo root
+    __DIR__ . '/../vendor/autoload.php',       // package-local
+];
+
+foreach ($autoloadCandidates as $autoload) {
+    if (is_file($autoload)) {
+        require $autoload;
+        break;
+    }
+}
+
+use Symfony\Component\Console\Application;
+use Velm\Console\Commands\ListCommand;
+
+if (! class_exists(Application::class)) {
+    fwrite(STDERR, "Run composer install from the Velm monorepo root first.\n");
+    exit(1);
+}
+
+$app = new Application('Velm', '0.1.0-dev');
+$app->add(new ListCommand());
+$app->setDefaultCommand('list');
+$app->run();

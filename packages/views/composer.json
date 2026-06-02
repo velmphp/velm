@@ -1,0 +1,13 @@
+{
+    "name": "velmphp/views",
+    "description": "Velm declarative views — ir.ui.view, arch resolve, fluent Authoring builders",
+    "license": "LGPL-3.0-or-later",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "velmphp/core": "@dev"
+    },
+    "autoload": { "psr-4": { "Velm\\Views\\": "src/" } },
+    "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
+    "minimum-stability": "dev"
+}

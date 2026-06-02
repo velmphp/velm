@@ -1,0 +1,28 @@
+{
+    "name": "velmphp/framework",
+    "description": "Velm framework metapackage — Laravel integration and service provider",
+    "license": "LGPL-3.0-or-later",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^12.0",
+        "filament/filament": "^4.0",
+        "livewire/livewire": "^3.0",
+        "velmphp/core": "@dev",
+        "velmphp/views": "@dev",
+        "velmphp/modules": "@dev",
+        "velmphp/console": "@dev",
+        "velmphp/web": "@dev",
+        "velmphp/ui": "@dev",
+        "velmphp/filament": "@dev"
+    },
+    "autoload": { "psr-4": { "Velm\\Framework\\": "src/" } },
+    "extra": {
+        "laravel": {
+            "providers": ["Velm\\Framework\\VelmServiceProvider"],
+            "aliases": { "Velm": "Velm\\Framework\\Facades\\Velm" }
+        },
+        "branch-alias": { "dev-main": "1.x-dev" }
+    },
+    "minimum-stability": "dev"
+}

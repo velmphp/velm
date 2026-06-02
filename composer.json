@@ -1,0 +1,29 @@
+{
+    "name": "velmphp/velm-dev",
+    "description": "Velm monorepo development workspace",
+    "license": "LGPL-3.0-or-later",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "velmphp/framework": "@dev"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "repositories": [
+        { "type": "path", "url": "packages/*", "options": { "symlink": true } }
+    ],
+    "autoload-dev": {
+        "psr-4": {
+            "Velm\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "analyse": "phpstan analyse --memory-limit=512M"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

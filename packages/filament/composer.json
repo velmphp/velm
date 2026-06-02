@@ -1,0 +1,17 @@
+{
+    "name": "velmphp/filament",
+    "description": "Velm Filament bridge — arch-driven Infolist, Table, Form pages",
+    "license": "LGPL-3.0-or-later",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^4.0",
+        "velmphp/core": "@dev",
+        "velmphp/views": "@dev",
+        "velmphp/web": "@dev",
+        "velmphp/ui": "@dev"
+    },
+    "autoload": { "psr-4": { "Velm\\Filament\\": "src/" } },
+    "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
+    "minimum-stability": "dev"
+}
