@@ -189,7 +189,7 @@ final class Recordset
     /**
      * @param  list<mixed>|list<list<mixed>>  $domain
      */
-    public function search(array $domain = [], int $limit = 0, int $offset = 0): self
+    public function search(array $domain = [], int $limit = 0, int $offset = 0, ?string $order = null): self
     {
         $modelClass = $this->modelClass;
         $sql = 'SELECT "id" FROM "'.$modelClass::table().'"';
@@ -200,7 +200,7 @@ final class Recordset
             $sql .= ' WHERE '.$clauses;
         }
 
-        $sql .= ' ORDER BY "id"';
+        $sql .= ' ORDER BY '.($order ?? '"id"');
 
         if ($limit > 0) {
             $sql .= ' LIMIT '.$limit;
