@@ -12,6 +12,8 @@ PHP ERP framework on Laravel + Livewire + Filament. Port of [PyVelm](https://git
 
 The full feasibility and implementation plan lives in **[PLAN.md](./PLAN.md)** — read this first for module system, ORM, views, migrations, CLI, packages, and phased delivery.
 
+Current progress: **[ROADMAP.md](./ROADMAP.md)**.
+
 ## Monorepo packages
 
 | Package | Path |

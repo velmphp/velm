@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Velm\Framework;
 
 use Illuminate\Support\ServiceProvider;
+use Velm\Modules\ModulesServiceProvider;
 
 final class VelmServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->register(ModulesServiceProvider::class);
         $this->mergeConfigFrom(__DIR__ . '/../config/velm.php', 'velm');
     }
 

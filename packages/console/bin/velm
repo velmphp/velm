@@ -6,13 +6,12 @@ declare(strict_types=1);
 /**
  * Velm CLI entry point.
  *
- * Full command surface: see PLAN.md — CLI section.
- * Usage: php velm list
+ * Usage: php velm module:list
  */
 
 $autoloadCandidates = [
-    __DIR__ . '/../../../vendor/autoload.php', // monorepo root
-    __DIR__ . '/../vendor/autoload.php',       // package-local
+    __DIR__ . '/../../../vendor/autoload.php',
+    __DIR__ . '/../vendor/autoload.php',
 ];
 
 foreach ($autoloadCandidates as $autoload) {
@@ -24,6 +23,10 @@ foreach ($autoloadCandidates as $autoload) {
 
 use Symfony\Component\Console\Application;
 use Velm\Console\Commands\ListCommand;
+use Velm\Console\Commands\MigrateCommand;
+use Velm\Console\Commands\ModuleInstallCommand;
+use Velm\Console\Commands\ModuleListCommand;
+use Velm\Console\Commands\ModuleSyncCommand;
 
 if (! class_exists(Application::class)) {
     fwrite(STDERR, "Run composer install from the Velm monorepo root first.\n");
@@ -31,6 +34,11 @@ if (! class_exists(Application::class)) {
 }
 
 $app = new Application('Velm', '0.1.0-dev');
-$app->add(new ListCommand());
-$app->setDefaultCommand('list');
+$app->addCommands([
+    new ListCommand,
+    new ModuleListCommand,
+    new ModuleInstallCommand,
+    new ModuleSyncCommand,
+    new MigrateCommand,
+]);
 $app->run();

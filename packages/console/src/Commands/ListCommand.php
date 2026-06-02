@@ -16,8 +16,11 @@ final class ListCommand extends Command
     {
         $output->writeln('<info>Velm CLI scaffold</info> — see PLAN.md for the full command catalog.');
         $output->writeln('');
-        $output->writeln('Core (planned):');
-        $output->writeln('  migrate, db:diff, db:status, db:autogen, make:module, make:model, make:view, module:sync');
+        $output->writeln('Module runtime (Phase 0):');
+        $output->writeln('  module:list, module:install, module:sync, migrate');
+        $output->writeln('');
+        $output->writeln('Planned:');
+        $output->writeln('  db:diff, db:status, db:autogen, make:module, make:model, make:view');
         return Command::SUCCESS;
     }
 }
