@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Velm\Modules\Tests\Support;
 
 use Velm\Fields\CharField;
+use Velm\Models\Model;
 
-class PartnerChainedExtension extends PartnerExtension
+final class PartnerChainedExtension extends Model
 {
     protected static ?string $inherit = 'res.partner';
 
@@ -19,7 +20,7 @@ class PartnerChainedExtension extends PartnerExtension
 
     public static function displayNameFor(array $values): string
     {
-        $base = parent::displayNameFor($values);
+        $base = static::super($values);
         $tag = (string) ($values['chain_tag'] ?? '');
 
         return $tag === '' ? $base : $base.' #'.$tag;

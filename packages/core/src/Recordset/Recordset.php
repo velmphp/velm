@@ -8,6 +8,7 @@ use Velm\Domain\Domain;
 use Velm\Environment;
 use Velm\Fields\Field;
 use Velm\Models\Model;
+use Velm\Registry;
 
 final class Recordset
 {
@@ -135,7 +136,10 @@ final class Recordset
                 $field = $fields[$name];
                 $record[$name] = $field->toPhp($row[$field->column] ?? null);
             }
-            $record['display_name'] = $modelClass::displayNameFor($record);
+            $record['display_name'] = Registry::with(
+                $this->env->registry,
+                static fn (): string => $modelClass::displayNameFor($record),
+            );
             $result[] = $record;
 
             foreach ($record as $fname => $fvalue) {

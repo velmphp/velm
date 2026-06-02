@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Velm\Core\Tests\Support;
 
 use Velm\Fields\CharField;
+use Velm\Models\Model;
 
-class CountryExtension extends Country
+final class CountryExtension extends Model
 {
     protected static ?string $inherit = 'res.country';
 
@@ -19,7 +20,7 @@ class CountryExtension extends Country
 
     public static function displayNameFor(array $values): string
     {
-        $base = parent::displayNameFor($values);
+        $base = static::super($values);
         $region = $values['region_code'] ?? '';
 
         if ($region !== '') {
