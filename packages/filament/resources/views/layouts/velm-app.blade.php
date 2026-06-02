@@ -7,69 +7,100 @@
     $layoutMode = $menu['menu_layout'] ?? 'apps';
     $renderHookScopes = $livewire?->getRenderHookScopes();
     $maxContentWidth ??= filament()->getMaxContentWidth();
+    $activeRoot = $menu['menu_active_root'] ?? null;
 @endphp
 
 <x-filament-panels::layout.base :livewire="$livewire">
     <div
-        class="velm-shell flex min-h-[100dvh] w-full bg-gray-50 dark:bg-gray-950"
+        class="velm-shell flex min-h-screen w-full bg-neutral-secondary font-sans text-body antialiased md:flex-row"
         x-data="{ sidebarOpen: false }"
     >
         <div
             x-cloak
             x-show="sidebarOpen"
             x-transition.opacity
-            class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
+            class="velm-shell-backdrop fixed inset-0 z-20 md:hidden"
             @click="sidebarOpen = false"
         ></div>
 
         <aside
-            class="fixed inset-y-0 start-0 z-50 flex w-56 flex-col border-e border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900
-                   lg:static lg:z-auto lg:translate-x-0"
+            class="fixed inset-y-0 start-0 z-30 flex w-64 min-h-screen flex-shrink-0 flex-col bg-neutral-secondary transition-transform duration-200 ease-in-out md:relative md:translate-x-0"
             :class="{ '-translate-x-full': ! sidebarOpen, 'translate-x-0': sidebarOpen }"
         >
-            <div class="flex h-14 shrink-0 items-center border-b border-gray-200 px-4 dark:border-white/10">
+            <div class="relative flex h-[68px] shrink-0 items-center overflow-hidden border-b border-default/60 px-4 pe-10 md:pe-4">
                 <x-filament-panels::logo class="h-8" />
+                <button
+                    type="button"
+                    aria-label="{{ __('Close sidebar') }}"
+                    class="absolute end-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-body-subtle hover:bg-neutral-secondary hover:text-heading md:hidden"
+                    @click="sidebarOpen = false"
+                >
+                    <x-filament::icon icon="heroicon-o-x-mark" class="h-4 w-4" />
+                </button>
             </div>
 
             @if ($layoutMode === 'sidebar')
                 @include('velm-filament::partials.nav-sidebar', ['menu' => $menu['menu'] ?? []])
             @else
-                @include('velm-filament::partials.nav-app-rail', ['menu' => $menu])
+                <div class="hidden min-h-0 flex-1 flex-col md:contents">
+                    @include('velm-filament::partials.nav-app-rail', ['menu' => $menu])
+                </div>
+                <div class="flex min-h-0 flex-1 flex-col overflow-hidden md:hidden">
+                    @include('velm-filament::partials.nav-sidebar', ['menu' => $menu['menu'] ?? []])
+                </div>
             @endif
+
+            @include('velm-filament::partials.shell-user-footer')
         </aside>
 
-        <div class="flex min-w-0 flex-1 flex-col">
-            <header class="flex min-h-14 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 dark:border-white/10 dark:bg-gray-900">
-                <x-filament::icon-button
-                    color="gray"
-                    icon="heroicon-o-bars-3"
-                    icon-size="lg"
-                    label="{{ __('filament-panels::layout.actions.sidebar.expand.label') }}"
-                    class="lg:hidden"
-                    x-on:click="sidebarOpen = true"
-                />
+        <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
+            <header
+                class="sticky top-0 z-30 flex min-h-[60px] shrink-0 items-center gap-3 overflow-visible border-b border-default bg-neutral-secondary px-4 md:px-6"
+            >
+                <button
+                    type="button"
+                    aria-label="{{ __('Open menu') }}"
+                    class="-ms-1.5 rounded-md p-1.5 text-body hover:bg-neutral-secondary md:hidden"
+                    @click="sidebarOpen = true"
+                >
+                    <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
+                </button>
 
                 @if ($layoutMode === 'apps')
-                    @include('velm-filament::partials.nav-topbar-secondary', ['menu' => $menu])
+                    <div class="hidden min-w-0 flex-1 overflow-visible md:flex">
+                        @include('velm-filament::partials.nav-topbar-secondary', ['menu' => $menu])
+                    </div>
+
+                    @if ($activeRoot)
+                        <p class="min-w-0 flex-1 truncate px-0.5 text-sm font-semibold text-heading md:hidden">
+                            {{ $activeRoot['label'] }}
+                        </p>
+                    @else
+                        <div class="min-w-0 flex-1 md:hidden" aria-hidden="true"></div>
+                    @endif
+                @else
+                    <div class="min-w-0 flex-1" aria-hidden="true"></div>
                 @endif
 
-                <div class="ms-auto flex items-center gap-2">
+                <div class="flex shrink-0 items-center gap-2">
                     @if (filament()->auth()->check() && filament()->hasUserMenu())
                         @livewire(\Filament\Livewire\SimpleUserMenu::class)
                     @endif
                 </div>
             </header>
 
-            <main @class([
-                'fi-main flex-1 overflow-x-auto p-4 md:p-6',
-                is_string($maxContentWidth) ? "fi-width-{$maxContentWidth}" : null,
-            ])>
-                {{ FilamentView::renderHook(PanelsRenderHook::CONTENT_START, scopes: $renderHookScopes) }}
+            <div class="velm-shell-main flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+                <main @class([
+                    'fi-main flex-1 px-4 py-5 md:px-6',
+                    is_string($maxContentWidth) ? "fi-width-{$maxContentWidth}" : null,
+                ])>
+                    {{ FilamentView::renderHook(PanelsRenderHook::CONTENT_START, scopes: $renderHookScopes) }}
 
-                {{ $slot }}
+                    {{ $slot }}
 
-                {{ FilamentView::renderHook(PanelsRenderHook::CONTENT_END, scopes: $renderHookScopes) }}
-            </main>
+                    {{ FilamentView::renderHook(PanelsRenderHook::CONTENT_END, scopes: $renderHookScopes) }}
+                </main>
+            </div>
         </div>
     </div>
 </x-filament-panels::layout.base>
