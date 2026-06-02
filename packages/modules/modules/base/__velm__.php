@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Velm\Modules\Base\Models\Company;
+use Velm\Modules\Base\Models\UiMenu;
 use Velm\Modules\Base\Models\UiView;
 use Velm\Modules\Manifest;
 
@@ -12,7 +13,7 @@ use Velm\Modules\Manifest;
  */
 return Manifest::make('base')
     ->version(0, 1, 0)
-    ->models(Company::class, UiView::class)
+    ->models(Company::class, UiView::class, UiMenu::class)
     ->data('views/company.php')
     ->summary('Framework primitives — users, groups, views, menus, modules.')
     ->category('Administration');

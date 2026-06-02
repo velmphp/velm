@@ -5,20 +5,26 @@ declare(strict_types=1);
 namespace Velm\Views\Data;
 
 use Velm\Modules\ModuleSpec;
+use Velm\Views\Authoring\Contracts\MenuDeclaration;
 use Velm\Views\Authoring\Contracts\ViewDeclaration;
 
 final class DataFileLoader
 {
     /**
-     * @return array{views: list<array<string, mixed>>, view_inherits: list<array<string, mixed>>}
+     * @return array{
+     *     views: list<array<string, mixed>>,
+     *     view_inherits: list<array<string, mixed>>,
+     *     menus: list<array<string, mixed>>
+     * }
      */
     public function load(ModuleSpec $spec): array
     {
         $views = [];
         $inherits = [];
+        $menus = [];
 
         if ($spec->data === []) {
-            return ['views' => $views, 'view_inherits' => $inherits];
+            return ['views' => $views, 'view_inherits' => $inherits, 'menus' => $menus];
         }
 
         foreach ($spec->data as $relativePath) {
@@ -52,9 +58,10 @@ final class DataFileLoader
 
             $views = array_merge($views, $this->expandViews($exported['VIEWS'] ?? []));
             $inherits = array_merge($inherits, $this->expandInherits($exported['VIEW_INHERITS'] ?? []));
+            $menus = array_merge($menus, $this->expandMenus($exported['MENUS'] ?? []));
         }
 
-        return ['views' => $views, 'view_inherits' => $inherits];
+        return ['views' => $views, 'view_inherits' => $inherits, 'menus' => $menus];
     }
 
     /**
@@ -101,5 +108,28 @@ final class DataFileLoader
         }
 
         return $inherits;
+    }
+
+    /**
+     * @param  list<mixed>  $declarations
+     * @return list<array<string, mixed>>
+     */
+    private function expandMenus(array $declarations): array
+    {
+        $menus = [];
+
+        foreach ($declarations as $declaration) {
+            if ($declaration instanceof MenuDeclaration) {
+                $menus[] = $declaration->toArray();
+
+                continue;
+            }
+
+            if (is_array($declaration)) {
+                $menus[] = $declaration;
+            }
+        }
+
+        return $menus;
     }
 }

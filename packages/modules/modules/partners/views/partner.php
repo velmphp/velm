@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
 use Velm\Views\Authoring\ListView;
+use Velm\Views\Authoring\Menus;
 use Velm\Views\Data\ViewsData;
+
+$m = new Menus('partners');
 
 return ViewsData::make()
     ->views(
@@ -29,4 +32,12 @@ return ViewsData::make()
             ])
             ->section('organization', 'Organization', ['company_id'])
             ->section('address', 'Address', ['country_id']),
+    )
+    ->menus(
+        $m->group('contacts', 'Contacts')->icon('user-group')->sequence(10),
+        $m->item('partners', 'Partners')
+            ->parentRef($m->parentRef('contacts'))
+            ->view('partner.list')
+            ->icon('user-group')
+            ->sequence(10),
     );

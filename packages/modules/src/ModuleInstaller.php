@@ -10,6 +10,7 @@ use Velm\Environment;
 use Velm\Modules\Database\LaravelConnection;
 use Velm\Registry;
 use Velm\Schema\SchemaBuilder;
+use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\ViewSynchronizer;
 
 final class ModuleInstaller
@@ -20,6 +21,7 @@ final class ModuleInstaller
         private readonly ModuleRepository $repository = new ModuleRepository,
         private readonly ModuleModelLoader $modelLoader = new ModuleModelLoader,
         private readonly ViewSynchronizer $viewSynchronizer = new ViewSynchronizer,
+        private readonly MenuSynchronizer $menuSynchronizer = new MenuSynchronizer,
         private readonly ?Connection $connection = null,
     ) {}
 
@@ -97,7 +99,10 @@ final class ModuleInstaller
             throw new \RuntimeException("Module {$moduleName} is not installed. Run module:install first.");
         }
 
-        $this->viewSynchronizer->sync($specs[$moduleName], $this->environment($roots));
+        $env = $this->environment($roots);
+        $spec = $specs[$moduleName];
+        $this->viewSynchronizer->sync($spec, $env);
+        $this->menuSynchronizer->sync($spec, $env);
     }
 
     /**
@@ -160,6 +165,7 @@ final class ModuleInstaller
 
         $env = new Environment($connection, $registry);
         $this->viewSynchronizer->sync($spec, $env);
+        $this->menuSynchronizer->sync($spec, $env);
 
         $this->repository->markInstalled($spec);
 
