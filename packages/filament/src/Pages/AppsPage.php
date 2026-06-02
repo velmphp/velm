@@ -6,7 +6,6 @@ namespace Velm\Filament\Pages;
 
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -15,15 +14,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use Velm\Framework\VelmManager;
 use Velm\Modules\ModuleInstaller;
 
-final class AppsPage extends Page implements HasTable
+final class AppsPage extends VelmShellPage implements HasTable
 {
     use InteractsWithTable;
-
-    protected static ?string $navigationLabel = 'Apps';
-
-    protected static ?int $navigationSort = 1;
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
 
     protected static ?string $slug = 'apps';
 

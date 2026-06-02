@@ -6,7 +6,6 @@ namespace Velm\Filament\Pages;
 
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
@@ -15,10 +14,8 @@ use Illuminate\Contracts\Support\Htmlable;
 use Velm\Environment;
 use Velm\Filament\Arch\ArchFormConfigurator;
 
-abstract class ArchCreatePage extends Page
+abstract class ArchCreatePage extends VelmShellPage
 {
-    protected static bool $shouldRegisterNavigation = false;
-
     /**
      * @var array<string, mixed>|null
      */

@@ -7,6 +7,7 @@ namespace Velm\Views;
 use Illuminate\Support\ServiceProvider;
 use Velm\Views\Arch\ArchResolver;
 use Velm\Views\Data\DataFileLoader;
+use Velm\Views\Menu\MenuTreeBuilder;
 use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\ViewSynchronizer;
 
@@ -20,5 +21,6 @@ final class ViewsServiceProvider extends ServiceProvider
         $this->app->singleton(ViewSynchronizer::class);
         $this->app->singleton(MenuSynchronizer::class);
         $this->app->singleton(MenuRegistry::class);
+        $this->app->singleton(MenuTreeBuilder::class);
     }
 }

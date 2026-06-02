@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Velm\Filament\Support;
 
 use Velm\Filament\Pages\CompanyListPage;
+use Velm\Filament\Pages\CreateCompanyPage;
+use Velm\Filament\Pages\CreatePartnerPage;
+use Velm\Filament\Pages\EditCompanyPage;
+use Velm\Filament\Pages\EditPartnerPage;
 use Velm\Filament\Pages\PartnerListPage;
 
 final class ArchPageMap
@@ -13,6 +17,14 @@ final class ArchPageMap
     private const VIEW_PAGES = [
         'partners.partner.list' => PartnerListPage::class,
         'base.company.list' => CompanyListPage::class,
+    ];
+
+    /** @var array<class-string, string> */
+    private const PAGE_ACTIVE_HREF = [
+        CreatePartnerPage::class => 'partners.partner.list',
+        EditPartnerPage::class => 'partners.partner.list',
+        CreateCompanyPage::class => 'base.company.list',
+        EditCompanyPage::class => 'base.company.list',
     ];
 
     /**
@@ -24,12 +36,46 @@ final class ArchPageMap
             return null;
         }
 
+        $key = self::viewKeyFromHref($href);
+
+        if ($key === null) {
+            return null;
+        }
+
+        return self::VIEW_PAGES[$key] ?? null;
+    }
+
+    /**
+     * @param  class-string  $pageClass
+     */
+    public static function canonicalHrefForPage(string $pageClass): ?string
+    {
+        if (isset(self::PAGE_ACTIVE_HREF[$pageClass])) {
+            return self::hrefForViewKey(self::PAGE_ACTIVE_HREF[$pageClass]);
+        }
+
+        foreach (self::VIEW_PAGES as $key => $class) {
+            if ($class === $pageClass) {
+                return self::hrefForViewKey($key);
+            }
+        }
+
+        return null;
+    }
+
+    public static function hrefForViewKey(string $viewKey): string
+    {
+        [$module, $name] = explode('.', $viewKey, 2);
+
+        return "/velm/views/{$module}/{$name}";
+    }
+
+    private static function viewKeyFromHref(string $href): ?string
+    {
         if (preg_match('#^/velm/views/([^/]+)/([^/]+)$#', $href, $matches) !== 1) {
             return null;
         }
 
-        $key = $matches[1].'.'.$matches[2];
-
-        return self::VIEW_PAGES[$key] ?? null;
+        return $matches[1].'.'.$matches[2];
     }
 }

@@ -10,8 +10,6 @@ final class PartnerListPage extends ArchListPage
 {
     use ResolvesStoredView;
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static function velmViewModule(): string
     {
         return 'partners';
