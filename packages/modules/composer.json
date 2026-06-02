@@ -10,7 +10,13 @@
         "velmphp/core": "@dev",
         "velmphp/views": "@dev"
     },
-    "autoload": { "psr-4": { "Velm\\Modules\\": "src/" } },
+    "autoload": {
+        "psr-4": {
+            "Velm\\Modules\\": "src/",
+            "Velm\\Modules\\Base\\Models\\": "modules/base/models/",
+            "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/"
+        }
+    },
     "autoload-dev": {
         "psr-4": { "Velm\\Modules\\Tests\\": "tests/" }
     },
