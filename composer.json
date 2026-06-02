@@ -23,7 +23,8 @@
     ],
     "autoload-dev": {
         "psr-4": {
-            "Velm\\Tests\\": "tests/"
+            "Velm\\Tests\\": "tests/",
+            "Velm\\Modules\\Tests\\": "packages/modules/tests/"
         }
     },
     "scripts": {

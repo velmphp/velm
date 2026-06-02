@@ -18,7 +18,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          extensions: intl
+          extensions: intl, pdo_sqlite
       - run: composer install --prefer-dist --no-progress
       - run: composer test
       - run: composer analyse || true

@@ -5,10 +5,20 @@
     "type": "library",
     "require": {
         "php": "^8.3",
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0",
         "velmphp/core": "@dev",
         "velmphp/views": "@dev"
     },
     "autoload": { "psr-4": { "Velm\\Modules\\": "src/" } },
-    "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
+    "autoload-dev": {
+        "psr-4": { "Velm\\Modules\\Tests\\": "tests/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Velm\\Modules\\ModulesServiceProvider"]
+        },
+        "branch-alias": { "dev-main": "1.x-dev" }
+    },
     "minimum-stability": "dev"
 }
