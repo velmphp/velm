@@ -55,7 +55,7 @@
 
                 <div class="ms-auto flex items-center gap-2">
                     @if (filament()->auth()->check() && filament()->hasUserMenu())
-                        <x-filament-panels::user-menu />
+                        @livewire(\Filament\Livewire\SimpleUserMenu::class)
                     @endif
                 </div>
             </header>
