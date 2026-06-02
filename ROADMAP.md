@@ -26,7 +26,9 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Model registration + schema on `module:install` | Done |
 | Laravel DB connection (`LaravelConnection`) | Done |
 | Arch → Filament schema bridge (list + form spike) | Done |
-| Filament panel / Livewire pages | Planned |
+| `VelmManager` + `Environment` container binding | Done |
+| Filament panel + `ArchListPage` / partner list | Done |
+| Partner form page + save actions | Planned |
 
 ## Phase 2+
 

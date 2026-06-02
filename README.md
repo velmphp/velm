@@ -17,7 +17,13 @@
   <strong>Odoo's semantics. Laravel's ergonomics. Filament's craft.</strong>
 </p>
 
-PHP ERP framework on Laravel + Livewire + Filament. Port of [PyVelm](https://github.com/coolsam726/pyvelm) semantics with a custom module runtime, recordset ORM, and arch-driven views.
+<p align="center">
+  Velm is a PHP ERP framework built on <a href="https://laravel.com">Laravel</a>, <a href="https://livewire.laravel.com">Livewire</a>, and <a href="https://filamentphp.com">Filament</a>—installable addons per database, a recordset ORM, and declarative view arch that resolves into Filament tables and forms. It extends the stack you already use (Composer, Pest, Eloquent connections, the scheduler) with Odoo-style modularity, not a parallel platform.
+</p>
+
+<p align="center">
+  Semantic port of <a href="https://github.com/coolsam726/pyvelm">PyVelm</a>; packages ship as <code>velmphp/*</code> alongside your app.
+</p>
 
 - **Organization:** [github.com/velmphp](https://github.com/velmphp)
 - **Composer vendor:** `velmphp/*`
@@ -62,7 +68,7 @@ php packages/console/bin/velm module:list --discovered-only
 
 ## Status
 
-**Phase 0 in progress** — module discovery, `ir.module`, and CLI; see [ROADMAP.md](./ROADMAP.md).
+Early development — module runtime, recordset ORM, partners addon, and Filament arch bridge are landing incrementally. See **[ROADMAP.md](./ROADMAP.md)**.
 
 ## License
 

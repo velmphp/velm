@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Velm\Framework;
 
 use Illuminate\Support\ServiceProvider;
+use Velm\Environment;
 use Velm\Filament\FilamentServiceProvider;
+use Velm\Framework\VelmManager;
 use Velm\Modules\ModulesServiceProvider;
 
 final class VelmServiceProvider extends ServiceProvider
@@ -14,7 +16,14 @@ final class VelmServiceProvider extends ServiceProvider
     {
         $this->app->register(ModulesServiceProvider::class);
         $this->app->register(FilamentServiceProvider::class);
-        $this->mergeConfigFrom(__DIR__ . '/../config/velm.php', 'velm');
+        $this->mergeConfigFrom(__DIR__.'/../config/velm.php', 'velm');
+
+        $this->app->singleton(VelmManager::class);
+        $this->app->alias(VelmManager::class, 'velm');
+        $this->app->singleton(
+            Environment::class,
+            static fn ($app): Environment => $app->make(VelmManager::class)->environment(),
+        );
     }
 
     public function boot(): void

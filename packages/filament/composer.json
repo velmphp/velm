@@ -18,7 +18,10 @@
     },
     "extra": {
         "laravel": {
-            "providers": ["Velm\\Filament\\FilamentServiceProvider"]
+            "providers": [
+                "Velm\\Filament\\FilamentServiceProvider",
+                "Velm\\Filament\\VelmPanelProvider"
+            ]
         },
         "branch-alias": { "dev-main": "1.x-dev" }
     },
