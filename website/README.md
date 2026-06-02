@@ -29,10 +29,18 @@ Pushes to `main` that touch `website/` trigger [.github/workflows/deploy-docs.ym
 
 **Live site:** [https://velmphp.github.io/velm/](https://velmphp.github.io/velm/)
 
-One-time repo setup:
+### One-time setup (required)
 
-1. **Settings → Pages → Build and deployment** → Source: **GitHub Actions**.
-2. After the first successful run, the site is published from the `github-pages` environment.
+The deploy job fails with `HttpError: Not Found` until Pages is turned on for this repository.
+
+1. Open **[velmphp/velm → Settings → Pages](https://github.com/velmphp/velm/settings/pages)**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”).
+3. If GitHub offers workflow templates, you can dismiss them — this repo already has `deploy-docs.yml`.
+4. Re-run the failed workflow: **Actions → Deploy documentation → Re-run all jobs**.
+
+For the `velmphp` organization, an owner may also need **Organization settings → Pages** to allow Pages for this repo.
+
+After the first successful deploy, the `github-pages` environment is created automatically.
 
 Pull requests run the same build (with `baseUrl` `/velm/`) but do not deploy.
 
