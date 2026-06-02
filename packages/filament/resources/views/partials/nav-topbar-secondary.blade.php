@@ -27,7 +27,7 @@
                     @click="openKey = openKey === '{{ $key }}' ? '' : '{{ $key }}'"
                     @class([
                         'flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm whitespace-nowrap transition',
-                        'bg-primary-50 font-medium text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $item['active'] ?? false,
+                        'bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $item['active'] ?? false,
                         'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($item['active'] ?? false),
                     ])
                     :aria-expanded="(openKey === '{{ $key }}').toString()"
@@ -51,7 +51,7 @@
                             href="{{ $childUrl ?? '#' }}"
                             @class([
                                 'block px-3 py-1.5 text-sm whitespace-nowrap transition',
-                                'bg-primary-50 font-medium text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $child['active'] ?? false,
+                                'bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $child['active'] ?? false,
                                 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($child['active'] ?? false),
                             ])
                         >
@@ -66,7 +66,7 @@
                 href="{{ $url ?? '#' }}"
                 @class([
                     'shrink-0 rounded-md px-2.5 py-1.5 text-sm whitespace-nowrap transition',
-                    'bg-primary-50 font-medium text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $item['active'] ?? false,
+                    'bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $item['active'] ?? false,
                     'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($item['active'] ?? false),
                 ])
             >
