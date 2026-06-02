@@ -62,7 +62,7 @@ final class SchemaDiffer
                         $table,
                         $column,
                         'set_not_null',
-                        'backfill NULLs, then SET NOT NULL (not auto-applied)',
+                        'SET NOT NULL when no NULL rows remain',
                     );
                 } elseif (! $wantsRequired && ! $nullable) {
                     $diff->alterations[] = new SchemaAlteration(
@@ -89,11 +89,12 @@ final class SchemaDiffer
     /**
      * @param  list<class-string<Model>>  $modelClasses
      */
-    public function apply(Registry $registry, array $modelClasses, ?SchemaDiff $diff = null): SchemaDiff
+    public function apply(Registry $registry, array $modelClasses, ?SchemaDiff $diff = null): SchemaApplyResult
     {
         $diff ??= $this->compute($registry, $modelClasses);
+        $result = new SchemaApplyResult($diff);
 
-        Registry::with($registry, function () use ($registry, $modelClasses, $diff): void {
+        Registry::with($registry, function () use ($registry, $modelClasses, $diff, $result): void {
             foreach ($diff->newTables as [, $modelClass]) {
                 $this->builder->ensureTable($modelClass);
             }
@@ -113,14 +114,24 @@ final class SchemaDiffer
             }
 
             foreach ($diff->alterations as $alteration) {
-                if ($alteration->kind !== 'drop_not_null') {
-                    continue;
-                }
-
-                if ($this->supportsDropNotNull()) {
+                if ($alteration->kind === 'drop_not_null' && $this->supportsPostgresAlterColumn()) {
                     $this->connection->execute(
                         'ALTER TABLE "'.$alteration->table.'" ALTER COLUMN "'.$alteration->column.'" DROP NOT NULL',
                     );
+                }
+
+                if ($alteration->kind === 'set_not_null' && $this->supportsPostgresAlterColumn()) {
+                    if ($this->countNullRows($alteration->table, $alteration->column) > 0) {
+                        $result->skippedNotNull++;
+                        $result->skippedNotNullColumns[] = $alteration->table.'.'.$alteration->column;
+
+                        continue;
+                    }
+
+                    $this->connection->execute(
+                        'ALTER TABLE "'.$alteration->table.'" ALTER COLUMN "'.$alteration->column.'" SET NOT NULL',
+                    );
+                    $result->setNotNull++;
                 }
             }
 
@@ -141,7 +152,16 @@ final class SchemaDiffer
             }
         });
 
-        return $diff;
+        return $result;
+    }
+
+    public function countNullRows(string $table, string $column): int
+    {
+        $row = $this->connection->fetchOne(
+            'SELECT COUNT(*) as c FROM "'.$table.'" WHERE "'.$column.'" IS NULL',
+        );
+
+        return (int) ($row['c'] ?? $row['C'] ?? 0);
     }
 
     /**
@@ -236,7 +256,7 @@ final class SchemaDiffer
         return strtoupper((string) $nullable) === 'YES';
     }
 
-    private function supportsDropNotNull(): bool
+    private function supportsPostgresAlterColumn(): bool
     {
         return $this->supportsInformationSchema();
     }

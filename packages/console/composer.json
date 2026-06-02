@@ -9,7 +9,6 @@
         "velmphp/modules": "@dev"
     },
     "autoload": { "psr-4": { "Velm\\Console\\": "src/" } },
-    "bin": ["bin/velm"],
     "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
     "minimum-stability": "dev"
 }

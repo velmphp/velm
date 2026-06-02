@@ -40,9 +40,13 @@ Sign in with the credentials from your `.env` (default seed: `admin@velm.test` /
 Velm modules are **not** Composer packages. They are discovered from addon roots configured in `config/velm.php`.
 
 ```bash
+php artisan list velm                        # all Velm commands
+php artisan velm:migrate                     # bootstrap modules (same as composer run setup)
 php artisan velm:module:list
-php artisan velm:module:install partners
+php artisan velm:module:install partners       # alias path: velm:migrate --module=partners
 php artisan velm:module:sync partners
+php artisan velm:db:diff --module=partners
+php artisan velm:db:status
 ```
 
 Installing a module:

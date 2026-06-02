@@ -14,13 +14,11 @@ final class ListCommand extends Command
 {
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('<info>Velm CLI scaffold</info> — see PLAN.md for the full command catalog.');
-        $output->writeln('');
-        $output->writeln('Module runtime (Phase 0):');
-        $output->writeln('  module:list, module:install, module:sync, migrate');
-        $output->writeln('');
-        $output->writeln('Planned:');
-        $output->writeln('  db:diff, db:status, db:autogen, make:module, make:model, make:view');
+        $output->writeln('<info>Velm commands run via Laravel Artisan</info> (from your app root):');
+        $output->writeln('  php artisan list velm');
+        $output->writeln('  php artisan velm:migrate');
+        $output->writeln('  php artisan velm:module:list');
+        $output->writeln('  php artisan velm:db:diff --module=partners');
         return Command::SUCCESS;
     }
 }

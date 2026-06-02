@@ -498,7 +498,7 @@ This is idempotent and runs per module during install.
 
 ### CLI commands (see dedicated section below)
 
-Migration and module lifecycle are driven by **`php velm`** — not `php artisan velm:*` and not space-separated subcommands like PyVelm's `pyvelm db diff`. Key commands: `php velm migrate`, `php velm db:diff`, `php velm db:autogen partners`, `php velm db:status`.
+Migration and module lifecycle are driven by **`php artisan velm:*`**. Key commands: `velm:migrate`, `velm:db:diff`, `velm:db:autogen`, `velm:db:status`.
 
 Deploy pattern (same as PyVelm): run `php velm migrate` **once** before workers start; app boot may call `load_and_install` idempotently as a safety net.
 
@@ -530,15 +530,20 @@ Keeping these separate avoids Laravel running module DDL out of dependency order
 
 ---
 
-## CLI (`php velm` — Artisan-style, primary entry point)
+## CLI (`php artisan velm:*` — primary entry point)
 
-The PHP port uses a **standalone CLI binary** mirroring Laravel Artisan ergonomics — not PyVelm's space-separated `pyvelm db diff` style. Invoked as:
+**Implemented today:** all Velm commands register on **Laravel Artisan** from a bootstrapped app (e.g. `apps/skeleton`). There is no supported standalone `php velm` binary.
 
 ```bash
-php velm <command> [arguments] [options]
+php artisan velm:migrate --module=partners
+php artisan velm:module:sync partners
+php artisan velm:db:diff --module=partners
+php artisan list velm
 ```
 
-Equivalent to `php artisan` for Velm/ERP operations. Standard Laravel infra (`queue:work`, `cache:clear`, etc.) stays on `php artisan`.
+Naming uses a `velm:` prefix (like `queue:work`), not PyVelm's space-separated `pyvelm db diff`. Standard Laravel infra (`queue:work`, `cache:clear`, etc.) stays on `php artisan`.
+
+The tables and examples below that say `php velm …` mean **`php artisan velm:…`** (e.g. `php velm migrate` → `php artisan velm:migrate`).
 
 ### Implementation
 

@@ -63,10 +63,16 @@ VELM_MENU_LAYOUT=sidebar
 
 | Command | Description |
 |---------|-------------|
-| `php artisan velm:migrate` | Install bootstrap modules |
-| `php artisan velm:module:install {name}` | Install a module + dependencies |
-| `php artisan velm:module:sync {name}` | Reload module DATA files |
+| `php artisan velm:migrate` | Install or upgrade bootstrap modules |
+| `php artisan velm:migrate --module={name}` | One module + dependencies |
+| `php artisan velm:module:install {name}` | Same as `velm:migrate --module={name}` |
+| `php artisan velm:module:sync {name}` | Reload module DATA + schema diff (no version bump) |
 | `php artisan velm:module:list` | Discovered modules and state |
+| `php artisan velm:db:diff --module={name}` | Schema drift report |
+| `php artisan velm:db:autogen --module={name}` | Scaffold migration + bump VERSION |
+| `php artisan velm:db:status` | Installed vs manifest versions |
+| `php artisan velm:cron:run` | Run due `ir.cron` jobs once |
+| `php artisan list velm` | Full command list |
 
 ## Standalone app (future)
 

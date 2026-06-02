@@ -13,6 +13,7 @@ use Velm\Modules\Schema\ModuleSchema;
 use Velm\Modules\ModuleVersion;
 use Velm\Registry;
 use Velm\Schema\SchemaDiff;
+use Velm\Schema\SchemaDiffer;
 use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\ViewSynchronizer;
 
@@ -25,6 +26,7 @@ final class ModuleInstaller
         private readonly ModuleModelLoader $modelLoader = new ModuleModelLoader,
         private readonly ViewSynchronizer $viewSynchronizer = new ViewSynchronizer,
         private readonly MenuSynchronizer $menuSynchronizer = new MenuSynchronizer,
+        private readonly ModuleHookRunner $hookRunner = new ModuleHookRunner,
         private readonly ?Connection $connection = null,
     ) {}
 
@@ -114,6 +116,11 @@ final class ModuleInstaller
         return (new ModuleSchema($this->velmConnection()))->diff($spec, $registry);
     }
 
+    public function countNullRows(string $table, string $column): int
+    {
+        return (new SchemaDiffer($this->velmConnection()))->countNullRows($table, $column);
+    }
+
     /**
      * @return list<array{name: string, installed: string|null, manifest: string, status: string}>
      */
@@ -165,10 +172,11 @@ final class ModuleInstaller
         $spec = $specs[$moduleName];
         $registry = $this->registry($roots, $spec);
         $connection = $this->velmConnection();
+        $env = new Environment($connection, $registry);
 
+        $this->hookRunner->runSyncHook($spec->syncHook, $env);
         (new ModuleSchema($connection))->apply($spec, $registry);
 
-        $env = new Environment($connection, $registry);
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
     }
@@ -247,15 +255,12 @@ final class ModuleInstaller
 
         (new ModuleMigrationRunner)->run($env, $spec, [], $spec->version);
         (new ModuleSchema($connection))->apply($spec, $registry);
+        $this->hookRunner->runInstallHook($spec->installHook, $env);
 
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
 
         $this->repository->markInstalled($spec);
-
-        if ($spec->name === 'base') {
-            $this->seedBase($roots);
-        }
     }
 
     /**
@@ -269,7 +274,7 @@ final class ModuleInstaller
         $env = new Environment($connection, $registry);
 
         (new ModuleMigrationRunner)->run($env, $spec, $installed, $spec->version);
-        (new ModuleSchema($connection))->apply($spec, $registry);
+        $this->applySchema($spec, $connection, $registry, $env);
 
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
@@ -277,87 +282,14 @@ final class ModuleInstaller
         $this->repository->markInstalled($spec);
     }
 
-    /**
-     * @param  list<string>  $roots
-     */
-    private function seedBase(array $roots): void
-    {
-        $env = $this->environment($roots);
-
-        if ($env->model('res.groups')->search()->count() > 0) {
-            return;
-        }
-
-        $adminGroup = $env->model('res.groups')->create(['name' => 'Admin']);
-        $env->model('res.groups')->create(['name' => 'User']);
-        $env->model('res.groups')->create(['name' => 'Public']);
-
-        $company = null;
-
-        if ($env->model('res.company')->search()->count() === 0) {
-            $company = $env->model('res.company')->create(['name' => 'My Company']);
-        } else {
-            $company = $env->model('res.company')->search(limit: 1);
-        }
-
-        $userValues = [
-            'name' => 'Administrator',
-            'login' => 'admin',
-            'password' => 'admin',
-            'group_ids' => $adminGroup->ids(),
-        ];
-
-        if ($company->count() > 0) {
-            $userValues['company_id'] = $company->ids()[0];
-        }
-
-        $env->model('res.users')->create($userValues);
-
-        $access = $env->model('ir.model.access');
-
-        foreach ([
-            'res.company',
-            'res.groups',
-            'res.users',
-            'ir.model.access',
-            'ir.rule',
-            'ir.ui.view',
-            'ir.ui.menu',
-        ] as $model) {
-            if (! $env->registry->has($model)) {
-                continue;
-            }
-
-            $access->create([
-                'name' => "Admin/{$model}",
-                'model' => $model,
-                'group_id' => $adminGroup->ids()[0],
-                'perm_read' => true,
-                'perm_write' => true,
-                'perm_create' => true,
-                'perm_unlink' => true,
-            ]);
-        }
-
-        $access->create([
-            'name' => 'Authenticated/res.users (self)',
-            'model' => 'res.users',
-            'group_id' => null,
-            'perm_read' => true,
-            'perm_write' => false,
-            'perm_create' => false,
-            'perm_unlink' => false,
-        ]);
-
-        $access->create([
-            'name' => 'Authenticated/ir.ui.view (read)',
-            'model' => 'ir.ui.view',
-            'group_id' => null,
-            'perm_read' => true,
-            'perm_write' => false,
-            'perm_create' => false,
-            'perm_unlink' => false,
-        ]);
+    private function applySchema(
+        ModuleSpec $spec,
+        Connection $connection,
+        Registry $registry,
+        Environment $env,
+    ): void {
+        $this->hookRunner->runSyncHook($spec->syncHook, $env);
+        (new ModuleSchema($connection))->apply($spec, $registry);
     }
 
     private function velmConnection(): Connection
