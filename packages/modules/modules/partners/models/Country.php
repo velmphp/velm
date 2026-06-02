@@ -16,8 +16,8 @@ final class Country extends Model
     public static function defineFields(): array
     {
         return [
-            'name' => CharField::make(required: true),
-            'code' => CharField::make(maxLength: 2),
+            'name' => CharField::make()->required(),
+            'code' => CharField::make()->maxLength(2),
         ];
     }
 }

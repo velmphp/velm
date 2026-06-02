@@ -6,16 +6,7 @@ namespace Velm\Fields;
 
 final class CharField extends Field
 {
-    public function __construct(
-        ?string $string = null,
-        mixed $default = null,
-        bool $required = false,
-        bool $readonly = false,
-        ?string $column = null,
-        public readonly ?int $maxLength = null,
-    ) {
-        parent::__construct($string, $default, $required, $readonly, $column);
-    }
+    public ?int $maxLength = null;
 
     public static function make(
         ?string $string = null,
@@ -24,7 +15,20 @@ final class CharField extends Field
         bool $readonly = false,
         ?int $maxLength = null,
     ): self {
-        return new self($string, $default, $required, $readonly, maxLength: $maxLength);
+        $field = new self($string, $default, $required, $readonly);
+
+        if ($maxLength !== null) {
+            $field->maxLength = $maxLength;
+        }
+
+        return $field;
+    }
+
+    public function maxLength(?int $maxLength): self
+    {
+        $this->maxLength = $maxLength;
+
+        return $this;
     }
 
     public function sqlType(): string

@@ -6,27 +6,33 @@ namespace Velm\Fields;
 
 final class Many2oneField extends Field
 {
-    public function __construct(
-        public readonly string $comodel,
-        ?string $string = null,
-        mixed $default = null,
-        bool $required = false,
-        ?string $column = null,
-    ) {
-        parent::__construct($string, $default, $required, false, $column);
-    }
+    public string $comodel = '';
 
     public static function make(
-        string $comodel,
+        string $comodel = '',
         ?string $string = null,
         mixed $default = null,
         bool $required = false,
     ): self {
-        return new self($comodel, $string, $default, $required);
+        $field = new self($string, $default, $required);
+        $field->comodel = $comodel;
+
+        return $field;
+    }
+
+    public function comodel(string $comodel): self
+    {
+        $this->comodel = $comodel;
+
+        return $this;
     }
 
     public function sqlType(): string
     {
+        if ($this->comodel === '') {
+            throw new \LogicException('Many2oneField requires a comodel.');
+        }
+
         return 'INTEGER';
     }
 
