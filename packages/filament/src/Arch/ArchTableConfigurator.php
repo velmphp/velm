@@ -23,7 +23,7 @@ final class ArchTableConfigurator
         $arch = ArchNormalizer::normalizeList($arch);
 
         return $table
-            ->columns($this->schemaBuilder->buildTableColumns($arch))
+            ->columns($this->schemaBuilder->buildTableColumns($arch, $env))
             ->records(fn (): Collection => $this->fetchRecords($arch, $env))
             ->recordTitleAttribute('display_name');
     }

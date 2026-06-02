@@ -117,7 +117,7 @@ final class ModuleInstaller
                 continue;
             }
 
-            $this->installModule($spec);
+            $this->installModule($spec, $roots);
         }
     }
 
@@ -132,7 +132,10 @@ final class ModuleInstaller
         return new Environment($this->velmConnection(), $registry);
     }
 
-    private function installModule(ModuleSpec $spec): void
+    /**
+     * @param  list<string>  $roots
+     */
+    private function installModule(ModuleSpec $spec, array $roots): void
     {
         $registry = new Registry;
         $connection = $this->velmConnection();
@@ -145,6 +148,24 @@ final class ModuleInstaller
         }
 
         $this->repository->markInstalled($spec);
+
+        if ($spec->name === 'base') {
+            $this->seedDefaultCompany($roots);
+        }
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    private function seedDefaultCompany(array $roots): void
+    {
+        $env = $this->environment($roots);
+
+        if ($env->model('res.company')->search()->count() > 0) {
+            return;
+        }
+
+        $env->model('res.company')->create(['name' => 'My Company']);
     }
 
     private function velmConnection(): Connection

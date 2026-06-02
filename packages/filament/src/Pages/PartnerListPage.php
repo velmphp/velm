@@ -21,4 +21,14 @@ final class PartnerListPage extends ArchListPage
     {
         return PartnerViews::list();
     }
+
+    protected static function createPage(): ?string
+    {
+        return CreatePartnerPage::class;
+    }
+
+    protected static function editPage(): ?string
+    {
+        return EditPartnerPage::class;
+    }
 }
