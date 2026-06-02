@@ -13,9 +13,9 @@ final class Menus
         private readonly string $module,
     ) {}
 
-    public function group(string $name, string $label): MenuGroup
+    public function group(string $name, string $label): MenuBranch
     {
-        return MenuGroup::make($name, $label);
+        return MenuBranch::make($this->module, $name, $label);
     }
 
     public function item(string $name, string $label): MenuItem
@@ -24,10 +24,18 @@ final class Menus
     }
 
     /**
-     * Parent reference within this module (`partners.business` → `partners.partners.business`).
+     * Parent reference within this module (`business` → `partners.business`).
      */
     public function parentRef(string $name): string
     {
         return "{$this->module}.{$name}";
+    }
+
+    /**
+     * Cross-module parent reference for explicit {@see MenuItem::parentRef()}.
+     */
+    public function parent(string $parentModule, string $parentName): string
+    {
+        return "{$parentModule}.{$parentName}";
     }
 }

@@ -6,6 +6,10 @@ namespace Velm\Views\Authoring\Contracts;
 
 interface MenuDeclaration
 {
-    /** @return array<string, mixed> */
-    public function toArray(): array;
+    /**
+     * Expand nested groups into a flat list for {@see \Velm\Views\Sync\MenuSynchronizer}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function flatten(): array;
 }

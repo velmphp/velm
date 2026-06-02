@@ -75,6 +75,24 @@ final class MenuItem implements MenuDeclaration
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function flatten(): array
+    {
+        return [$this->toArray()];
+    }
+
+    /**
+     * @internal Used by {@see MenuBranch::children()}.
+     */
+    public function assignParentIfMissing(string $parentRef): void
+    {
+        if ($this->parent === null) {
+            $this->parent = $parentRef;
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array

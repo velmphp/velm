@@ -34,10 +34,13 @@ return ViewsData::make()
             ->section('address', 'Address', ['country_id']),
     )
     ->menus(
-        $m->group('contacts', 'Contacts')->icon('user-group')->sequence(10),
-        $m->item('partners', 'Partners')
-            ->parentRef($m->parentRef('contacts'))
-            ->view('partner.list')
+        $m->group('contacts', 'Contacts')
             ->icon('user-group')
-            ->sequence(10),
+            ->sequence(10)
+            ->children(
+                $m->item('partners', 'Partners')
+                    ->view('partner.list')
+                    ->icon('user-group')
+                    ->sequence(10),
+            ),
     );

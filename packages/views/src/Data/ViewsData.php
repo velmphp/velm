@@ -18,6 +18,11 @@ use Velm\Views\Authoring\Contracts\ViewDeclaration;
  *     )
  *     ->inherits(
  *         InheritView::make('partner.list.ext', 'partners.partner.list', […]),
+ *     )
+ *     ->menus(
+ *         $m->group('contacts', 'Contacts')->children(
+ *             $m->item('partners', 'Partners')->view('partner.list'),
+ *         ),
  *     );
  */
 final class ViewsData
@@ -104,7 +109,13 @@ final class ViewsData
         }
 
         if ($this->menus !== []) {
-            $data['MENUS'] = array_map(static fn (MenuDeclaration $menu): array => $menu->toArray(), $this->menus);
+            $flat = [];
+
+            foreach ($this->menus as $menu) {
+                array_push($flat, ...$menu->flatten());
+            }
+
+            $data['MENUS'] = $flat;
         }
 
         return $data;
