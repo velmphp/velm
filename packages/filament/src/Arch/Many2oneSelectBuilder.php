@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Velm\Filament\Arch;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Velm\Environment;
 use Velm\Fields\Many2oneField;
+use Velm\Web\Api\Many2oneQuickCreate;
 use Velm\Web\Api\Many2oneSearch;
 
 final class Many2oneSelectBuilder
 {
     public function __construct(
         private readonly Many2oneSearch $search = new Many2oneSearch,
+        private readonly Many2oneQuickCreate $quickCreate = new Many2oneQuickCreate,
     ) {}
 
     public function make(
@@ -56,6 +59,25 @@ final class Many2oneSelectBuilder
 
                 return (string) ($rows[0]['display_name'] ?? $value);
             });
+
+        $modelClass = $env->registry->modelClass($comodel);
+        if ($this->quickCreate->canQuickCreate($modelClass)) {
+            $select
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->label(__('Name'))
+                        ->required(),
+                ])
+                ->createOptionUsing(function (array $data) use ($env, $comodel): int {
+                    $created = $this->quickCreate->create(
+                        $env,
+                        $comodel,
+                        (string) ($data['name'] ?? ''),
+                    );
+
+                    return $created['id'];
+                });
+        }
 
         if ($field->required === true) {
             $select->required();
