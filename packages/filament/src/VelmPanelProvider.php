@@ -50,7 +50,7 @@ final class VelmPanelProvider extends PanelProvider
                 })->name('home');
             })
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Indigo,
             ])
             ->assets([
                 Css::make('velm-shell', __DIR__.'/../resources/css/velm-shell.css'),
