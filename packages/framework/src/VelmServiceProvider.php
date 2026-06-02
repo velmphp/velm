@@ -34,8 +34,15 @@ final class VelmServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/velm.php' => config_path('velm.php'),
+                __DIR__.'/../config/velm.php' => config_path('velm.php'),
             ], 'velm-config');
+
+            $this->commands([
+                Console\MigrateCommand::class,
+                Console\ModuleInstallCommand::class,
+                Console\ModuleSyncCommand::class,
+                Console\ModuleListCommand::class,
+            ]);
         }
     }
 }

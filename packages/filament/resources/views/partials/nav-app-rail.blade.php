@@ -18,7 +18,7 @@
             href="{{ $href ?? '#' }}"
             @class([
                 'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition',
-                'bg-primary-50 font-semibold text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $isActive,
+                'bg-amber-50 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $isActive,
                 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! $isActive,
             ])
             @if (! $href) aria-disabled="true" tabindex="-1" @endif

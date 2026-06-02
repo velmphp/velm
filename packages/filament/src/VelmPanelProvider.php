@@ -10,8 +10,11 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -37,9 +40,21 @@ final class VelmPanelProvider extends PanelProvider
             ->login()
             ->navigation(false)
             ->homeUrl(fn (): string => AppsPage::getUrl())
+            ->authenticatedTenantRoutes(function (): void {
+                // Filament's default home redirect uses navigation items; with
+                // navigation(false) it loops back to /velm. Register home first.
+                Route::get('/', static function (): RedirectResponse {
+                    $home = AppsPage::getUrl(panel: 'velm');
+
+                    return redirect()->to($home);
+                })->name('home');
+            })
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->assets([
+                Css::make('velm-shell', __DIR__.'/../resources/css/velm-shell.css'),
+            ], 'velm-filament')
             ->pages([
                 AppsPage::class,
                 CompanyListPage::class,

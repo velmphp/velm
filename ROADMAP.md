@@ -12,7 +12,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `php velm module:list` / `module:install` / `module:sync` / `migrate` | Done (DB commands need Laravel bootstrap) |
 | Bundled `base` + `admin` manifests | Done |
 | Apps catalog UI (Filament `/velm/apps`) | Done |
-| DATA / VIEW sync on install | Done (base views; inheritance next) |
+| Runnable skeleton app (`apps/skeleton`) | Done |
+| DATA / VIEW sync on install | Done |
 
 ## Phase 1 — ORM foundation
 

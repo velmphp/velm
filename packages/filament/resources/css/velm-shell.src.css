@@ -1,0 +1,7 @@
+/**
+ * Velm shell navigation (velm-app layout + partials).
+ * Compiled to velm-shell.css — run `npm run build:css` in packages/filament.
+ */
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';

@@ -23,7 +23,7 @@
                         <summary
                             @class([
                                 'flex cursor-pointer select-none items-center gap-2.5 rounded-md px-3 py-2 text-sm transition [&::-webkit-details-marker]:hidden',
-                                'bg-primary-50 font-semibold text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $child['active'] ?? false,
+                                'bg-amber-50 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $child['active'] ?? false,
                                 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($child['active'] ?? false),
                             ])
                         >
@@ -38,7 +38,7 @@
                                         href="{{ $grandUrl ?? '#' }}"
                                         @class([
                                             'flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition',
-                                            'bg-primary-50 font-semibold text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $grandchild['active'] ?? false,
+                                            'bg-amber-50 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $grandchild['active'] ?? false,
                                             'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($grandchild['active'] ?? false),
                                         ])
                                         @click="sidebarOpen = false"
@@ -55,7 +55,7 @@
                         href="{{ $childUrl ?? '#' }}"
                         @class([
                             'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition',
-                            'bg-primary-50 font-semibold text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $child['active'] ?? false,
+                            'bg-amber-50 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $child['active'] ?? false,
                             'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($child['active'] ?? false),
                         ])
                         @click="sidebarOpen = false"
@@ -70,7 +70,7 @@
                 href="{{ $navUrl ?? '#' }}"
                 @class([
                     'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition',
-                    'bg-primary-50 font-semibold text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => $nav['active'] ?? false,
+                    'bg-amber-50 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $nav['active'] ?? false,
                     'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' => ! ($nav['active'] ?? false),
                 ])
                 @click="sidebarOpen = false"
