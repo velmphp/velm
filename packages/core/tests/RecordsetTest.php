@@ -52,6 +52,17 @@ test('writes field values on existing records', function (): void {
     expect($partner->read()[0]['name'])->toBe('After');
 });
 
+test('searches with ilike operator on text fields', function (): void {
+    $env = ormEnvironment();
+    $env->model('res.partner')->create(['name' => 'Acme Corp']);
+    $env->model('res.partner')->create(['name' => 'Beta LLC']);
+
+    $matches = $env->model('res.partner')->search([['name', 'ilike', '%acme%']]);
+
+    expect($matches->count())->toBe(1)
+        ->and($matches->read()[0]['name'])->toBe('Acme Corp');
+});
+
 test('searches with simple domains', function (): void {
     $env = ormEnvironment();
     $env->model('res.partner')->create(['name' => 'Active Co', 'active' => true]);

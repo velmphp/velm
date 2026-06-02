@@ -48,6 +48,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `GET /api/views` | Done |
 | `GET /api/records` | Done |
 | `POST/PATCH/DELETE /api/records` | Done |
+| `GET /api/m2o/search` | Done |
 
 ## Phase 2+
 

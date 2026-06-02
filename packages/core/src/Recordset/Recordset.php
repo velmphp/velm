@@ -252,6 +252,7 @@ final class Recordset
                 '!=' => '"'.$field->column.'" <> ?',
                 '>' => '"'.$field->column.'" > ?',
                 '<' => '"'.$field->column.'" < ?',
+                'like', 'ilike' => 'LOWER(CAST("'.$field->column.'" AS TEXT)) LIKE LOWER(?)',
                 default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
             };
             $params[] = $field->toSql($leaf->value);
