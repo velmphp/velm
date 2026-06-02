@@ -30,10 +30,13 @@ php artisan velm:module:sync <name>
 
 ## What `composer run setup` does
 
-1. `php artisan migrate` — Laravel tables (`users`, `sessions`, …)
-2. `php artisan velm:migrate` — bootstrap modules (`base`, `admin`)
-3. `php artisan velm:module:install partners` — demo CRM data model + views/menus
-4. `php artisan db:seed` — Filament admin user
+1. `php artisan filament:assets` — publish Filament CSS/JS/fonts to `public/` (required for styled login and panel)
+2. `php artisan migrate` — Laravel tables (`users`, `sessions`, …)
+3. `php artisan velm:migrate` — bootstrap modules (`base`, `admin`)
+4. `php artisan velm:module:install partners` — demo CRM data model + views/menus
+5. `php artisan db:seed` — Filament admin user
+
+If the sign-in page or Velm shell menu looks unstyled, run `php artisan filament:assets` (or re-run `composer run setup`). After changing shell Blade templates in `packages/filament`, rebuild shell CSS with `npm run build:css` in that package, then publish assets again.
 
 ## Configuration
 
