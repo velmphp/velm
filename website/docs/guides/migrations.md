@@ -11,18 +11,21 @@ Velm uses a **two-layer** migration model (same as PyVelm/Odoo):
 
 ## CLI
 
+Run from your Laravel app root (e.g. `apps/skeleton`). All Velm commands use **Artisan**:
+
 ```bash
-php velm migrate --module=partners   # install or upgrade (deps first)
-php velm migrate                     # bootstrap modules
-php velm module:sync partners        # views, menus, schema diff (no version bump)
-php velm db:diff --module=partners   # show drift without applying
-php velm db:autogen --module=partners  # scaffold migration + minor VERSION bump
-php velm db:status                   # installed vs manifest versions
+php artisan velm:migrate --module=partners   # install or upgrade (deps first)
+php artisan velm:migrate                     # bootstrap modules
+php artisan velm:module:sync partners        # views, menus, schema diff (no version bump)
+php artisan velm:db:diff --module=partners   # show drift without applying
+php artisan velm:db:autogen --module=partners  # scaffold migration + minor VERSION bump
+php artisan velm:db:status                   # installed vs manifest versions
+php artisan list velm                        # full command list
 ```
 
 ## SYNC_HOOK
 
-Declare an idempotent backfill that runs **before** schema apply on every install, upgrade, `migrate`, and `module:sync`:
+Declare an idempotent backfill that runs **before** schema apply on every install, upgrade, `velm:migrate`, and `velm:module:sync`:
 
 ```php
 return Manifest::make('partners')

@@ -22,8 +22,8 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Model fields: prefer fluent setters on `Velm\Fields\*` (e.g. `CharField::make()->required()->maxLength(2)`); constructor/`make()` args still work
 - Models: `$name` registers a table; `$inherit` on a class that **extends `Model`** adds fields and joins the registry MRO — chain static hooks and instance methods with `static::super(...$args)` (recordset methods: `static::super($recordset, ...)`); `$recordset->action()` dispatches via `Recordset::__call`; `ALTER TABLE` on install (`partners_ext` fixture)
 - Views: module `DATA` files return `ViewsData::make()->views(…)->inherits(…)->menus(…)`; synced to `ir.ui.view` / `ir.ui.menu`; shell nav from `MenuTreeBuilder` + `MenuLayoutContext` (Blade layout `velm-filament::layouts.velm-app`, primary Filament Amber, accent `#F1511B`); Filament list pages use PyVelm-style search toolbar (filters, group by, columns); Filament renders arch pages inside the shell; `GET /api/views/{module}/{name}` returns resolved arch JSON; `GET /api/records?model=&domain=&fields=` lists rows; `POST/PATCH/DELETE /api/records` for CRUD; `GET /api/m2o/search?model=&q=` and `POST /api/m2o/quick-create` for combobox options (`velm-web`)
-- Runnable app: `apps/skeleton` — `composer run setup` then `composer run dev`; Artisan `velm:migrate`, `velm:module:*`
+- Runnable app: `apps/skeleton` — `composer run setup` then `composer run dev`; all Velm CLI via **`php artisan velm:*`** (see `php artisan list velm`)
 - Bundled module **code** lives under `packages/modules/modules/{name}/` (`models/`, `data/`, …); package **runtime** lives in `packages/modules/src/` (see `packages/modules/modules/README.md`)
 - Module install state: `ir.module` (not Composer)
-- CLI: `php velm …` (Artisan-style colon commands)
-- Cron: Laravel Scheduler + `velm:cron:run`
+- CLI: **`php artisan velm:*`** only (`velm:migrate`, `velm:module:install`, `velm:db:diff`, …) — requires a bootstrapped Laravel app (skeleton)
+- Cron: Laravel Scheduler + `php artisan velm:cron:run`
