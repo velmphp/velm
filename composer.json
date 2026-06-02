@@ -28,7 +28,8 @@
             "Velm\\Core\\Tests\\": "packages/core/tests/",
             "Velm\\Filament\\Tests\\": "packages/filament/tests/",
             "Velm\\Framework\\Tests\\": "packages/framework/tests/",
-            "Velm\\Views\\Tests\\": "packages/views/tests/"
+            "Velm\\Views\\Tests\\": "packages/views/tests/",
+            "Velm\\Web\\Tests\\": "packages/web/tests/"
         }
     },
     "scripts": {

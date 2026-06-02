@@ -32,7 +32,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Filament panel + arch list/create/edit pages | Done |
 | `res.company` on base module + default company on install | Done |
 
-## Phase 3 — Views and menus (in progress)
+## Phase 3 — Views and menus
 
 | Item | Status |
 |------|--------|
@@ -43,7 +43,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `VIEW_INHERITS` + `resolve_arch()` | Done |
 | `ir.ui.menu` + navigation from menus | Done |
 | PyVelm-style shell (apps rail + top bar / sidebar layout) | Done |
-| `GET /api/views` | Planned |
+| `GET /api/views` | Done |
 
 ## Phase 2+
 
