@@ -57,6 +57,7 @@ VELM_MENU_LAYOUT=sidebar
 | `/api/records?model=&domain=&fields=` | List records (GET) |
 | `/api/records?model=` | Create (POST JSON body) |
 | `/api/records/{id}?model=` | Update (PATCH) or delete (DELETE) |
+| `/api/m2o/search?model=&q=` | Many2one combobox search (`id` + `label`) |
 
 ## Artisan commands
 
