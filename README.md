@@ -35,6 +35,14 @@ The full feasibility and implementation plan lives in **[PLAN.md](./PLAN.md)** â
 
 Current progress: **[ROADMAP.md](./ROADMAP.md)**.
 
+## Documentation
+
+Module-author guides (models, `$inherit`, `static::super()`) live in the **[Docusaurus site](./website/)** under `website/docs/`. Local preview:
+
+```bash
+cd website && npm install && npm start
+```
+
 ## Monorepo packages
 
 | Package | Path |
