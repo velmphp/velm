@@ -6,24 +6,24 @@ namespace Velm\Core\Tests\Support;
 
 use Velm\Fields\CharField;
 
-class CountryExtension extends Country
+class CountryTagExtension extends CountryExtension
 {
     protected static ?string $inherit = 'res.country';
 
     public static function defineFields(): array
     {
         return [
-            'region_code' => CharField::make()->label('Region code')->maxLength(8),
+            'tag' => CharField::make()->maxLength(32),
         ];
     }
 
     public static function displayNameFor(array $values): string
     {
         $base = parent::displayNameFor($values);
-        $region = $values['region_code'] ?? '';
+        $tag = $values['tag'] ?? '';
 
-        if ($region !== '') {
-            return $base.' ['.$region.']';
+        if ($tag !== '') {
+            return $base.' #'.$tag;
         }
 
         return $base;

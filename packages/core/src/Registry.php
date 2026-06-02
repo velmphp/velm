@@ -99,10 +99,19 @@ final class Registry
             );
         }
 
+        $parentClass = $this->models[$inheritName];
+
+        if (! is_subclass_of($extensionClass, $parentClass)) {
+            throw new \RuntimeException(
+                "{$extensionClass} must extend {$parentClass} so overrides can call parent::.",
+            );
+        }
+
         $extensionClass::initialize();
-        $current = $this->fieldSets[$inheritName] ?? $this->models[$inheritName]::baseFields();
+        $current = $this->fieldSets[$inheritName] ?? $parentClass::baseFields();
         $this->fieldSets[$inheritName] = $this->mergeFields($current, $extensionClass::extensionFields());
         $this->extensions[$inheritName][] = $extensionClass;
+        $this->models[$inheritName] = $extensionClass;
     }
 
     public function hasFieldSet(string $name): bool
