@@ -1,16 +1,16 @@
-/* Velm brand palette — primary #286291, accent #F1511B */
+/* Velm brand palette — primary #289291, accent #F1511B */
 @theme {
-    --color-primary-50: #eef3f8;
-    --color-primary-100: #d9e6f0;
-    --color-primary-200: #b3cce0;
-    --color-primary-300: #8db3d1;
-    --color-primary-400: #5e94bc;
-    --color-primary-500: #286291;
-    --color-primary-600: #22527a;
-    --color-primary-700: #1c4363;
-    --color-primary-800: #16344c;
-    --color-primary-900: #102535;
-    --color-primary-950: #0a1822;
+    --color-primary-50: #eef8f8;
+    --color-primary-100: #d4f0ef;
+    --color-primary-200: #a9e1df;
+    --color-primary-300: #7dd2cf;
+    --color-primary-400: #52b3af;
+    --color-primary-500: #289291;
+    --color-primary-600: #227a79;
+    --color-primary-700: #1c6361;
+    --color-primary-800: #164c49;
+    --color-primary-900: #103532;
+    --color-primary-950: #0a2221;
 
     --color-accent-50: #fef0eb;
     --color-accent-100: #fde0d4;

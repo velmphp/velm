@@ -50,7 +50,7 @@ final class VelmPanelProvider extends PanelProvider
                 })->name('home');
             })
             ->colors([
-                'primary' => Color::hex('#286291'),
+                'primary' => Color::hex('#289291'),
                 'warning' => Color::hex('#F1511B'),
             ])
             ->assets([
