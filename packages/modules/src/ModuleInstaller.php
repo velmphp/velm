@@ -170,7 +170,7 @@ final class ModuleInstaller
                         );
                     }
 
-                    $schema->ensureTable($registry->modelClass($inherit));
+                    $schema->ensureTable($registry->baseModelClass($inherit));
 
                     continue;
                 }

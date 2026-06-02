@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Schema;
 use Velm\Modules\ModuleInstaller;
-use Velm\Modules\Tests\TestCase;
+use Velm\Modules\Partners\Models\Partner;
 use Velm\Modules\Tests\Support\PartnerChainedExtension;
 use Velm\Modules\Tests\Support\PartnerExtension;
+use Velm\Modules\Tests\Support\PartnerIndependentExtension;
+use Velm\Modules\Tests\TestCase;
 
 uses(TestCase::class);
 
@@ -39,7 +41,7 @@ test('installing a module with model inherit adds columns and exposes merged fie
         ->and($partner->read()[0]['display_name'])->toBe('Acme (ACME-001)');
 });
 
-test('independent extensions on same model fail with a clear chaining error', function (): void {
+test('independent extensions stack in module load order via static::super()', function (): void {
     $roots = [
         dirname(__DIR__, 2).'/modules',
         dirname(__DIR__, 2).'/tests/fixtures',
@@ -50,9 +52,27 @@ test('independent extensions on same model fail with a clear chaining error', fu
     $installer->install('partners', $roots);
     $installer->install('partners_ext', $roots);
     $installer->install('partners_ext_independent', $roots);
-})->throws(RuntimeException::class, 'must extend');
 
-test('chained partner extension module installs and composes display_name', function (): void {
+    expect(Schema::hasColumn('res_partner', 'ref'))->toBeTrue()
+        ->and(Schema::hasColumn('res_partner', 'independent_note'))->toBeTrue();
+
+    $env = $installer->environment($roots);
+    $partner = $env->model('res.partner')->create([
+        'name' => 'Velm Labs',
+        'ref' => 'VL-001',
+        'independent_note' => 'vip',
+    ]);
+
+    expect($partner->read()[0]['display_name'])->toBe('Velm Labs (VL-001) {vip}')
+        ->and($env->registry->modelClass('res.partner'))->toBe(PartnerIndependentExtension::class)
+        ->and($env->registry->extensionChainFor('res.partner'))->toBe([
+            Partner::class,
+            PartnerExtension::class,
+            PartnerIndependentExtension::class,
+        ]);
+});
+
+test('multiple extension modules compose display_name through super chain', function (): void {
     $roots = [
         dirname(__DIR__, 2).'/modules',
         dirname(__DIR__, 2).'/tests/fixtures',

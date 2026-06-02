@@ -17,8 +17,12 @@ final class Registry
     /** @var array<string, array<string, Field>> */
     private array $fieldSets = [];
 
-    /** @var array<string, list<class-string<Model>>> */
-    private array $extensions = [];
+    /**
+     * MRO chain per model name: base class first, each extension appended in load order.
+     *
+     * @var array<string, list<class-string<Model>>>
+     */
+    private array $extensionChain = [];
 
     public static function active(): self
     {
@@ -76,6 +80,7 @@ final class Registry
 
         $this->models[$name] = $modelClass;
         $this->fieldSets[$name] = $modelClass::baseFields();
+        $this->extensionChain[$name] = [$modelClass];
     }
 
     /**
@@ -99,19 +104,42 @@ final class Registry
             );
         }
 
-        $parentClass = $this->models[$inheritName];
+        $extensionClass::initialize();
+        $current = $this->fieldSets[$inheritName] ?? $this->baseModelClass($inheritName)::baseFields();
+        $this->fieldSets[$inheritName] = $this->mergeFields($current, $extensionClass::extensionFields());
+        $this->extensionChain[$inheritName][] = $extensionClass;
+        $this->models[$inheritName] = $extensionClass;
+    }
 
-        if (! is_subclass_of($extensionClass, $parentClass)) {
-            throw new \RuntimeException(
-                "{$extensionClass} must extend {$parentClass} so overrides can call parent::.",
-            );
+    /**
+     * @param  class-string<Model>  $class
+     * @return class-string<Model>|null
+     */
+    public function superClass(string $class): ?string
+    {
+        $modelName = $class::isExtension() ? $class::inherit() : $class::name();
+        $chain = $this->extensionChain[$modelName] ?? [];
+        $index = array_search($class, $chain, true);
+
+        if ($index === false || $index === 0) {
+            return null;
         }
 
-        $extensionClass::initialize();
-        $current = $this->fieldSets[$inheritName] ?? $parentClass::baseFields();
-        $this->fieldSets[$inheritName] = $this->mergeFields($current, $extensionClass::extensionFields());
-        $this->extensions[$inheritName][] = $extensionClass;
-        $this->models[$inheritName] = $extensionClass;
+        return $chain[$index - 1];
+    }
+
+    /**
+     * @return class-string<Model>
+     */
+    public function baseModelClass(string $modelName): string
+    {
+        $chain = $this->extensionChain[$modelName] ?? [];
+
+        if ($chain === []) {
+            throw new \InvalidArgumentException("Unknown model {$modelName}.");
+        }
+
+        return $chain[0];
     }
 
     public function hasFieldSet(string $name): bool
@@ -136,7 +164,21 @@ final class Registry
      */
     public function extensionsFor(string $name): array
     {
-        return $this->extensions[$name] ?? [];
+        $chain = $this->extensionChain[$name] ?? [];
+
+        if ($chain === []) {
+            return [];
+        }
+
+        return array_slice($chain, 1);
+    }
+
+    /**
+     * @return list<class-string<Model>>
+     */
+    public function extensionChainFor(string $name): array
+    {
+        return $this->extensionChain[$name] ?? [];
     }
 
     /**
@@ -165,6 +207,8 @@ final class Registry
     }
 
     /**
+     * Effective class for ORM dispatch (top of the extension chain).
+     *
      * @return class-string<Model>
      */
     public function modelClass(string $name): string

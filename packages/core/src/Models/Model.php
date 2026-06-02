@@ -146,11 +146,48 @@ abstract class Model
 
     public static function table(): string
     {
+        if (static::isExtension()) {
+            try {
+                return \Velm\Registry::active()->baseModelClass(static::inherit())::table();
+            } catch (\RuntimeException) {
+            }
+        }
+
         if (static::$table !== null && static::$table !== '') {
             return static::$table;
         }
 
         return str_replace('.', '_', static::name());
+    }
+
+    /**
+     * Call the next class in the registry MRO (PyVelm-style super()).
+     *
+     * Preferred: {@code static::super(...$args)} — infers the caller method.
+     * Legacy: {@code static::super(__FUNCTION__, ...$args)} still works.
+     */
+    protected static function super(mixed ...$args): mixed
+    {
+        $frame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? null;
+        $method = $frame['function'] ?? null;
+
+        if (! is_string($method) || $method === '') {
+            throw new \LogicException('Could not resolve caller for static::super().');
+        }
+
+        if ($args !== [] && is_string($args[0]) && $args[0] === $method) {
+            array_shift($args);
+        }
+
+        $parent = \Velm\Registry::active()->superClass(static::class);
+
+        if ($parent === null) {
+            throw new \LogicException(
+                static::class." has no parent in the model MRO for {$method}().",
+            );
+        }
+
+        return $parent::$method(...$args);
     }
 
     public static function recNameField(): string
