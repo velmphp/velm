@@ -1,4 +1,5 @@
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
@@ -53,6 +54,7 @@ const features: FeatureItem[] = [
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
+  const logoSrc = useBaseUrl('/img/logo-concept.svg');
 
   return (
     <header className={clsx('hero', styles.heroBanner)}>
@@ -83,7 +85,7 @@ function HomepageHeader() {
           <div className={styles.heroVisual}>
             <div className={styles.heroGlow} aria-hidden />
             <img
-              src="/img/logo-concept.svg"
+              src={logoSrc}
               alt="Velm"
               className={styles.heroLogo}
               width={320}
