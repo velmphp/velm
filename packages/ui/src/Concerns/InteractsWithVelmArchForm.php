@@ -52,6 +52,25 @@ trait InteractsWithVelmArchForm
         return (string) ($this->arch()['title'] ?? 'Record');
     }
 
+    public function velmRecordDisplayName(): string
+    {
+        $recordId = $this->velmFormRecordId();
+
+        if ($recordId === null) {
+            return $this->velmFormTitle();
+        }
+
+        $model = (string) ($this->arch()['model'] ?? '');
+
+        if ($model === '') {
+            return '#'.$recordId;
+        }
+
+        $row = app(Environment::class)->browse($model, [$recordId])->read()[0] ?? [];
+
+        return (string) ($row['display_name'] ?? '#'.$recordId);
+    }
+
     protected function velmFormViewModule(): ?string
     {
         if (property_exists($this, 'module') && is_string($this->module) && $this->module !== '') {
@@ -150,11 +169,61 @@ trait InteractsWithVelmArchForm
 
     protected function velmFormRecordId(): ?int
     {
-        if (property_exists($this, 'record') && is_int($this->record) && $this->record > 0) {
-            return $this->record;
+        if (! property_exists($this, 'record')) {
+            return null;
         }
 
-        return null;
+        $id = (int) $this->record;
+
+        return $id > 0 ? $id : null;
+    }
+
+    public function velmFormCanDelete(): bool
+    {
+        $recordId = $this->velmFormRecordId();
+
+        if ($recordId === null) {
+            return false;
+        }
+
+        $model = (string) ($this->arch()['model'] ?? '');
+
+        return $model !== '' && app(Environment::class)->hasAccess($model, 'unlink');
+    }
+
+    public function deleteVelmForm(): void
+    {
+        $recordId = $this->velmFormRecordId();
+
+        if ($recordId === null) {
+            return;
+        }
+
+        $model = (string) ($this->arch()['model'] ?? '');
+
+        if ($model === '') {
+            return;
+        }
+
+        try {
+            app(Environment::class)->browse($model, [$recordId])->unlink();
+
+            session()->flash('velm_notify', [
+                'type' => 'success',
+                'title' => (string) __('Deleted'),
+                'body' => null,
+            ]);
+
+            if ($this->velmFormEmbedded()) {
+                $this->js('window.parent.pvCloseRecordDialog?.()');
+
+                return;
+            }
+
+            $this->redirect($this->listPageUrl(), navigate: true);
+        } catch (\Throwable $e) {
+            $this->formError = $e->getMessage();
+        }
     }
 
     protected function afterVelmFormSaved(): void {}
@@ -173,6 +242,14 @@ trait InteractsWithVelmArchForm
         }
 
         return $url.(str_contains($url, '?') ? '&' : '?').'embed=1';
+    }
+
+    /**
+     * Detail page after save/create when defined (stored views with detail arch).
+     */
+    protected function detailPageUrl(?int $recordId): ?string
+    {
+        return null;
     }
 
     protected function redirectAfterVelmFormSubmit(?int $recordId = null): void
@@ -197,7 +274,11 @@ trait InteractsWithVelmArchForm
             return;
         }
 
-        $this->redirect($this->listPageUrl());
+        $target = $recordId !== null
+            ? ($this->detailPageUrl($recordId) ?? $this->listPageUrl())
+            : $this->listPageUrl();
+
+        $this->redirect($target);
     }
 
     protected function notifyEmbedDialogParent(int $recordId): void

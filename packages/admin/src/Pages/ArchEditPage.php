@@ -30,7 +30,7 @@ abstract class ArchEditPage extends VelmShellPage
 
     public function getTitle(): string|Htmlable
     {
-        return 'Edit '.$this->velmFormTitle();
+        return 'Edit '.$this->velmRecordDisplayName();
     }
 
     public function mount(int|string $record): void

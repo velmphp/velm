@@ -2,7 +2,11 @@
     $app = $this->moduleEntry();
 @endphp
 
-<div class="space-y-4">
+<div
+    class="space-y-4"
+    data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
+    data-velm-nav-label="{{ $this->velmNavLabel() }}"
+>
     @if ($app === null)
         <p class="text-sm text-body-subtle">{{ __('Module not found.') }}</p>
     @else

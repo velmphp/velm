@@ -8,7 +8,8 @@ use Velm\Environment;
 
 final class CompanyBranding
 {
-    private const int DEFAULT_HEADER_LOGO_HEIGHT = 68;
+    /** Matches shell topbar `min-h-[60px]`. */
+    private const int DEFAULT_HEADER_LOGO_HEIGHT = 60;
 
     /**
      * @return array<string, mixed>

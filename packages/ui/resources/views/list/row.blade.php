@@ -12,14 +12,15 @@
         @click="if (! $event.defaultPrevented) { (window.Livewire && typeof Livewire.navigate === 'function') ? Livewire.navigate(@js($openUrl)) : (window.location.href = @js($openUrl)) }"
     @endif
 >
-    <td class="w-9 px-3 py-3" @click.stop>
+    <td class="w-9 px-3 py-3">
         <span class="block h-3.5 w-3.5 rounded border border-default bg-neutral-primary/60"></span>
     </td>
     @foreach ($columns as $column)
         @if ($this->isListColumnVisible($column->name))
-            <td class="px-4 py-3 text-body" @click.stop>
+            <td class="px-4 py-3 text-body">
                 @if ($column->kind === 'toggle')
                     @php $isOn = (bool) ($record[$column->name] ?? false); @endphp
+                    <div @click.stop>
                     <button
                         type="button"
                         role="switch"
@@ -29,6 +30,7 @@
                     >
                         <span @class(['pv-list-toggle', 'pv-list-toggle--on' => $isOn]) aria-hidden="true"></span>
                     </button>
+                    </div>
                 @else
                     {{ $this->formatListCell($column, $record[$column->name] ?? null) }}
                 @endif

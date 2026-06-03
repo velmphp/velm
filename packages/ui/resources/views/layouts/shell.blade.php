@@ -64,7 +64,7 @@
             >
                 <div
                     class="relative flex shrink-0 items-center overflow-hidden border-b border-default/60 px-4 pr-10 md:pr-4"
-                    style="height: {{ (int) ($velmShell['header_logo_height'] ?? 68) }}px"
+                    style="height: {{ (int) ($velmShell['header_logo_height'] ?? 60) }}px"
                 >
                     @include('velm-ui::partials.brand-mark')
                     <button

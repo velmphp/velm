@@ -5,7 +5,14 @@
     $sections = $this->velmFormSections();
 @endphp
 
-<div class="mx-auto max-w-5xl space-y-6" data-pv-form-shell>
+<div
+    class="mx-auto max-w-5xl space-y-6"
+    data-pv-form-shell
+    data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
+    data-velm-nav-label="{{ $this->velmNavLabel() }}"
+>
+    @include('velm-ui::partials.page-heading')
+
     @include('velm-ui::form.actions-bar', [
         'mode' => $mode,
         'listUrl' => $this->listPageUrl(),

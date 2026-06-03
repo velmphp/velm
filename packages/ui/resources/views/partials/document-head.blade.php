@@ -11,13 +11,19 @@
 <meta name="csrf-token" content="{{ csrf_token() }}" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>
+<meta name="velm-app-name" content="{{ $appName }}" />
+
+<title id="velm-document-title">
     @if (filled($title))
         {{ $title }} — {{ $appName }}
     @else
         {{ $appName }}
     @endif
 </title>
+
+@if (filled($title))
+    <meta name="velm-nav-label" content="{{ $title }}" />
+@endif
 
 @if ($favicon !== '')
     <link rel="icon" href="{{ $favicon }}" />

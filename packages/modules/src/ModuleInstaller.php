@@ -15,6 +15,7 @@ use Velm\Registry;
 use Velm\Schema\SchemaDiff;
 use Velm\Schema\SchemaDiffer;
 use Velm\Views\Sync\MenuSynchronizer;
+use Velm\Views\Sync\UiSyncDiffer;
 use Velm\Views\Sync\ViewSynchronizer;
 
 final class ModuleInstaller
@@ -234,6 +235,39 @@ final class ModuleInstaller
         }
     }
 
+    /**
+     * @param  list<string>  $roots
+     */
+    public function uiSyncDiff(string $moduleName, array $roots): \Velm\Views\Sync\UiSyncDiff
+    {
+        $specs = $this->discover($roots);
+
+        if (! isset($specs[$moduleName])) {
+            throw new \InvalidArgumentException("Module {$moduleName} was not discovered.");
+        }
+
+        if (! $this->repository->isInstalled($moduleName)) {
+            return new \Velm\Views\Sync\UiSyncDiff;
+        }
+
+        $spec = $specs[$moduleName];
+        $env = new Environment($this->velmConnection(), $this->registry($roots, $spec));
+
+        return (new UiSyncDiffer)->diff($spec, $env);
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    public function hasPendingUiSync(string $moduleName, array $roots): bool
+    {
+        try {
+            return $this->uiSyncDiff($moduleName, $roots)->hasChanges();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     public function canAlterColumnNullability(): bool
     {
         return (new SchemaDiffer($this->velmConnection()))->supportsAlterColumnNullability();
@@ -250,7 +284,7 @@ final class ModuleInstaller
             return;
         }
 
-        if ($this->hasPendingSchemaDiff($spec->name, $roots)) {
+        if ($this->hasPendingSchemaDiff($spec->name, $roots) || $this->hasPendingUiSync($spec->name, $roots)) {
             $this->sync($spec->name, $roots);
         }
     }

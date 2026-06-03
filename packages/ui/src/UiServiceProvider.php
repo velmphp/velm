@@ -23,6 +23,7 @@ final class UiServiceProvider extends ServiceProvider
         $this->publishes([
             UiAssets::stylesheetPath() => public_path('css/velm/velm.css'),
             UiAssets::flowbiteScriptPath() => public_path('js/velm/flowbite.min.js'),
+            UiAssets::navigationScriptPath() => public_path('js/velm/velm-nav.js'),
         ], 'velm-ui-assets');
     }
 }

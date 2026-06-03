@@ -50,7 +50,7 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 | **Not installed** | Absent from `ir.module` | **Install** |
 | **Installed** | Up to date | **Open app** (if menus exist) |
 | **Upgrade** | Installed manifest **version** is newer | **Upgrade** (versioned migrations + sync) |
-| **Sync pending** | Same version but **actionable** schema diff (new columns, etc.) | **Sync** |
+| **Sync pending** | Same version but **actionable** schema diff (new columns, etc.) **or** views/menus on disk differ from `ir.ui.view` / `ir.ui.menu` | **Sync** |
 | **Schema drift** | Unsupported diff (e.g. SQLite nullability-only changes) | Informational only — does not block “Installed”; fix manually or bump version |
 
 `schemaExternalColumns()` on a model (e.g. Laravel-owned `users.password`) excludes columns from actionable sync diff so Laravel tables do not show false “sync pending”.
@@ -107,6 +107,9 @@ Panel login uses Laravel session guard; Velm ACL applies after bind. See [Securi
 |---------|--------|
 | **Grid layout** | `->cols(n)`, per-section `cols:`, `Field::make('x')->colspan(2)` or `colspan('full')` |
 | **Modes** | Display (detail), Edit, **New** (create) |
+| **Breadcrumbs** | Session history in the shell; click a crumb to jump back without losing the trail |
+| **Back / Cancel** | Uses navigation history (falls back to the list URL) |
+| **After save/create** | Redirects to the **detail** view when one exists (not the list) |
 | **Keyboard** | `Ctrl+S` / `Cmd+S` submits `#velm-form` |
 | **Embedded forms** | `?embed=1` for record dialogs; `postMessage` updates parent M2M chips |
 | **Relational widgets** | M2O combobox, M2M/O2M dialog widgets — work on **New** forms (same widgets as edit) |

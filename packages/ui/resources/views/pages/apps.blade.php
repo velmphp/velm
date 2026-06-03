@@ -3,7 +3,13 @@
     $catalog = $this->moduleCatalog();
 @endphp
 
-<div class="space-y-4" x-data x-init="$nextTick(() => { $store.velmAppsCatalog.apply(); $refs.searchInput?.focus(); })">
+<div
+    class="space-y-4"
+    x-data
+    x-init="$nextTick(() => { $store.velmAppsCatalog.apply(); $refs.searchInput?.focus(); })"
+    data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
+    data-velm-nav-label="{{ $this->velmNavLabel() }}"
+>
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-lg font-semibold text-heading">{{ $this->getTitle() }}</h1>

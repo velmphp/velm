@@ -50,9 +50,7 @@ final class StoredViewRecordPage extends VelmShellPage
 
     public function getTitle(): string|Htmlable
     {
-        $row = app(Environment::class)->browse((string) $this->arch()['model'], [$this->record])->read()[0] ?? [];
-
-        return (string) ($row['display_name'] ?? $this->velmFormTitle());
+        return 'View '.$this->velmRecordDisplayName();
     }
 
     protected function listPageUrl(): string
