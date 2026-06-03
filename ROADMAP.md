@@ -39,9 +39,9 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `ir.attachment` model + storage (Laravel Flysystem disk / db inline / legacy local path) | Done |
 | `POST/GET/DELETE /api/attachment/*` | Done |
 | `file_manager` module (`res.attachment.folder`, ACL install hook, list views) | Done |
-| Drive-style library shell (`/web/files/library`) | Pending |
+| Drive-style library shell (`/web/files/library`) | Done |
 | File picker widgets (`file`, `files`, `file_url`) | Pending |
-| Bulk actions, properties page, Alpine `pvFileLibrary` | Pending |
+| Bulk actions, properties page, Alpine `pvFileLibrary` | Done |
 
 ## Phase 3 — Views and menus
 

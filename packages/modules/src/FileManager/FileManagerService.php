@@ -216,6 +216,31 @@ final class FileManagerService
     /**
      * @return array<string, mixed>
      */
+    /**
+     * @return array<string, mixed>
+     */
+    public function propertiesViewData(int $attId): array
+    {
+        $context = $this->propertiesContext($attId);
+        $att = $context['att'] ?? [];
+        $bytes = (int) ($att['file_size'] ?? 0);
+
+        return [
+            'att' => $att,
+            'mimetype' => $context['mimetype'] ?? '',
+            'isImage' => (bool) ($context['is_image'] ?? false),
+            'extension' => $context['extension'] ?? '',
+            'dimensions' => $context['dimensions'] ?? null,
+            'ownerUrl' => $context['owner_url'] ?? '',
+            'folderChain' => $context['folder_chain'] ?? [],
+            'fileSizeLabel' => self::humanSize($bytes),
+            'panelOnly' => false,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function propertiesContext(int $attId): array
     {
         $this->env->checkAccess('ir.attachment', 'read');
@@ -630,6 +655,23 @@ final class FileManagerService
         }
 
         return $rec;
+    }
+
+    private static function humanSize(int $bytes): string
+    {
+        if ($bytes <= 0) {
+            return '0 B';
+        }
+
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+
+        if ($bytes < 1024 * 1024) {
+            return number_format($bytes / 1024, 1).' KB';
+        }
+
+        return number_format($bytes / 1024 / 1024, 1).' MB';
     }
 
     private function folderChainIncludes(int $ancestorId, int $candidateId): bool

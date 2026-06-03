@@ -24,6 +24,8 @@ final class MenuBranch implements MenuDeclaration
 
     private ?string $icon = null;
 
+    private ?string $href = null;
+
     /** @var list<MenuDeclaration> */
     private array $children = [];
 
@@ -65,6 +67,16 @@ final class MenuBranch implements MenuDeclaration
     public function icon(string $icon): self
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
+     * Default landing URL when the group is opened from the app rail.
+     */
+    public function href(string $href): self
+    {
+        $this->href = $href;
 
         return $this;
     }
@@ -112,6 +124,10 @@ final class MenuBranch implements MenuDeclaration
 
         if ($this->icon !== null) {
             $row['icon'] = $this->icon;
+        }
+
+        if ($this->href !== null) {
+            $row['href'] = $this->href;
         }
 
         return $row;

@@ -54,13 +54,33 @@ final class UiAssets
 
     public static function navigationScriptHref(): string
     {
-        $published = public_path('js/velm/velm-nav.js');
+        return self::publishedOrVendor('js/velm/velm-nav.js', 'resources/js/velm-nav.js');
+    }
+
+    public static function fileHelpersScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-file-helpers.js', 'resources/js/pv-file-helpers.js');
+    }
+
+    public static function filesAlpineScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-files-alpine.js', 'resources/js/pv-files-alpine.js');
+    }
+
+    public static function fileLibraryScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-file-library.js', 'resources/js/pv-file-library.js');
+    }
+
+    private static function publishedOrVendor(string $publicRelative, string $packageRelative): string
+    {
+        $published = public_path($publicRelative);
 
         if (is_file($published)) {
-            return asset('js/velm/velm-nav.js');
+            return asset($publicRelative);
         }
 
-        return asset('vendor/velm-ui/velm-nav.js');
+        return asset('vendor/velm-ui/'.basename($packageRelative));
     }
 
     private static function requireBuiltFile(string $path, string $message): string

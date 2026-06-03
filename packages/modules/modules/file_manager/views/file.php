@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
-use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Data\ViewsData;
 
@@ -11,8 +12,12 @@ return ViewsData::make()
     ->views(
         ListView::make('file.list')
             ->model('ir.attachment')
-            ->title('File library')
-            ->formView('file.form')
+            ->title('All files')
+            ->readonly()
+            ->detailView('file.detail')
+            ->rowActions([
+                ListRowAction::open(),
+            ])
             ->columns([
                 'name',
                 'mimetype',
@@ -22,8 +27,9 @@ return ViewsData::make()
                 Field::make('public')->toggle(),
                 'created_at',
             ]),
-        FormView::make('file.form')
+        DetailView::make('file.detail')
             ->model('ir.attachment')
+            ->title('File')
             ->section('identity', 'File', [
                 'name',
                 'datas_fname',

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Velm\Admin\Support;
 
 use Illuminate\Http\Request;
+use Velm\Admin\Pages\FileLibraryPage;
+use Velm\Admin\Pages\FilePropertiesPage;
 use Velm\Admin\Pages\StoredViewCreatePage;
 use Velm\Admin\Pages\StoredViewEditPage;
 use Velm\Admin\Pages\StoredViewListPage;
@@ -22,11 +24,33 @@ final class MenuActivePath
 
         $pageClass = self::pageClassFromRequest($request);
 
-        if ($pageClass === null) {
-            return null;
+        if ($pageClass !== null) {
+            $canonical = ArchPageMap::canonicalHrefForPage($pageClass);
+
+            if ($canonical !== null) {
+                return $canonical;
+            }
+
+            if ($pageClass === FileLibraryPage::class) {
+                return '/web/files/library';
+            }
         }
 
-        return ArchPageMap::canonicalHrefForPage($pageClass);
+        return self::shellPathFromRequest($request);
+    }
+
+    /**
+     * Non-Livewire routes that still use the Velm shell (file library JSON, etc.).
+     */
+    private static function shellPathFromRequest(Request $request): ?string
+    {
+        if ($request->is('web/files', 'web/files/*')) {
+            $path = '/'.ltrim($request->path(), '/');
+
+            return $path !== '/' ? $path : null;
+        }
+
+        return null;
     }
 
     private static function storedViewHrefFromRequest(Request $request): ?string
@@ -70,6 +94,10 @@ final class MenuActivePath
         }
 
         if (ArchPageMap::canonicalHrefForPage($class) !== null) {
+            return $class;
+        }
+
+        if ($class === FileLibraryPage::class || $class === FilePropertiesPage::class) {
             return $class;
         }
 

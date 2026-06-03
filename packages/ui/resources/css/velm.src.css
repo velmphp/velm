@@ -270,6 +270,39 @@
     overflow: visible;
 }
 
+/* Velm shell — flex sidebar + main (must live in @layer so Tailwind v4 emits it) */
+@layer components {
+    @media (min-width: 768px) {
+        .velm-shell {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .velm-shell__aside {
+            position: relative;
+            transform: none;
+            flex-shrink: 0;
+            width: 16rem;
+        }
+
+        .velm-shell__main {
+            flex: 1 1 0%;
+            min-width: 0;
+            width: auto;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .velm-shell__aside {
+            position: fixed;
+        }
+
+        .velm-shell__main {
+            width: 100%;
+        }
+    }
+}
+
 /* Sidebar navigation — section labels vs clickable items */
 .pv-sidebar-nav {
     display: flex;
