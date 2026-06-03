@@ -27,9 +27,10 @@ test('base install seeds admin user and security tables', function (): void {
         ->and($env->model('res.users')->search()->count())->toBe(1)
         ->and($env->model('ir.model.access')->search()->count())->toBeGreaterThan(0);
 
-    $admin = $env->model('res.users')->search([['login', '=', 'admin']])->read()[0];
+    $adminEmail = (string) config('velm.bootstrap_admin.email', 'admin@velm.test');
+    $admin = $env->model('res.users')->search([['email', '=', $adminEmail]])->read()[0];
 
-    expect($admin['login'])->toBe('admin')
+    expect($admin['email'])->toBe($adminEmail)
         ->and($admin['group_ids'])->not->toBeEmpty();
 });
 
@@ -42,11 +43,11 @@ test('non-superuser without partner grant cannot read partners after install', f
     $salesGroup = $baseEnv->model('res.groups')->create(['name' => 'Sales Only']);
     $baseEnv->model('res.users')->create([
         'name' => 'Limited',
-        'login' => 'limited',
+        'email' => 'limited@velm.test',
         'group_ids' => $salesGroup->ids(),
     ]);
 
-    $limitedUser = $baseEnv->model('res.users')->search([['login', '=', 'limited']]);
+    $limitedUser = $baseEnv->model('res.users')->search([['email', '=', 'limited@velm.test']]);
     $limitedEnv = new Environment(
         $baseEnv->connection,
         $baseEnv->registry,

@@ -9,7 +9,7 @@ $m = new Menus('demo_relations');
 
 return ViewsData::make()
     ->menus(
-        $m->group('demos', 'Demos')
+        $m->group('demos', 'Demo Module')
             ->icon('beaker')
             ->sequence(90)
             ->children(

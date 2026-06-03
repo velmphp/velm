@@ -38,7 +38,7 @@ On the comodel:
 - **Write** on a **single** parent record accepts an id list and replaces links (children not in the list are unlinked by clearing the inverse FK).
 - Registration validates that the inverse field exists and points back at the parent model.
 
-Optional UI hints for future form embeds: `->listView('order.line.list')`, `->formView('order.line.form')`.
+Optional UI hints: `->listView('order.line.list')`, `->formView('order.line.form')`. In forms, One2many uses the **dialog** widget by default (table + create/link/open in a floating record dialog). See [Views and forms](../guides/views-and-forms#relational-fields-in-the-ui).
 
 ## Many2many
 
@@ -70,6 +70,10 @@ Self-referential many2many requires an explicit `->relation(...)`.
 - Junction tables for Many2many
 - **No** column for One2many (inverse Many2one on the comodel is synced instead)
 
+## Try it in the shell
+
+The skeleton **`demo_relations`** addon (`apps/skeleton/addons/demo_relations`) installs **Demos → Projects** with M2M tags, O2M tasks, and M2O `project_id` on tasks. UI widgets (dialog, combobox, embed forms) are described in [Views and forms](../guides/views-and-forms#relational-fields-in-the-ui) and [Platform features](../guides/features#relational-ui-dialogs).
+
 ## Example
 
 ```php
@@ -92,5 +96,15 @@ $order->write(['line_ids' => [$line->ids()[0]]]); // single parent only
 ```
 
 See [Scaffolding](../guides/scaffolding) for generating modules that use these fields, and [Module migrations](../guides/migrations) for schema upgrades.
+
+## UI behavior (summary)
+
+| Field | In forms |
+|-------|----------|
+| **Many2one** | Search combobox, quick create, open/edit in record dialog |
+| **Many2many** | Inline chips, or `widget: dialog` for Create new / Link existing |
+| **One2many** | Dialog table (default) or `widget: inline` when supported |
+
+Record dialogs load the comodel form with `?embed=1` and show the full **Save** / **Create** action bar. See [Views and forms](../guides/views-and-forms).
 
 **Try it:** run `composer run setup` in `apps/skeleton`, then open **Demos → Projects** (module `demo_relations`).

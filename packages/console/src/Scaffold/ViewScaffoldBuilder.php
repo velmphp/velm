@@ -12,7 +12,16 @@ use Velm\Registry;
 
 final class ViewScaffoldBuilder
 {
-    private const SKIP_FIELDS = ['id', 'display_name', 'create_uid', 'write_uid', 'create_date', 'write_date'];
+    private const SKIP_FIELDS = [
+        'id',
+        'display_name',
+        'create_uid',
+        'write_uid',
+        'create_date',
+        'write_date',
+        'created_at',
+        'updated_at',
+    ];
 
     /**
      * @return array{list: list<string>, sections: list<array{id: string, title: string, fields: list<string>}>}

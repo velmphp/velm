@@ -56,4 +56,14 @@ final class VelmManager
     {
         $this->installer->install($moduleName, $this->addonPaths());
     }
+
+    public function upgrade(string $moduleName): void
+    {
+        $this->installer->reconcile($moduleName, $this->addonPaths());
+    }
+
+    public function sync(string $moduleName): void
+    {
+        $this->installer->sync($moduleName, $this->addonPaths());
+    }
 }

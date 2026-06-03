@@ -37,3 +37,43 @@ test('installing partners syncs menus into ir.ui.menu', function (): void {
     expect($partnerMenu->count())->toBe(1)
         ->and($partnerMenu->read()[0]['href'])->toBe('/velm/views/partners/partner.list');
 });
+
+test('syncing base removes stale administration menus from older data files', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules/modules'];
+    $installer = new ModuleInstaller;
+
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $env = $installer->environment($roots);
+    $Menu = $env->model('ir.ui.menu');
+
+    $Menu->create([
+        'module' => 'base',
+        'name' => 'administration',
+        'label' => 'Administration',
+        'sequence' => 20,
+        'active' => true,
+    ]);
+
+    $administration = $Menu->search([
+        ['module', '=', 'base'],
+        ['name', '=', 'administration'],
+    ]);
+
+    $Menu->create([
+        'module' => 'base',
+        'name' => 'companies',
+        'label' => 'Companies',
+        'parent_id' => $administration->ids()[0],
+        'href' => '/velm/views/base/company.list',
+        'sequence' => 10,
+        'active' => true,
+    ]);
+
+    expect($Menu->search([['module', '=', 'base'], ['name', '=', 'administration']])->count())->toBe(1);
+
+    $installer->sync('base', $roots);
+
+    expect($Menu->search([['module', '=', 'base'], ['name', '=', 'administration']])->count())->toBe(0)
+        ->and($Menu->search([['module', '=', 'base'], ['name', '=', 'companies']])->count())->toBe(0)
+        ->and($Menu->search([['module', '=', 'admin'], ['name', '=', 'settings.companies']])->count())->toBe(1);
+});

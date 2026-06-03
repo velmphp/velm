@@ -3,7 +3,7 @@
     "name": "velmphp/skeleton",
     "type": "project",
     "description": "Velm Laravel application template for local development and greenfield ERP apps",
-    "keywords": ["velm", "laravel", "erp", "filament"],
+    "keywords": ["velm", "laravel", "erp", "admin"],
     "license": "LGPL-3.0-or-later",
     "require": {
         "php": "^8.3",
@@ -47,8 +47,13 @@
             "@php artisan key:generate",
             "@velm-setup"
         ],
+        "velm-build-css": [
+            "npm --prefix ../../packages/ui ci",
+            "npm --prefix ../../packages/ui run build:css",
+            "@php artisan vendor:publish --tag=velm-ui-assets --force"
+        ],
         "velm-setup": [
-            "@php artisan filament:assets",
+            "@velm-build-css",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --force",
             "@php artisan velm:migrate",
@@ -70,7 +75,7 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan filament:assets --ansi"
+            "@php artisan vendor:publish --tag=velm-ui-assets --force --ansi"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

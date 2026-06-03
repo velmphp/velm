@@ -14,6 +14,9 @@ const sidebars: SidebarsConfig = {
         'guides/installation',
         'guides/migrations',
         'guides/scaffolding',
+        'guides/features',
+        'guides/admin-panel',
+        'guides/views-and-forms',
       ],
     },
     {
@@ -26,6 +29,7 @@ const sidebars: SidebarsConfig = {
         'models/relational-fields',
         'models/extending-a-model',
         'models/method-overrides-and-super',
+        'models/security',
         {
           type: 'category',
           label: 'Digging Deeper',

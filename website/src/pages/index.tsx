@@ -34,7 +34,7 @@ const features: FeatureItem[] = [
   },
   {
     icon: '🖥️',
-    title: 'Filament admin shell',
+    title: 'Velm admin shell',
     description:
       'List and form views driven by arch JSON, with search, quick-create, and view inheritance.',
   },

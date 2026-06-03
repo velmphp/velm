@@ -28,4 +28,22 @@ final class SchemaDiff
             && $this->orphanColumns === []
             && $this->alterations === [];
     }
+
+    /**
+     * Whether {@see ModuleInstaller::sync()} can apply this diff (new tables/columns
+     * and supported nullability alters). Orphan columns and unsupported alters are drift only.
+     */
+    public function isSyncActionable(bool $canAlterColumnNullability): bool
+    {
+        if ($this->newTables !== [] || $this->newColumns !== []) {
+            return true;
+        }
+
+        return $canAlterColumnNullability && $this->alterations !== [];
+    }
+
+    public function hasDrift(): bool
+    {
+        return ! $this->isEmpty();
+    }
 }

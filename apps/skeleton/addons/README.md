@@ -14,6 +14,8 @@ Demonstrates **Many2one**, **One2many**, and **Many2many** (see [Relational fiel
 
 Installed by `composer run setup`. Open **Demos → Projects** in the Velm shell.
 
+Documentation: [Platform features](https://github.com/velmphp/velm/blob/main/website/docs/guides/features.md) (demo module, relational UI), [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md), [Views and forms](https://github.com/velmphp/velm/blob/main/website/docs/guides/views-and-forms.md).
+
 Sample API checks after setup:
 
 ```bash

@@ -31,14 +31,21 @@ test('installing partners syncs views into ir.ui.view', function (): void {
 
     expect($list['view_type'])->toBe('list')
         ->and($list['model'])->toBe('res.partner')
-        ->and($list['fields'])->not->toBeEmpty();
+        ->and($list['fields'])->not->toBeEmpty()
+        ->and($list['detail_view'])->toBe('partner.detail');
+
+    $detail = $registry->arch($env, 'partners', 'partner.detail');
+
+    expect($detail['view_type'])->toBe('detail')
+        ->and($detail['sections'])->not->toBeEmpty();
 });
 
 test('module sync reloads view data without reinstall', function (): void {
     $roots = [dirname(__DIR__, 2).'/modules/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base', 'partners']);
+    $installer->installBootstrap($roots, ['base', 'admin', 'partners']);
+    $installer->sync('admin', $roots);
     $installer->sync('partners', $roots);
 
     $env = $installer->environment($roots);

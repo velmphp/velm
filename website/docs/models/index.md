@@ -79,4 +79,12 @@ Extension models call `registerExtension()` instead of `register()`. The registr
 - [Security (ACL + record rules)](./security.md) — `ir.model.access`, `ir.rule`, superuser bypass.
 - `GET /api/records?model=res.partner` — HTTP JSON API (`velm-web`).
 
-View inheritance (`VIEW_INHERITS`) will be documented separately when the view guides land on this site.
+## Admin UI
+
+List, form, and relational field behavior in the shell are documented under **Guides**:
+
+- [Platform features](../guides/features) — timestamps, UTC/timezone, catalog states, relational UI, demo addon
+- [Admin panel](../guides/admin-panel) — apps catalog, navigation, branding, users
+- [Views and forms](../guides/views-and-forms) — search/filters, form layout, M2M/O2M dialogs, delete actions
+
+View inheritance (`VIEW_INHERITS`) is planned; today you author full list/form/detail arch in module `views/*.php` files.

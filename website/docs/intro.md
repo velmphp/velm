@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Velm documentation
 
-**Velm** is a Laravel-based ERP framework with PyVelm-style semantics: Odoo-like modules, recordsets, and view inheritance, rendered through a Filament-backed admin shell.
+**Velm** is a Laravel-based ERP framework with PyVelm-style semantics: Odoo-like modules, recordsets, and view inheritance, rendered through the Velm admin shell (Livewire + Tailwind).
 
 This site documents how to **author modules** and use the ORM. For repository architecture and contributor context, see the monorepo [PLAN.md](https://github.com/velmphp/velm/blob/main/PLAN.md) and [CONTEXT.md](https://github.com/velmphp/velm/blob/main/CONTEXT.md).
 
@@ -15,9 +15,13 @@ This site documents how to **author modules** and use the ORM. For repository ar
 | Install the skeleton app and modules | [Installation](./guides/installation) |
 | Schema diff, versioned migrations, hooks | [Module migrations](./guides/migrations) |
 | Scaffold modules, models, views, menus | [Scaffolding](./guides/scaffolding) |
+| Timestamps, catalog, branding, ACL UI, relations | [Platform features](./guides/features) |
+| Panel navigation, apps catalog, branding | [Admin panel](./guides/admin-panel) |
+| List search/filters, forms, M2M dialogs | [Views and forms](./guides/views-and-forms) |
 | Models — fields, registry, recordsets | [Models](./models/) |
 | Add a new business model and table | [Defining models](./models/defining-a-model) |
 | Many2one, One2many, Many2many | [Relational fields](./models/relational-fields) |
+| Access rights and record rules | [Security](./models/security) |
 | Extend another module's model | [Extending models](./models/extending-a-model) |
 | Override methods and chain behavior | [Method overrides and `super()`](./models/method-overrides-and-super) |
 | Multiple addons on one model | [Stacking extensions](./models/stacking-extensions) |
@@ -27,7 +31,7 @@ This site documents how to **author modules** and use the ORM. For repository ar
 Velm has **two** inheritance mechanisms:
 
 - **Model `$inherit`** — add columns and PHP methods to an existing model (same database table). Covered under **Models**.
-- **View `VIEW_INHERITS`** — patch list/form arch JSON without forking views. (Documentation coming soon.)
+- **View `VIEW_INHERITS`** — patch list/form arch JSON without forking views (planned; see [Views and forms](./guides/views-and-forms) for current list/form authoring).
 
 Model inheritance is data and server logic; view inheritance is UI layout.
 

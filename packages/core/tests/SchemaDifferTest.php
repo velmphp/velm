@@ -22,14 +22,15 @@ test('schema differ reports and applies new columns', function (): void {
     $differ = new SchemaDiffer($connection);
     $diff = $differ->compute($registry, [Country::class]);
 
-    expect($diff->newColumns)->toHaveCount(1)
-        ->and($diff->newColumns[0][1])->toBe('code');
+    $newNames = array_map(static fn (array $row): string => $row[1], $diff->newColumns);
+
+    expect($newNames)->toContain('code', 'created_at', 'updated_at');
 
     $differ->apply($registry, [Country::class], $diff);
 
     $columns = array_column($connection->fetchAll('PRAGMA table_info("res_country")'), 'name');
 
-    expect($columns)->toContain('code');
+    expect($columns)->toContain('code', 'created_at', 'updated_at');
 });
 
 test('schema differ reports orphan columns', function (): void {

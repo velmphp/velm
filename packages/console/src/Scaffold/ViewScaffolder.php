@@ -161,8 +161,10 @@ PHP;
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Data\ViewsData;
 
@@ -172,9 +174,19 @@ return ViewsData::make()
             ->model('{$technical}')
             ->title('{$title}')
             ->formView('{$viewStem}.form')
+            ->detailView('{$viewStem}.detail')
+            ->rowActions([
+                ListRowAction::open(),
+                ListRowAction::edit(),
+                ListRowAction::delete(),
+            ])
             ->columns([
                 {$listBody},
             ]),
+        DetailView::make('{$viewStem}.detail')
+            ->model('{$technical}')
+            ->title('{$title}')
+{$formSections}
         FormView::make('{$viewStem}.form')
             ->model('{$technical}')
 {$formSections}

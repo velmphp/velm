@@ -17,6 +17,20 @@ final class ListView implements ViewDeclaration
 
     private ?string $formView = null;
 
+    /** Detail view opened from the list (read-only). */
+    private ?string $detailView = null;
+
+    /** @deprecated Use {@see detailView()} */
+    private ?string $recordView = null;
+
+    /** Form view used for explicit edit navigation. Defaults to {@see $formView}. */
+    private ?string $editView = null;
+
+    private ?bool $clickToOpen = null;
+
+    /** @var list<array{action: string, label: string, icon: string, href?: string}> */
+    private array $rowActions = [];
+
     private function __construct(
         private readonly string $name,
     ) {}
@@ -58,6 +72,59 @@ final class ListView implements ViewDeclaration
     }
 
     /**
+     * Target detail view when a list row is opened (read-only display).
+     */
+    public function detailView(string $detailView): self
+    {
+        $this->detailView = $detailView;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated Use {@see detailView()}
+     */
+    public function recordView(string $recordView): self
+    {
+        return $this->detailView($recordView);
+    }
+
+    /**
+     * Target form for explicit edit navigation (e.g. from the record page).
+     */
+    public function editView(string $editView): self
+    {
+        $this->editView = $editView;
+
+        return $this;
+    }
+
+    /**
+     * Navigate to the detail view when the row is clicked (requires {@see detailView()}).
+     */
+    public function clickToOpen(bool $enabled = true): self
+    {
+        $this->clickToOpen = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * @param  list<ListRowAction|array{action: string, label: string, href?: string}>  $actions
+     */
+    public function rowActions(array $actions): self
+    {
+        $this->rowActions = array_map(
+            static fn (ListRowAction|array $action): array => $action instanceof ListRowAction
+                ? $action->toArray()
+                : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -79,6 +146,24 @@ final class ListView implements ViewDeclaration
 
         if ($this->formView !== null) {
             $arch['form_view'] = $this->formView;
+        }
+
+        if ($this->detailView !== null) {
+            $arch['detail_view'] = $this->detailView;
+        }
+
+        if ($this->editView !== null) {
+            $arch['edit_view'] = $this->editView;
+        }
+
+        if ($this->clickToOpen !== null) {
+            $arch['click_to_open'] = $this->clickToOpen;
+        } elseif ($this->detailView !== null) {
+            $arch['click_to_open'] = true;
+        }
+
+        if ($this->rowActions !== []) {
+            $arch['row_actions'] = $this->rowActions;
         }
 
         return [

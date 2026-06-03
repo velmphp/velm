@@ -1,0 +1,29 @@
+{
+    "name": "velmphp/admin",
+    "description": "Velm admin — Livewire shell, arch-driven list and form pages",
+    "license": "LGPL-3.0-or-later",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^13.0",
+        "livewire/livewire": "^4.0",
+        "velmphp/core": "@dev",
+        "velmphp/modules": "@dev",
+        "velmphp/views": "@dev",
+        "velmphp/web": "@dev",
+        "velmphp/ui": "@dev"
+    },
+    "autoload": { "psr-4": { "Velm\\Admin\\": "src/" } },
+    "autoload-dev": {
+        "psr-4": { "Velm\\Admin\\Tests\\": "tests/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Velm\\Admin\\AdminServiceProvider"
+            ]
+        },
+        "branch-alias": { "dev-main": "1.x-dev" }
+    },
+    "minimum-stability": "dev"
+}

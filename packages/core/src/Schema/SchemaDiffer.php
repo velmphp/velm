@@ -80,6 +80,10 @@ final class SchemaDiffer
                     continue;
                 }
 
+                if (in_array($column, $modelClass::schemaExternalColumns(), true)) {
+                    continue;
+                }
+
                 $diff->orphanColumns[] = [$table, $column];
             }
         }
@@ -257,9 +261,14 @@ final class SchemaDiffer
         return strtoupper((string) $nullable) === 'YES';
     }
 
-    private function supportsPostgresAlterColumn(): bool
+    public function supportsAlterColumnNullability(): bool
     {
         return $this->supportsInformationSchema();
+    }
+
+    private function supportsPostgresAlterColumn(): bool
+    {
+        return $this->supportsAlterColumnNullability();
     }
 
     /**

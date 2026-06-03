@@ -18,9 +18,22 @@ Grant rows tie a `res.groups` (or everyone when `group_id` is empty) to a model 
 ```php
 $env->checkAccess('res.partner', 'read'); // throws AccessDeniedException if denied
 $env->hasAccess('res.partner', 'write');  // bool, for UI gating
+$env->hasAccess('res.partner', 'unlink'); // bool — controls Delete on list rows
 ```
 
 `Recordset` CRUD calls `checkAccess` before mutating data. If `ir.model.access` is not installed, access is open (tests and minimal registries).
+
+### Shell UI gating
+
+The admin panel uses the same flags for list row actions:
+
+| Permission | List UI |
+|------------|---------|
+| `perm_read` | **Open** (when a detail view exists), click-to-open |
+| `perm_write` | **Edit** |
+| `perm_unlink` | **Delete** (trash icon; confirmation) — added automatically when allowed |
+
+Configure access in **Settings** (admin module: **Users**, **Groups**, **Model access**, **Record rules**). Bootstrap user: `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`. See [Admin panel — Settings](../guides/admin-panel#settings-admin-module) and [Views and forms](../guides/views-and-forms#row-actions-and-acl).
 
 ## Record rules
 

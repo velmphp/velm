@@ -18,7 +18,9 @@ class Task extends Model
     {
         return [
             'name' => CharField::make()->required()->label('Task'),
-            'project_id' => Many2oneField::make('demo.project')->label('Project'),
+            'project_id' => Many2oneField::make('demo.project')
+            ->required(false)->label('Project'),
+            'category' => CharField::make()->required(false)->label('Category')
         ];
     }
 }

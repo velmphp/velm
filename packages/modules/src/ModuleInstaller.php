@@ -54,22 +54,12 @@ final class ModuleInstaller
      */
     public function catalog(array $roots): array
     {
-        $specs = $this->discover($roots);
-        $rows = [];
-
-        foreach ($this->resolveOrder($specs) as $spec) {
-            $installedVersion = $this->repository->installedVersion($spec->name);
-
-            $rows[] = [
-                'name' => $spec->name,
-                'state' => $installedVersion === null ? 'uninstalled' : 'installed',
-                'version' => $installedVersion ?? $spec->versionString(),
-                'summary' => $spec->summary,
-                'depends' => implode(', ', $spec->depends) ?: '—',
-            ];
-        }
-
-        return $rows;
+        return (new AppsCatalog(
+            $this->discovery,
+            $this->resolver,
+            $this->repository,
+            $this,
+        ))->entries($roots);
     }
 
     /**
@@ -87,6 +77,31 @@ final class ModuleInstaller
     public function install(string $moduleName, array $roots): void
     {
         $this->migrate($moduleName, $roots);
+    }
+
+    /**
+     * Bring an installed module up to date: version migrations when the manifest
+     * version increased, otherwise schema diff + view/menu sync (same as Sync).
+     *
+     * @param  list<string>  $roots
+     */
+    public function reconcile(string $moduleName, array $roots): void
+    {
+        $specs = $this->discover($roots);
+
+        if (! isset($specs[$moduleName])) {
+            throw new \InvalidArgumentException("Module {$moduleName} was not discovered.");
+        }
+
+        $spec = $specs[$moduleName];
+
+        if (! $this->repository->isInstalled($moduleName)) {
+            $this->installModule($spec, $roots);
+
+            return;
+        }
+
+        $this->reconcileInstalled($spec, $roots);
     }
 
     /**
@@ -140,12 +155,12 @@ final class ModuleInstaller
                 continue;
             }
 
-            $installed = ModuleVersion::parse($entry['version'] ?? '0.0.0');
+            $installed = ModuleVersion::parse($entry['installed_version'] ?? '0.0.0');
             $status = ModuleVersion::needsUpgrade($installed, $spec->version) ? 'upgrade' : 'ok';
 
             $rows[] = [
                 'name' => $entry['name'],
-                'installed' => $entry['version'],
+                'installed' => $entry['installed_version'],
                 'manifest' => $spec->versionString(),
                 'status' => $status,
             ];
@@ -196,14 +211,47 @@ final class ModuleInstaller
             }
 
             if ($this->repository->isInstalled($spec->name)) {
-                if ($this->needsUpgrade($spec)) {
-                    $this->upgradeModule($spec, $roots);
-                }
+                $this->reconcileInstalled($spec, $roots);
 
                 continue;
             }
 
             $this->installModule($spec, $roots);
+        }
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    public function hasPendingSchemaDiff(string $moduleName, array $roots): bool
+    {
+        try {
+            $diff = $this->diff($moduleName, $roots);
+
+            return $diff->isSyncActionable($this->canAlterColumnNullability());
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    public function canAlterColumnNullability(): bool
+    {
+        return (new SchemaDiffer($this->velmConnection()))->supportsAlterColumnNullability();
+    }
+
+    /**
+     * @param  list<string>  $roots
+     */
+    private function reconcileInstalled(ModuleSpec $spec, array $roots): void
+    {
+        if ($this->needsUpgrade($spec)) {
+            $this->upgradeModule($spec, $roots);
+
+            return;
+        }
+
+        if ($this->hasPendingSchemaDiff($spec->name, $roots)) {
+            $this->sync($spec->name, $roots);
         }
     }
 
