@@ -69,4 +69,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `velm:make:menu` scaffold | Done |
 | `velm:db:autogen --with-views` | Done |
 
-See [PLAN.md](./PLAN.md) for remaining ORM parity (domain OR-groups, computed fields, relation fields, …).
+| One2many / Many2many on recordsets | Done |
+| Relational fields docs | Done |
+
+See [PLAN.md](./PLAN.md) for remaining ORM parity (domain OR-groups, computed fields, O2M form UX, …).

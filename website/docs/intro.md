@@ -17,6 +17,7 @@ This site documents how to **author modules** and use the ORM. For repository ar
 | Scaffold modules, models, views, menus | [Scaffolding](./guides/scaffolding) |
 | Models — fields, registry, recordsets | [Models](./models/) |
 | Add a new business model and table | [Defining models](./models/defining-a-model) |
+| Many2one, One2many, Many2many | [Relational fields](./models/relational-fields) |
 | Extend another module's model | [Extending models](./models/extending-a-model) |
 | Override methods and chain behavior | [Method overrides and `super()`](./models/method-overrides-and-super) |
 | Multiple addons on one model | [Stacking extensions](./models/stacking-extensions) |

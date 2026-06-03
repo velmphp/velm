@@ -34,13 +34,14 @@ php artisan velm:module:sync <name>
 2. `php artisan migrate` — Laravel tables (`users`, `sessions`, …)
 3. `php artisan velm:migrate` — bootstrap modules (`base`, `admin`)
 4. `php artisan velm:module:install partners` — demo CRM data model + views/menus
-5. `php artisan db:seed` — Filament admin user
+5. `php artisan velm:module:install demo_relations` — relational fields demo (M2O / O2M / M2M) under **Demos** in the shell
+6. `php artisan db:seed` — Filament admin user
 
 If the sign-in page or Velm shell menu looks unstyled, run `php artisan filament:assets` (or re-run `composer run setup`). After changing shell Blade templates in `packages/filament`, rebuild shell CSS with `npm run build:css` in that package, then publish assets again.
 
 ## Configuration
 
-`config/velm.php` resolves addon paths for monorepo dev (`../../packages/modules/modules`) and Packagist installs (`vendor/velmphp/modules/modules`). Drop custom modules under `addons/`.
+`config/velm.php` resolves addon paths for monorepo dev (`../../packages/modules/modules`) and Packagist installs (`vendor/velmphp/modules/modules`). Drop custom modules under `addons/` (see `addons/README.md` for the bundled `demo_relations` module).
 
 ```bash
 # Optional: nested sidebar instead of apps rail + top bar

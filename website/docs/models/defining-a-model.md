@@ -86,6 +86,8 @@ $rows = $env->model('res.widget')->search([], limit: 10);
 | `BooleanField` | True/false |
 | `Many2oneField` | Foreign key (`comodel('res.country')`) |
 
+For **One2many** and **Many2many** (inverse FK, junction tables, read/write semantics), see [Relational fields](./relational-fields).
+
 Use fluent setters: `CharField::make()->required()->maxLength(2)`.
 
 ## Checklist

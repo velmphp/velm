@@ -7,6 +7,7 @@ namespace Velm\Console\Scaffold;
 use Velm\Fields\BooleanField;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
+use Velm\Fields\One2manyField;
 use Velm\Registry;
 
 final class ViewScaffoldBuilder
@@ -33,7 +34,7 @@ final class ViewScaffoldBuilder
                 continue;
             }
 
-            if ($field instanceof Many2manyField) {
+            if ($field instanceof Many2manyField || $field instanceof One2manyField) {
                 $relations[] = [$name, $field];
 
                 continue;
