@@ -48,7 +48,7 @@ Module **detail** pages inside the catalog (`/velm/apps/{name}`) hide Status/Cat
 |--------|-------------|
 | **Install** | Module is not in `ir.module` yet (first install + dependencies). |
 | **Upgrade** | Manifest **version** increased — runs versioned migration scripts, then schema and view/menu sync. |
-| **Sync** | Installed module with **schema changes pending** (e.g. new model fields, no version bump) or to reload views/menus from disk. |
+| **Sync** | Installed module with **schema changes pending** (e.g. new model fields, no version bump) or **views/menus on disk** that differ from the database (no version bump). |
 
 After **Sync** or **Upgrade**, the catalog state returns to **Installed**. CLI equivalents: `php artisan velm:module:install`, `velm:migrate` / reconcile, and `velm:module:sync`.
 

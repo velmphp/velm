@@ -22,6 +22,14 @@ final class UiAssets
         );
     }
 
+    public static function navigationScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/velm-nav.js',
+            'Missing packages/ui/resources/js/velm-nav.js.',
+        );
+    }
+
     public static function stylesheetHref(): string
     {
         $published = public_path('css/velm/velm.css');
@@ -42,6 +50,17 @@ final class UiAssets
         }
 
         return asset('vendor/velm-ui/flowbite.min.js');
+    }
+
+    public static function navigationScriptHref(): string
+    {
+        $published = public_path('js/velm/velm-nav.js');
+
+        if (is_file($published)) {
+            return asset('js/velm/velm-nav.js');
+        }
+
+        return asset('vendor/velm-ui/velm-nav.js');
     }
 
     private static function requireBuiltFile(string $path, string $message): string

@@ -7,10 +7,12 @@ namespace Velm\Admin\Pages;
 use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Velm\Admin\Concerns\InteractsWithVelmBreadcrumbTrail;
 
 #[Layout('velm-ui::layouts.shell')]
 abstract class VelmShellPage extends Component
 {
+    use InteractsWithVelmBreadcrumbTrail;
     protected static ?string $slug = null;
 
     public static function routePath(): string

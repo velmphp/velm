@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Velm\Admin\Pages;
 
+use Velm\Admin\Concerns\StoredViewDetailRedirect;
 use Velm\Admin\Support\ResolvesStoredView;
 use Velm\Admin\Support\StoredViewRoutes;
 
 final class EditCompanyPage extends ArchEditPage
 {
     use ResolvesStoredView;
+    use StoredViewDetailRedirect;
 
     protected static ?string $slug = 'companies/{record}/edit';
 

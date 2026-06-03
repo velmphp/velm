@@ -4,7 +4,7 @@
     $showText = (bool) ($brand['show_header_brand_text'] ?? true);
     $logoLight = (string) ($brand['logo_url_light'] ?? '');
     $logoDark = (string) ($brand['logo_url_dark'] ?? $logoLight);
-    $logoStyle = (string) ($brand['header_logo_style'] ?? 'height: 68px; width: auto;');
+    $logoStyle = (string) ($brand['header_logo_style'] ?? 'height: 60px; width: auto;');
 @endphp
 
 <a

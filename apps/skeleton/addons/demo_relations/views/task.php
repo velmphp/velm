@@ -16,6 +16,7 @@ return ViewsData::make()
             ->title('Tasks')
             ->formView('task.form')
             ->detailView('task.detail')
+            ->clickToOpen()
             ->rowActions([ListRowAction::open(), ListRowAction::edit()])
             ->columns([
                 'name',

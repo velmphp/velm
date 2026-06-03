@@ -32,6 +32,8 @@ final class AppsCatalog
             $schemaDiffSummary = '';
             $hasSchemaDrift = false;
             $schemaDriftSummary = '';
+            $hasUiSync = false;
+            $uiSyncSummary = '';
 
             if ($inst === null) {
                 $state = 'uninstalled';
@@ -56,11 +58,19 @@ final class AppsCatalog
                         $hasSchemaDiff = false;
                         $hasSchemaDrift = false;
                     }
+
+                    try {
+                        $uiDiff = $this->installer->uiSyncDiff($name, $roots);
+                        $hasUiSync = $uiDiff->hasChanges();
+                        $uiSyncSummary = $hasUiSync ? $uiDiff->summary() : '';
+                    } catch (\Throwable) {
+                        $hasUiSync = false;
+                    }
                 }
 
                 $state = match (true) {
                     $versionUpgrade => 'to_upgrade',
-                    $hasSchemaDiff => 'needs_sync',
+                    $hasSchemaDiff, $hasUiSync => 'needs_sync',
                     default => 'installed',
                 };
             }
@@ -91,7 +101,9 @@ final class AppsCatalog
                 'version_upgrade' => $versionUpgrade,
                 'pending_migrations' => $pendingMigrations,
                 'has_schema_diff' => $hasSchemaDiff,
-                'schema_diff_summary' => $schemaDiffSummary,
+                'schema_diff_summary' => $this->combineSyncSummaries($schemaDiffSummary, $uiSyncSummary),
+                'has_ui_sync' => $hasUiSync,
+                'ui_sync_summary' => $uiSyncSummary,
                 'has_schema_drift' => $hasSchemaDrift,
                 'schema_drift_summary' => $schemaDriftSummary,
                 'depends' => $spec->depends,
@@ -158,6 +170,11 @@ final class AppsCatalog
         }
 
         return $parts === [] ? 'Schema changes pending' : implode(', ', $parts);
+    }
+
+    private function combineSyncSummaries(string $schemaSummary, string $uiSummary): string
+    {
+        return trim(implode('; ', array_filter([$schemaSummary, $uiSummary], static fn (string $s): bool => $s !== '')));
     }
 
     private function summarizeDriftDiff(\Velm\Schema\SchemaDiff $diff, bool $canAlterColumnNullability): string

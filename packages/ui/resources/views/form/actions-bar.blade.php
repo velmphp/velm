@@ -54,6 +54,19 @@
             />
         @endif
 
+        @if (in_array($mode, [FormMode::Display, FormMode::Edit], true) && $this->velmFormCanDelete())
+            <button
+                type="button"
+                class="pv-btn inline-flex items-center gap-1.5 rounded-md border border-default px-3 py-1.5 text-sm text-fg-danger transition hover:bg-danger-soft"
+                wire:click="deleteVelmForm"
+                wire:confirm="{{ __('Delete this record? This cannot be undone.') }}"
+                wire:loading.attr="disabled"
+            >
+                <x-velm-ui::icon icon="heroicon-o-trash" class="h-4 w-4 shrink-0" />
+                {{ __('Delete') }}
+            </button>
+        @endif
+
         @if ($embed)
             <button
                 type="button"
@@ -64,13 +77,14 @@
                 {{ $mode === FormMode::Display ? __('Close') : __('Cancel') }}
             </button>
         @else
-            <a
-                href="{{ $listUrl }}"
+            <button
+                type="button"
                 class="pv-btn inline-flex items-center gap-1.5 rounded-md border border-default bg-neutral-primary px-3 py-1.5 text-sm text-body transition hover:bg-neutral-secondary"
+                @click="window.VelmNav?.goBack(@js($listUrl))"
             >
                 <x-velm-ui::icon icon="heroicon-o-arrow-left" class="h-4 w-4 shrink-0" />
                 {{ $mode === FormMode::Display ? __('Back') : __('Cancel') }}
-            </a>
+            </button>
         @endif
     </div>
 </div>

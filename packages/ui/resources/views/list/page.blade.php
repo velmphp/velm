@@ -1,4 +1,8 @@
-<div class="space-y-4">
+<div
+    class="space-y-4"
+    data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
+    data-velm-nav-label="{{ $this->velmNavLabel() }}"
+>
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-lg font-semibold text-heading">{{ $this->getTitle() }}</h1>
         @if ($createUrl = $this->createPageUrl())
