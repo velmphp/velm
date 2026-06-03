@@ -9,7 +9,12 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Prologue',
       collapsed: false,
-      items: ['intro', 'guides/installation', 'guides/migrations'],
+      items: [
+        'intro',
+        'guides/installation',
+        'guides/migrations',
+        'guides/scaffolding',
+      ],
     },
     {
       type: 'category',

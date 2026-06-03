@@ -47,8 +47,11 @@ php artisan velm:module:install partners       # alias path: velm:migrate --modu
 php artisan velm:module:sync partners
 php artisan velm:db:diff --module=partners
 php artisan velm:db:status
+php artisan velm:db:autogen inventory --with-views
 php artisan velm:make:module my_module       # scaffold under addons/
 ```
+
+See [Module migrations](./migrations) for schema diff, versioned scripts, and hooks. See [Scaffolding modules](./scaffolding) for the full `make:*` workflow.
 
 Installing a module:
 

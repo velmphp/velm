@@ -67,7 +67,7 @@ final class MakeViewCommand extends Command
         $mode = $fromModel ? 'from model fields' : 'minimal stub';
         $this->components->info("Created {$result['path']} ({$mode})");
         $this->line("  Views: {$result['viewStem']}.list, {$result['viewStem']}.form");
-        $this->line('  php artisan velm:make:menu (when available)');
+        $this->line("  php artisan velm:make:menu --view={$result['viewStem']}.list --module={$moduleName}");
         $this->line("  php artisan velm:module:sync --module={$moduleName}");
 
         return self::SUCCESS;

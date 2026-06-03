@@ -66,5 +66,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `velm:make:module` scaffold | Done |
 | `velm:make:model` scaffold | Done |
 | `velm:make:view` scaffold | Done |
+| `velm:make:menu` scaffold | Done |
+| `velm:db:autogen --with-views` | Done |
 
-See [PLAN.md](./PLAN.md) for remaining ORM parity (domain OR-groups, computed fields, `make:menu`, …).
+See [PLAN.md](./PLAN.md) for remaining ORM parity (domain OR-groups, computed fields, relation fields, …).

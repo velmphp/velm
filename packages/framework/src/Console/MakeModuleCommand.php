@@ -35,7 +35,9 @@ final class MakeModuleCommand extends Command
         $this->line('  __velm__.php');
         $this->line('  models/');
         $this->line('  migrations/');
-        $this->components->warn('Next: add model classes, then php artisan velm:make:model (when available) or register models in __velm__.php.');
+        $this->line("  php artisan velm:make:model product --module={$name}");
+        $this->line("  php artisan velm:make:view product --module={$name}");
+        $this->line("  php artisan velm:make:menu --view=product.list --module={$name}");
         $this->line("  php artisan velm:migrate --module={$name}");
 
         return self::SUCCESS;
