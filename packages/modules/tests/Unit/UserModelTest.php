@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Velm\Modules\Base\Models\User;
+use Velm\Modules\Tests\TestCase;
+
+uses(TestCase::class);
 
 test('res.users maps to users table and hashes passwords on prepare', function (): void {
     expect(User::table())->toBe('users');
