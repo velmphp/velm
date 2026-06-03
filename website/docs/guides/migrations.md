@@ -19,6 +19,7 @@ php artisan velm:migrate                     # bootstrap modules
 php artisan velm:module:sync partners        # views, menus, schema diff (no version bump)
 php artisan velm:db:diff --module=partners   # show drift without applying
 php artisan velm:db:autogen --module=partners  # scaffold migration + minor VERSION bump
+php artisan velm:db:autogen --module=partners --with-views  # also scaffold views for models in the diff
 php artisan velm:db:status                   # installed vs manifest versions
 php artisan list velm                        # full command list
 ```

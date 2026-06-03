@@ -107,7 +107,7 @@ php artisan velm:db:autogen inventory --dry-run
 php artisan velm:db:autogen inventory --version=0.2.0
 ```
 
-This is useful after `make:model` when you want migration + views in one step before `velm:migrate`.
+This is useful after `make:model` when you want migration + views in one step before `velm:migrate`. For the two-layer migration model, hooks, and versioned scripts, see [Module migrations](./migrations).
 
 ## Related commands
 
