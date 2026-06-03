@@ -21,6 +21,7 @@ test('view scaffolder creates minimal views and patches manifest', function (): 
     expect($result['viewStem'])->toBe('product')
         ->and(is_file($modulePath.'/views/product.php'))->toBeTrue()
         ->and(file_get_contents($modulePath.'/views/product.php'))->toContain("ListView::make('product.list')")
+        ->and(file_get_contents($modulePath.'/views/product.php'))->toContain("DetailView::make('product.detail')")
         ->and(file_get_contents($modulePath.'/views/product.php'))->toContain("->model('inventory.product')")
         ->and(file_get_contents($modulePath.'/__velm__.php'))->toContain("->data('views/product.php')");
 

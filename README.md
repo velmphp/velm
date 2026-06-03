@@ -53,7 +53,7 @@ cd website && npm install && npm start
 | `velmphp/console` | `packages/console` |
 | `velmphp/web` | `packages/web` |
 | `velmphp/ui` | `packages/ui` |
-| `velmphp/filament` | `packages/filament` |
+| `velmphp/admin` | `packages/admin` |
 | `velmphp/framework` | `packages/framework` |
 
 Bundled Velm modules (`base`, `admin`, …) ship under `packages/modules/modules/`.

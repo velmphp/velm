@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+use Velm\Environment;
+use Velm\Ui\Forms\FormMode;
+use Velm\Ui\Widgets\WidgetContext;
+use Velm\Ui\Widgets\WidgetRegistry;
+use Velm\Ui\Tests\TestCase;
+
+uses(TestCase::class);
+
+test('widget registry resolves many2one on new forms', function (): void {
+    $env = app(Environment::class);
+    $ctx = new WidgetContext(
+        $env,
+        'res.partner',
+        ['name' => 'country_id'],
+        FormMode::New,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.m2o-input');
+});
+
+test('widget registry still resolves char default on new forms', function (): void {
+    $env = app(Environment::class);
+    $ctx = new WidgetContext(
+        $env,
+        'res.partner',
+        ['name' => 'name'],
+        FormMode::New,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.char-input');
+});

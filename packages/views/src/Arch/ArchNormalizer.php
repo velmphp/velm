@@ -14,7 +14,7 @@ final class ArchNormalizer
     {
         return match ($viewType) {
             'list' => self::normalizeList($arch),
-            'form' => self::normalizeForm($arch),
+            'form', 'detail' => self::normalizeSections($arch),
             default => $arch,
         };
     }
@@ -36,11 +36,34 @@ final class ArchNormalizer
      */
     public static function normalizeForm(array $arch): array
     {
+        return self::normalizeSections($arch);
+    }
+
+    public static function normalizeDetail(array $arch): array
+    {
+        return self::normalizeSections($arch);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arch
+     * @return array<string, mixed>
+     */
+    public static function normalizeSections(array $arch): array
+    {
         $sections = [];
 
         foreach ($arch['sections'] ?? [] as $section) {
             if (! is_array($section)) {
                 continue;
+            }
+
+            if (isset($section['pages']) && is_array($section['pages'])) {
+                foreach ($section['pages'] as $i => $page) {
+                    if (! is_array($page)) {
+                        continue;
+                    }
+                    $section['pages'][$i]['fields'] = self::normalizeFields($page['fields'] ?? []);
+                }
             }
 
             $section['fields'] = self::normalizeFields($section['fields'] ?? []);

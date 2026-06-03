@@ -25,13 +25,22 @@ final class MenuSynchronizer
      */
     public function syncMenus(string $module, array $menus, Environment $env): void
     {
-        if ($menus === [] || ! $env->registry->has('ir.ui.menu')) {
+        if (! $env->registry->has('ir.ui.menu')) {
+            return;
+        }
+
+        if ($menus === []) {
+            $this->pruneStaleMenus($module, [], $env);
+
             return;
         }
 
         $Menu = $env->model('ir.ui.menu');
 
+        $syncedNames = [];
+
         foreach ($this->orderMenus($menus, $module) as $menu) {
+            $syncedNames[] = (string) $menu['name'];
             $parentRef = $menu['parent'] ?? null;
             $parentId = null;
 
@@ -77,6 +86,58 @@ final class MenuSynchronizer
                 $existing->write($values);
             } else {
                 $Menu->create($values);
+            }
+        }
+
+        $this->pruneStaleMenus($module, $syncedNames, $env);
+    }
+
+    /**
+     * @param  list<string>  $syncedNames
+     */
+    private function pruneStaleMenus(string $module, array $syncedNames, Environment $env): void
+    {
+        $Menu = $env->model('ir.ui.menu');
+        $declared = array_flip($syncedNames);
+
+        /** @var array<int, array<string, mixed>> $stale */
+        $stale = [];
+
+        foreach ($Menu->search([['module', '=', $module]])->read() as $row) {
+            $name = (string) ($row['name'] ?? '');
+
+            if ($name === '' || isset($declared[$name])) {
+                continue;
+            }
+
+            $stale[(int) $row['id']] = $row;
+        }
+
+        while ($stale !== []) {
+            $removed = false;
+
+            foreach ($stale as $id => $row) {
+                $hasStaleChild = false;
+
+                foreach ($stale as $other) {
+                    if ((int) ($other['parent_id'] ?? 0) === $id) {
+                        $hasStaleChild = true;
+
+                        break;
+                    }
+                }
+
+                if ($hasStaleChild) {
+                    continue;
+                }
+
+                $env->browse('ir.ui.menu', [$id])->unlink();
+                unset($stale[$id]);
+                $removed = true;
+            }
+
+            if (! $removed) {
+                break;
             }
         }
     }

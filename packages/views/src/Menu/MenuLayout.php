@@ -10,6 +10,9 @@ final class MenuLayout
 
     public const APPS = 'apps';
 
+    /** Apps catalog pages: dedicated sidebar (status, category, open app). */
+    public const APPS_CATALOG = 'apps_catalog';
+
     /** @var array<string, string> */
     private const ALIASES = [
         'odoo' => self::APPS,

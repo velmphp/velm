@@ -26,10 +26,11 @@
             "Velm\\Tests\\": "tests/",
             "Velm\\Modules\\Tests\\": "packages/modules/tests/",
             "Velm\\Core\\Tests\\": "packages/core/tests/",
-            "Velm\\Filament\\Tests\\": "packages/filament/tests/",
+            "Velm\\Admin\\Tests\\": "packages/admin/tests/",
             "Velm\\Framework\\Tests\\": "packages/framework/tests/",
             "Velm\\Views\\Tests\\": "packages/views/tests/",
-            "Velm\\Web\\Tests\\": "packages/web/tests/"
+            "Velm\\Web\\Tests\\": "packages/web/tests/",
+            "Velm\\Ui\\Tests\\": "packages/ui/tests/"
         }
     },
     "scripts": {

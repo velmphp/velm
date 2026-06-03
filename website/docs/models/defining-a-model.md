@@ -36,7 +36,22 @@ class Widget extends Model
 }
 ```
 
-Velm automatically adds `id` and `display_name` (readonly) on base models. You do not declare them in `defineFields()`.
+Velm automatically adds on every **base** model (you do not declare these in `defineFields()`):
+
+| Field | Purpose |
+|-------|---------|
+| `id` | Primary key (readonly) |
+| `display_name` | Label for relations and UI (readonly) |
+| `created_at` | Set on `create()` (readonly `DatetimeField`) |
+| `updated_at` | Set on `create()` and `write()` (readonly `DatetimeField`) |
+
+Columns are created on install/sync via schema diff. To disable for a model (e.g. a pure SQL view), set `protected static bool $timestamps = false;`. To use custom column names, declare `created_at` / `updated_at` yourself in `defineFields()` — Velm will not add duplicates.
+
+Tables that already have Laravel-style timestamps (such as `users`) use the same field names; list/form scaffolds skip timestamp fields by default.
+
+Timestamps are stored in **UTC** in the database. The admin panel and API bound to a company show and accept datetimes in that company’s **Timezone** field on `res.company` (see [Platform features — UTC and timezone](../guides/features#utc-storage-and-company-timezone)).
+
+For Laravel-owned columns on a Velm table (e.g. `users.password`), implement `schemaExternalColumns()` so schema diff does not report false sync pending.
 
 ## Manifest
 
@@ -84,6 +99,7 @@ $rows = $env->model('res.widget')->search([], limit: 10);
 | `TextField` | Long text |
 | `IntegerField` | Integers |
 | `BooleanField` | True/false |
+| `DatetimeField` | Timestamp (`created_at` / `updated_at` are added automatically) |
 | `Many2oneField` | Foreign key (`comodel('res.country')`) |
 
 For **One2many** and **Many2many** (inverse FK, junction tables, read/write semantics), see [Relational fields](./relational-fields).

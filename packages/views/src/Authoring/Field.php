@@ -33,6 +33,34 @@ final class Field implements ViewDeclaration
     }
 
     /**
+     * Column span inside the section grid. Use {@see wide()} or the string `full` for a full-width row.
+     */
+    public function colspan(int|string $colspan): self
+    {
+        if ($colspan === 'full') {
+            return $this->wide();
+        }
+
+        if ((int) $colspan < 1) {
+            throw new \InvalidArgumentException('colspan must be at least 1.');
+        }
+
+        $this->options['colspan'] = (int) $colspan;
+        unset($this->options['wide']);
+
+        return $this;
+    }
+
+    /** Span all columns in the section grid. */
+    public function wide(): self
+    {
+        $this->options['wide'] = true;
+        unset($this->options['colspan']);
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array

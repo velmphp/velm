@@ -10,7 +10,7 @@ All commands are listed with `php artisan list velm`.
 
 ## End-to-end workflow
 
-Scaffold a new addon under `addons/` (or another path in `config/velm.php`):
+Scaffold a new module under `app/modules/` (see `velm.toml` and `config/velm.php`):
 
 ```bash
 cd apps/skeleton
@@ -29,7 +29,7 @@ For app addons, add a PSR-4 mapping in `composer.json` before migrating:
 ```json
 "autoload": {
   "psr-4": {
-    "Addons\\Inventory\\Models\\": "addons/inventory/models/"
+    "Addons\\Inventory\\Models\\": "app/modules/inventory/models/"
   }
 }
 ```
@@ -60,7 +60,7 @@ Short names are scoped to the module (`product` → `inventory.product`). Bundle
 
 ## `velm:make:view`
 
-Creates `views/{stem}.php` with list and form views. By default, columns and form sections are built from registered model fields:
+Creates `views/{stem}.php` with **list**, **form**, and **detail** views. By default, columns and form sections are built from registered model fields. List views include **Open**, **Edit**, and **Delete** row actions, `clickToOpen()` when a detail view exists, and links between list / form / detail.
 
 ```bash
 php artisan velm:make:view product --module=inventory
@@ -70,6 +70,8 @@ php artisan velm:make:view product --module=inventory --force
 ```
 
 Use `--minimal` when the model is not registered yet (stub with a `name` field only).
+
+Customize layout in the generated PHP file: `ListView::make(...)`, `FormView::make(...)->cols(2)`, `Field::make('notes')->colspan('full')`, etc. See [Views and forms](./views-and-forms).
 
 ## `velm:make:menu`
 

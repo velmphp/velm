@@ -1,6 +1,6 @@
 # Velm skeleton app
 
-Runnable Laravel host for the Velm monorepo — Filament panel, module install, and PyVelm-style shell navigation.
+Runnable Laravel host for the Velm monorepo — Livewire panel, module install, and PyVelm-style shell navigation.
 
 ## Quick start (monorepo)
 
@@ -30,14 +30,14 @@ php artisan velm:module:sync <name>
 
 ## What `composer run setup` does
 
-1. `php artisan filament:assets` — publish Filament CSS/JS/fonts to `public/` (required for styled login and panel)
+1. `composer velm-build-css` — build Tailwind + Flowbite (`velm.css`, `flowbite.min.js`) and publish to `public/css/velm/` and `public/js/velm/`
 2. `php artisan migrate` — Laravel tables (`users`, `sessions`, …)
 3. `php artisan velm:migrate` — bootstrap modules (`base`, `admin`)
 4. `php artisan velm:module:install partners` — demo CRM data model + views/menus
 5. `php artisan velm:module:install demo_relations` — relational fields demo (M2O / O2M / M2M) under **Demos** in the shell
-6. `php artisan db:seed` — Filament admin user
+6. `php artisan db:seed` — admin user
 
-If the sign-in page or Velm shell menu looks unstyled, run `php artisan filament:assets` (or re-run `composer run setup`). After changing shell Blade templates in `packages/filament`, rebuild shell CSS with `npm run build:css` in that package, then publish assets again.
+If the UI looks unstyled or colors are wrong, run `composer velm-build-css` (rebuilds `packages/ui` Tailwind and publishes assets). You can also re-run `composer run setup`.
 
 ## Configuration
 
@@ -52,7 +52,7 @@ VELM_MENU_LAYOUT=sidebar
 
 | URL | Purpose |
 |-----|---------|
-| `/velm` | Filament panel (arch-driven list/form pages) |
+| `/velm` | Velm admin panel (arch-driven list/form pages) |
 | `/velm/apps` | Module catalog |
 | `/api/views/{module}/{name}` | Resolved view arch JSON |
 | `/api/records?model=&domain=&fields=` | List records (GET) |

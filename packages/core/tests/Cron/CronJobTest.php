@@ -11,6 +11,7 @@ use Velm\Fields\IntegerField;
 use Velm\Fields\Many2oneField;
 use Velm\Models\Model;
 use Velm\Registry;
+use Velm\Schema\SchemaBuilder;
 
 class CronTestPartner extends Model
 {
@@ -74,16 +75,7 @@ test('cron job run due executes write action and advances schedule', function ()
         return $registry;
     });
     $env = new Environment($connection, $registry);
-
-    $connection->execute(
-        'CREATE TABLE "cron_test" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT NOT NULL, "ticked" INTEGER DEFAULT 0)',
-    );
-    $connection->execute(
-        'CREATE TABLE "ir_actions_server" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT NOT NULL, "model" TEXT NOT NULL, "action_type" TEXT NOT NULL, "vals_json" TEXT)',
-    );
-    $connection->execute(
-        'CREATE TABLE "ir_cron" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT NOT NULL, "action_id" INTEGER, "interval_number" INTEGER, "interval_type" TEXT, "nextcall" TEXT, "lastcall" TEXT, "active" INTEGER)',
-    );
+    (new SchemaBuilder($connection))->syncRegistry($registry);
 
     $partner = $env->model('cron.test')->create(['name' => 'Acme', 'ticked' => false]);
     $partnerId = $partner->ids()[0];

@@ -1,0 +1,167 @@
+---
+sidebar_position: 6
+---
+
+# Platform features
+
+This page summarizes Velm shell and ORM capabilities added beyond the core model docs. Use it as a map; each section links to deeper guides.
+
+## Automatic timestamps
+
+Every **base** model gets `created_at` and `updated_at` unless you set `protected static bool $timestamps = false` or declare your own datetime fields with those names.
+
+| Behavior | Detail |
+|----------|--------|
+| **On create** | Both fields set if missing or null |
+| **On write** | `updated_at` always refreshed; `created_at` never changed from the client |
+| **Schema** | Columns added on module install/sync (`DatetimeField`, SQL `TIMESTAMP`) |
+| **Scaffolds** | `velm:make:view` skips timestamp fields in list/form arch by default |
+
+See [Defining models — timestamps](../models/defining-a-model#model-class).
+
+### UTC storage and company timezone
+
+| Layer | Rule |
+|-------|------|
+| **Database** | All `DatetimeField` values (including automatic timestamps) stored as **UTC** (`Y-m-d H:i:s`) |
+| **UI & API** | When a company is active, values are shown and parsed in that company’s **Timezone** (`res.company.timezone`, default `UTC`) |
+| **No company** | Superuser “all companies” mode and CLI tests without `timezone` in context use UTC end-to-end |
+
+Set timezone on **Settings → Companies** (e.g. `Europe/Brussels`, `America/New_York`). Invalid identifiers fall back to `UTC`.
+
+The active company’s timezone is bound into `Environment` on each panel/API request (`BindVelmEnvironment`).
+
+## Apps catalog and navigation
+
+| Feature | Description |
+|---------|-------------|
+| **Default home** | `/velm` redirects to `/velm/apps` |
+| **Catalog sidebar** | Dedicated filters: Catalog, Status, Category, Open app |
+| **Status filters** | All, Installed, **Upgrade**, **Sync pending**, Not installed |
+| **Module rail** | Flat list of installed apps (no “Installed” heading); **Apps** link last to return to the catalog |
+| **Workspace entry** | From any module page, **Apps** in the left rail opens the catalog |
+| **Per-company layout** | `res.company.menu_layout`: `apps` (rail + top bar) or `sidebar` (classic accordion) |
+| **Env default** | `VELM_MENU_LAYOUT` in `.env` |
+
+### Module states in the catalog
+
+| State | Meaning | Action |
+|-------|---------|--------|
+| **Not installed** | Absent from `ir.module` | **Install** |
+| **Installed** | Up to date | **Open app** (if menus exist) |
+| **Upgrade** | Installed manifest **version** is newer | **Upgrade** (versioned migrations + sync) |
+| **Sync pending** | Same version but **actionable** schema diff (new columns, etc.) | **Sync** |
+| **Schema drift** | Unsupported diff (e.g. SQLite nullability-only changes) | Informational only — does not block “Installed”; fix manually or bump version |
+
+`schemaExternalColumns()` on a model (e.g. Laravel-owned `users.password`) excludes columns from actionable sync diff so Laravel tables do not show false “sync pending”.
+
+CLI: `php artisan velm:module:install`, `velm:module:sync`, `velm:migrate` / reconcile. See [Admin panel — Install](./admin-panel#install-upgrade-and-sync) and [Migrations](./migrations).
+
+## Company branding and switcher
+
+White-label fields on **`res.company`** (section **Branding & white-label**):
+
+- Application name, logos (light/dark), primary color, font, favicon
+- Copyright, support email/URL, “powered by Velm” toggle
+- Header logo height, show/hide brand text next to logo
+
+Environment overrides: `VELM_APP_NAME`, `VELM_LOGO_URL`, `VELM_LOGO_URL_DARK`, etc. (`config/velm.php` → `branding`).
+
+**Company switcher** in the header (cookie-backed) sets active `company_id` for record rules and default `company_id` on create.
+
+**Dark mode** uses shared design tokens (`packages/ui/resources/css/velm-tokens.css`). After token changes, rebuild CSS:
+
+```bash
+cd apps/skeleton && composer velm-build-css
+```
+
+## Users, groups, and ACL in the shell
+
+| Model | Admin menus (module `admin`) |
+|-------|------------------------------|
+| `res.users` | Users — name, email, password, groups, company |
+| `res.groups` | Groups — members (`user_ids` M2M) |
+| `ir.model.access` | Model access — per-model CRUD flags |
+| `ir.rule` | Record rules — row-level domains |
+
+`res.users` maps to Laravel’s **`users`** table. Bootstrap admin: `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`.
+
+Password handling: empty password on save leaves the hash unchanged; plain text is hashed on write. `password` is listed in `schemaExternalColumns()` so Velm schema sync does not treat it as a missing column.
+
+Panel login uses Laravel session guard; Velm ACL applies after bind. See [Security](../models/security).
+
+## List views
+
+| Feature | API / behavior |
+|---------|----------------|
+| **Click to open** | `->clickToOpen()` + `->detailView('…')` |
+| **Row actions** | `ListRowAction::open()`, `::edit()`, `::delete()` |
+| **ACL gating** | Open/read, Edit/write, Delete/unlink; delete auto-added when `perm_unlink` |
+| **Inline boolean** | `Field::make('active')->toggle()` on list columns |
+| **Search toolbar** | Free text, filter chips, column picker, group-by, clear all |
+| **New** | Links to `{formView}/create` (editable create form, not detail) |
+
+## Form and detail views
+
+| Feature | Detail |
+|---------|--------|
+| **Grid layout** | `->cols(n)`, per-section `cols:`, `Field::make('x')->colspan(2)` or `colspan('full')` |
+| **Modes** | Display (detail), Edit, **New** (create) |
+| **Keyboard** | `Ctrl+S` / `Cmd+S` submits `#velm-form` |
+| **Embedded forms** | `?embed=1` for record dialogs; `postMessage` updates parent M2M chips |
+| **Relational widgets** | M2O combobox, M2M/O2M dialog widgets — work on **New** forms (same widgets as edit) |
+| **M2O prefill** | Query params on create URL (e.g. `?project_id=3` from O2M “new line”) |
+
+Stored view URLs:
+
+| Page | Pattern |
+|------|---------|
+| List | `/velm/views/{module}/{listView}` |
+| Detail | `/velm/views/{module}/{detailView}/{id}` |
+| Edit | `/velm/views/{module}/{formView}/{id}/edit` |
+| Create | `/velm/views/{module}/{formView}/create` |
+
+Create and edit routes are registered **before** the generic `{record}` route so `/create` is not mistaken for a record id.
+
+## Relational UI (dialogs)
+
+| Type | Default UI |
+|------|------------|
+| **Many2one** | Search combobox, quick-create, open in dialog |
+| **Many2many** | Inline chips; `Field::make('x')->widget('dialog')` for create/link dialog |
+| **One2many** | Dialog table — create, link, open row, remove line |
+
+Floating record dialog: `window.pvOpenRecord()`, iframe with `?embed=1`, parent notified on save (`velm-dialog-saved`).
+
+ORM semantics: [Relational fields](../models/relational-fields). Authoring: [Views and forms](./views-and-forms).
+
+## Demo addon (`demo_relations`)
+
+Shipped with the skeleton under `apps/skeleton/addons/demo_relations`:
+
+| Model | Relations |
+|-------|-----------|
+| `demo.project` | `tag_ids` (M2M), `task_ids` (O2M) |
+| `demo.task` | `project_id` (M2O) |
+| `demo.tag` | `name` |
+
+Menu: **Demos → Projects**. Install/sync: `php artisan velm:module:sync demo_relations`.
+
+## HTTP JSON API
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET/POST /api/records` | Search and create |
+| `PATCH/DELETE /api/records/{id}` | Write and unlink |
+| `GET /api/m2o/search` | Combobox search |
+| `POST /api/m2o/quick-create` | Name-only quick create |
+
+Datetime fields in API responses follow the same company timezone as the panel when `BindVelmEnvironment` runs on `/api/*`.
+
+## See also
+
+- [Admin panel](./admin-panel) — sign-in, catalog UI, branding, URLs
+- [Views and forms](./views-and-forms) — list toolbar, widgets, menus
+- [Scaffolding](./scaffolding) — `velm:make:view`, `velm:make:menu`
+- [Security](../models/security) — access rights and record rules
+- [Installation](./installation) — setup and module commands

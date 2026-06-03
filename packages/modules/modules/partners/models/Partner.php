@@ -27,6 +27,14 @@ class Partner extends Model
         ];
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function schemaExternalColumns(): array
+    {
+        return ['ref'];
+    }
+
     public function badge(Recordset $records): string
     {
         $records->ensureOne();

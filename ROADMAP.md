@@ -11,7 +11,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `ir.module` table + repository | Done |
 | `php artisan velm:module:*` / `velm:migrate` / `velm:db:*` | Done (Laravel app required) |
 | Bundled `base` + `admin` manifests | Done |
-| Apps catalog UI (Filament `/velm/apps`) | Done |
+| Apps catalog UI (`/velm/apps`, sync/upgrade, module detail) | Done |
 | Runnable skeleton app (`apps/skeleton`) | Done |
 | DATA / VIEW sync on install | Done |
 
@@ -28,9 +28,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Bundled `partners` module (`res.partner`, `res.country`) | Done |
 | Model registration + schema on `module:install` | Done |
 | Laravel DB connection (`LaravelConnection`) | Done |
-| Arch → Filament schema bridge (list + form) | Done |
 | `VelmManager` + `Environment` container binding | Done |
-| Filament panel + arch list/create/edit pages | Done |
+| Livewire arch pages (list / create / edit) in `velmphp/admin` | Done |
 | `res.company` on base module + default company on install | Done |
 
 ## Phase 3 — Views and menus
@@ -52,6 +51,16 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | PyVelm-style list search toolbar (search, filters, group by, columns) | Done |
 | Arch form many2one combobox (`Many2oneSearch`) | Done |
 | `POST /api/m2o/quick-create` | Done |
+| `DetailView` authoring + stored detail routes | Done |
+| List row actions (`ListRowAction`, icons, ACL-gated delete) | Done |
+| List click-to-open via `detailView` + `ResolvesStoredView` | Done |
+| Form layout (`cols`, `colspan`, Ctrl+S) | Done |
+| Company branding (`CompanyBranding`, `res.company` fields) | Done |
+| Apps catalog sidebar + **Browse modules** rail entry | Done |
+| `res.users` on Laravel `users` + bootstrap admin env | Done |
+| ACL admin UI (users, groups, model access, rules) | Done |
+| O2M / M2M record dialog + `?embed=1` form save bar | Done |
+| `demo_relations` skeleton addon + website docs | Done |
 
 ## Phase 2+
 
@@ -72,4 +81,15 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | One2many / Many2many on recordsets | Done |
 | Relational fields docs | Done |
 
-See [PLAN.md](./PLAN.md) for remaining ORM parity (domain OR-groups, computed fields, O2M form UX, …).
+## Next up (not done)
+
+| Item | Notes |
+|------|--------|
+| Kanban / graph / pivot / dashboard views | Arch types exist; no Livewire renderers yet |
+| O2M inline / table widget | Dialog mode shipped; inline embed partial |
+| Arch-declared `header_actions` / `page_actions` → UI | Tier-2 actions in PLAN; CRUD bar only today |
+| Domain OR-groups + computed fields | ORM parity |
+| `velmphp/skeleton` separate repo + Packagist split releases | Monorepo path repos work for dev |
+| Optional Filament arch adapter | Superseded by velm-ui for MVP |
+
+See [PLAN.md](./PLAN.md) for the long-range design; user-facing behavior is in `website/docs/guides/`.

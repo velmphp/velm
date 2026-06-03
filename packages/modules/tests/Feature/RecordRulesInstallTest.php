@@ -27,7 +27,7 @@ test('record rule filters partners for limited user via api search path', functi
         $sales = $env->model('res.groups')->create(['name' => 'Sales']);
         $env->model('res.users')->create([
             'name' => 'Limited',
-            'login' => 'limited',
+            'email' => 'limited@velm.test',
             'group_ids' => $sales->ids(),
         ]);
         $env->model('ir.model.access')->create([
@@ -45,7 +45,7 @@ test('record rule filters partners for limited user via api search path', functi
         ]);
     });
 
-    $limited = $env->model('res.users')->search([['login', '=', 'limited']]);
+    $limited = $env->model('res.users')->search([['email', '=', 'limited@velm.test']]);
     $limitedEnv = new Environment(
         $env->connection,
         $env->registry,
@@ -80,10 +80,10 @@ test('global and group rules both constrain search for member', function (): voi
         $env->model('res.partner')->create(['name' => 'Match', 'active' => false]);
         $env->model('res.partner')->create(['name' => 'Other', 'active' => true]);
         $sales = $env->model('res.groups')->create(['name' => 'Sales']);
-        $env->model('res.users')->create(['name' => 'Administrator', 'login' => 'admin']);
+        $env->model('res.users')->create(['name' => 'Administrator', 'email' => 'admin@velm.test']);
         $bob = $env->model('res.users')->create([
             'name' => 'Bob',
-            'login' => 'bob',
+            'email' => 'bob@velm.test',
             'group_ids' => $sales->ids(),
         ]);
         $env->model('ir.model.access')->create([
@@ -125,7 +125,7 @@ test('m2o search api respects record rules', function (): void {
     $env->withAclBypass(function () use ($env): void {
         $env->model('res.partner')->create(['name' => 'Allowed Partner']);
         $env->model('res.partner')->create(['name' => 'Blocked Partner']);
-        $env->model('res.users')->create(['name' => 'Limited', 'login' => 'limited']);
+        $env->model('res.users')->create(['name' => 'Limited', 'email' => 'limited@velm.test']);
         $env->model('ir.model.access')->create([
             'name' => 'All/partner read',
             'model' => 'res.partner',
@@ -141,7 +141,7 @@ test('m2o search api respects record rules', function (): void {
         ]);
     });
 
-    $limited = $env->model('res.users')->search([['login', '=', 'limited']]);
+    $limited = $env->model('res.users')->search([['email', '=', 'limited@velm.test']]);
     $limitedEnv = new Environment($env->connection, $env->registry, uid: $limited->ids()[0]);
 
     $payload = (new \Velm\Web\Api\Many2oneSearch)->search($limitedEnv, 'res.partner', '', 10);

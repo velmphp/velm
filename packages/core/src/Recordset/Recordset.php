@@ -6,9 +6,12 @@ namespace Velm\Recordset;
 
 use Velm\Domain\Domain;
 use Velm\Environment;
+use Velm\Exception\AccessDeniedException;
+use Velm\Fields\DatetimeField;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\One2manyField;
+use Velm\Support\VelmDatetime;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -97,6 +100,10 @@ final class Recordset
     {
         $this->env->checkAccess($this->modelName(), 'create');
 
+        $values = $this->env->enforceCompanyOnCreate($this->modelName(), $values);
+        $values = $this->applyPrepareValues($values, 'create');
+        $values = $this->applyTimestamps($values, 'create');
+
         $modelClass = $this->modelClass;
         [$columnValues, $m2mValues, $o2mValues] = $this->splitValues($values);
         $fields = $this->modelFields();
@@ -108,7 +115,7 @@ final class Recordset
             $field = $fields[$name];
             $columns[] = '"'.$field->column.'"';
             $placeholders[] = '?';
-            $params[] = $field->toSql($value);
+            $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
 
         foreach ($fields as $name => $field) {
@@ -122,7 +129,7 @@ final class Recordset
 
             $columns[] = '"'.$field->column.'"';
             $placeholders[] = '?';
-            $params[] = $field->toSql($field->default);
+            $params[] = $field->toSql($this->datetimeToStorage($field->default, $field));
         }
 
         if ($columns === []) {
@@ -159,6 +166,8 @@ final class Recordset
         if ($this->ids === []) {
             return [];
         }
+
+        $this->assertAllIdsInCompanyScope();
 
         $this->env->checkAccess($this->modelName(), 'read');
 
@@ -224,7 +233,7 @@ final class Recordset
                     continue;
                 }
 
-                $record[$name] = $field->toPhp($row[$field->column] ?? null);
+                $record[$name] = $this->datetimeFromStorage($row[$field->column] ?? null, $field);
             }
             $record['display_name'] = Registry::with(
                 $this->env->registry,
@@ -257,7 +266,13 @@ final class Recordset
             return;
         }
 
+        $this->assertAllIdsInCompanyScope();
+
         $this->env->checkAccess($this->modelName(), 'write');
+
+        $values = $this->env->enforceCompanyOnWrite($this->modelName(), $values);
+        $values = $this->applyPrepareValues($values, 'write');
+        $values = $this->applyTimestamps($values, 'write');
 
         [$columnValues, $m2mValues, $o2mValues] = $this->splitValues($values);
         $modelClass = $this->modelClass;
@@ -268,7 +283,7 @@ final class Recordset
         foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
             $sets[] = '"'.$field->column.'" = ?';
-            $params[] = $field->toSql($value);
+            $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
 
         if ($sets !== []) {
@@ -298,6 +313,8 @@ final class Recordset
         if ($this->ids === []) {
             return;
         }
+
+        $this->assertAllIdsInCompanyScope();
 
         $this->env->checkAccess($this->modelName(), 'unlink');
 
@@ -353,11 +370,30 @@ final class Recordset
     {
         $domain = $userDomain;
 
+        foreach ($this->env->companySearchConstraints($this->modelName()) as $leaf) {
+            $domain[] = $leaf;
+        }
+
         foreach ($this->env->collectRecordRules($this->modelName(), $perm) as $leaf) {
             $domain[] = $leaf;
         }
 
         return $domain;
+    }
+
+    private function assertAllIdsInCompanyScope(): void
+    {
+        if ($this->env->companySearchConstraints($this->modelName()) === []) {
+            return;
+        }
+
+        $scoped = $this->env->model($this->modelName())
+            ->search([['id', 'in', $this->ids]])
+            ->ids();
+
+        if (count($scoped) !== count($this->ids)) {
+            throw AccessDeniedException::forCompanyScope($this->modelName(), $this->env->uid);
+        }
     }
 
     /**
@@ -685,5 +721,76 @@ final class Recordset
         }
 
         return $maps;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function applyPrepareValues(array $values, string $operation): array
+    {
+        $hook = Model::resolveStaticHookClass(
+            $this->env->registry,
+            $this->modelName(),
+            'prepareValues',
+        );
+
+        if ($hook === null) {
+            return $values;
+        }
+
+        return $hook::prepareValues($values, $operation);
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function applyTimestamps(array $values, string $operation): array
+    {
+        if (! $this->modelClass::usesTimestamps()) {
+            return $values;
+        }
+
+        $fields = $this->modelFields();
+        $now = VelmDatetime::fromUtc(VelmDatetime::nowUtc(), $this->env->timezone()) ?? VelmDatetime::nowUtc();
+
+        if ($operation === 'create') {
+            if (isset($fields['created_at']) && ($values['created_at'] ?? null) === null) {
+                $values['created_at'] = $now;
+            }
+
+            if (isset($fields['updated_at']) && ($values['updated_at'] ?? null) === null) {
+                $values['updated_at'] = $now;
+            }
+        }
+
+        if ($operation === 'write') {
+            unset($values['created_at']);
+
+            if (isset($fields['updated_at'])) {
+                $values['updated_at'] = $now;
+            }
+        }
+
+        return $values;
+    }
+
+    private function datetimeToStorage(mixed $value, Field $field): mixed
+    {
+        if (! $field instanceof DatetimeField) {
+            return $value;
+        }
+
+        return VelmDatetime::toUtc($value, $this->env->timezone());
+    }
+
+    private function datetimeFromStorage(mixed $value, Field $field): mixed
+    {
+        if (! $field instanceof DatetimeField) {
+            return $field->toPhp($value);
+        }
+
+        return VelmDatetime::fromUtc($field->toPhp($value), $this->env->timezone());
     }
 }

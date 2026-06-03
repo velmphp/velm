@@ -14,6 +14,7 @@ use Velm\Views\Authoring\Contracts\ViewDeclaration;
  * return ViewsData::make()
  *     ->views(
  *         ListView::make('partner.list')->model('res.partner')->…,
+ *         DetailView::make('partner.detail')->…,
  *         FormView::make('partner.form')->…,
  *     )
  *     ->inherits(

@@ -22,5 +22,5 @@ test('applyColumnDiff adds new columns to an existing table', function (): void 
     $rows = $connection->fetchAll('PRAGMA table_info("res_country")');
     $columns = array_column($rows, 'name');
 
-    expect($columns)->toContain('code');
+    expect($columns)->toContain('code', 'created_at', 'updated_at');
 });

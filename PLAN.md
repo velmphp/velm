@@ -1,46 +1,46 @@
 ---
 name: PHP Velm on Laravel
-overview: Building a Laravel + Livewire ERP framework with PyVelm’s core semantics is feasible. Use a custom Odoo/PyVelm-like module system (not nWidart or filament-modules), a full-fidelity recordset ORM, and an arch-driven Filament adapter for view inheritance.
+overview: Laravel + Livewire ERP with PyVelm semantics — custom module runtime, recordset ORM, arch-driven UI (velm-ui + velm-admin). Filament adapter optional; shipping renderer is Livewire.
 todos:
   - id: spike-arch-filament
-    content: "Spike: resolve JSON arch → dynamic Filament Form/Table for one partners list+form (validates Filament bridge before full ORM)"
-    status: pending
+    content: "Spike: Filament arch bridge — superseded by Livewire shell (velm-ui + velm-admin); revisit only if Filament adapter is desired"
+    status: cancelled
   - id: module-system
-    content: "Build custom module system: __velm__.php manifest, discovery roots, DEPENDS resolution, ir.module, install/sync/uninstall, Apps catalog dependency UI"
-    status: pending
+    content: "Custom module system: __velm__.php, discovery, DEPENDS, ir.module, install/sync/uninstall, Apps catalog"
+    status: completed
   - id: velm-scheduler
-    content: "Port ir.cron + CronJob::runDue; register velm:cron:run on Laravel Scheduler (everyMinute), remove standalone cron daemon"
-    status: pending
+    content: "ir.cron + CronJob::runDue; php artisan velm:cron:run on Laravel Scheduler"
+    status: completed
   - id: composer-packaging
-    content: "Set up github.com/velmphp/velm monorepo, split velmphp/* Packagist packages, velmphp/skeleton app template, unified semver releases"
+    content: "Split velmphp/* Packagist releases, velmphp/skeleton template, unified semver (monorepo dev works via path repos)"
     status: pending
   - id: core-env-registry
-    content: Implement Environment, Registry, BaseModel recordset + basic fields (Char, M2O) with Pest tests ported from PyVelm
-    status: pending
+    content: "Environment, Registry, Recordset, field types (incl. O2M/M2M), Pest tests"
+    status: completed
   - id: module-sync
-    content: Wire module loader to sync VIEWS, VIEW_INHERITS, MENUS, models, migrations, seeders, and WEB_ROUTES per installed module
-    status: pending
+    content: "Loader syncs VIEWS, VIEW_INHERITS, MENUS, models, migrations, hooks per installed module"
+    status: completed
   - id: view-resolver
-    content: "Port velm-views: ir.ui.view, normalize/resolve arch, fluent class builders (ListView::make, Field::make), VIEW_INHERITS, GET /api/views"
-    status: pending
+    content: "ir.ui.view, resolve_arch, fluent builders, VIEW_INHERITS, GET /api/views"
+    status: completed
   - id: view-render-list-form
-    content: "Build list + form renderers: Filament ArchResource adapter, widget registry, routes, save/validation, header_actions"
-    status: pending
+    content: "List + form + detail Livewire pages, shell nav, APIs, save/validation, list toolbar, row actions"
+    status: completed
   - id: view-render-advanced
-    content: "Custom Livewire renderers for kanban, graph, pivot, dashboard; O2M/M2M dialog and inline modes"
-    status: pending
+    content: "Kanban/graph/pivot/dashboard; O2M/M2M record dialog + embed forms (inline O2M partial)"
+    status: in_progress
   - id: migrations-tooling
-    content: "Port two-layer migrations: schema diff engine, per-module versioned scripts, SYNC_HOOK, CLI db:diff/db:autogen/migrate/db:status"
-    status: pending
+    content: "Schema diff, versioned scripts, SYNC_HOOK, velm:db:diff/autogen/migrate/status"
+    status: completed
   - id: velm-cli
-    content: "Build Artisan-style CLI (bin/velm): Symfony Console, colon namespaces, make:* generators, module command discovery, Laravel kernel bootstrap"
-    status: pending
+    content: "php artisan velm:* — migrate, module:*, db:*, make:* (Laravel app required)"
+    status: completed
   - id: domain-inherit
-    content: Add domain compiler, _inherit stacking, computed fields + ACL/record rules
-    status: pending
-  - id: filament-panel
-    content: "Wire velm-filament: ArchResource, widget registry, navigation from ir.ui.menu, header_actions as Filament actions"
-    status: pending
+    content: "$inherit stacking, ACL + record rules; domain OR-groups and computed fields still open"
+    status: in_progress
+  - id: admin-panel
+    content: "velmphp/admin Livewire panel: apps catalog, branding, stored views, ACL admin UI, company switcher"
+    status: completed
 isProject: false
 ---
 
@@ -53,7 +53,29 @@ PyVelm was explicitly built as **“Odoo’s semantics, Laravel’s ergonomics, 
 The two non-obvious design decisions:
 
 1. **Custom module system** — discovery roots, `__velm__.php` manifests, `ir.module` install state, topological `DEPENDS`, Install/Sync/Upgrade/Uninstall lifecycle, Apps catalog.
-2. **Filament as renderer, not source of truth** — JSON arch in `ir.ui.view` + `VIEW_INHERITS` ops ([views.py](pyvelm/views.py)), resolved at runtime into Filament schemas.
+2. **Arch as source of truth, Livewire as renderer** — JSON arch in `ir.ui.view` + `VIEW_INHERITS` ops ([views.py](pyvelm/views.py)), resolved at runtime into **velm-ui** Blade/Livewire components inside **velm-admin** shell pages. A Filament adapter remains an optional future path (see *Dual-renderer strategy* below); the shipping stack does **not** depend on Filament.
+
+### Implementation snapshot (2026-06)
+
+Monorepo status vs this plan — see [ROADMAP.md](./ROADMAP.md) for the checklist.
+
+| Area | Status | Notes |
+|------|--------|--------|
+| Module runtime | **Done** | `ir.module`, install/sync/upgrade, `AppsCatalog`, skeleton `addons/` |
+| ORM core | **Done** | Recordset, M2O/O2M/M2M, `$inherit`, `static::super()`, ACL + record rules |
+| Migrations | **Done** | Schema diff, versioned scripts, `velm:db:*`, hooks |
+| Views sync + resolve | **Done** | `ListView` / `FormView` / `DetailView`, `VIEW_INHERITS`, APIs |
+| Admin shell | **Done** | `velmphp/admin` + `velmphp/ui` — PyVelm-style apps rail, list toolbar, forms |
+| Apps catalog | **Done** | `/velm/apps`, dedicated catalog sidebar, sync/upgrade, module detail |
+| Branding | **Done** | `res.company` fields + `CompanyBranding` + env fallbacks |
+| Users / ACL UI | **Done** | `res.users` on Laravel `users`; admin views for groups, access, rules |
+| List UX | **Done** | Click-to-open, icon row actions, ACL-gated delete, filter dropdown styling |
+| Form UX | **Done** | `cols` / `colspan`, Ctrl+S, display/edit/create action bar |
+| Relational UI | **Partial** | M2O combobox; M2M/O2M **record dialog** (`?embed=1`); kanban/graph not started |
+| Public docs | **Done** | `website/docs` — [Admin panel](website/docs/guides/admin-panel.md), [Views and forms](website/docs/guides/views-and-forms.md) |
+| Packagist split / `bin/velm` | **Open** | Dev uses path repos + `php artisan velm:*` only |
+
+**Demo:** skeleton addon `demo_relations` (Projects / Tasks / Tags) exercises relational fields in the shell.
 
 ```mermaid
 flowchart TB
@@ -86,8 +108,8 @@ flowchart TB
   subgraph runtime [Request Runtime]
     Env["Environment uid company cache registry"]
     ResolveArch["resolve_arch inheritance ops"]
-    FilamentBridge["ArchToFilamentSchema"]
-    FilamentUI["Filament Panel Livewire"]
+    LivewireBridge["velm-ui arch renderers"]
+    VelmShell["velm-admin Livewire shell"]
   end
 
   addonRoots --> Discover
@@ -103,9 +125,9 @@ flowchart TB
   ViewsPHP --> SyncData
   MenusPHP --> SyncData
   SyncData --> ResolveArch
-  ResolveArch --> FilamentBridge
-  FilamentBridge --> FilamentUI
-  Env --> FilamentBridge
+  ResolveArch --> LivewireBridge
+  LivewireBridge --> VelmShell
+  Env --> LivewireBridge
 ```
 
 
@@ -776,7 +798,7 @@ PyVelm Python uses functional helpers (`list_view()`, `field()`). The PHP port s
 | Layer | What the author writes | What runs at request time |
 |-------|------------------------|---------------------------|
 | **Authoring** (`velm-views`) | `Field::make('name')` → arch dict | — |
-| **Rendering** (`velm-filament`) | — | arch dict → `TextColumn::make('name')` |
+| **Rendering** (`velm-admin`) | — | arch dict → `TextColumn::make('name')` |
 
 Authors learn Filament-shaped names once; inheritance and sync stay arch-based.
 
@@ -1111,7 +1133,7 @@ flowchart TB
 
 **Rule:** every renderer receives **resolved arch + Environment + view record** — never reads raw `ir.ui.view.arch` without resolving.
 
-### Filament bridge (`velm-filament`)
+### Filament bridge (`velm-admin`)
 
 One generic Livewire page per view type + mode — no per-model Filament Resources in modules.
 
@@ -1381,7 +1403,7 @@ Keep PyVelm's dual HTML + JSON surface ([views.md](docs/views.md)):
 packages/
   velm-views/       # ir.ui.view, types, fluent Authoring builders, normalize/resolve — zero UI
   velm-ui/          # WidgetRegistry, Livewire components, layout shell, menu context
-  velm-filament/    # ArchListPage, ArchViewPage (Infolist), ArchFormPage, ActionResolver, schema builder
+  velm-admin/    # ArchListPage, ArchViewPage (Infolist), ArchFormPage, ActionResolver, schema builder
   velm-web/         # Laravel routes, middleware (Environment), API controllers
 ```
 
@@ -1444,7 +1466,7 @@ All first-party framework code lives under **[github.com/velmphp](https://github
 
 | GitHub repo | Composer package(s) | Role |
 |-------------|---------------------|------|
-| [**velmphp/velm**](https://github.com/velmphp/velm) | `velmphp/core`, `views`, `modules`, `console`, `web`, `ui`, `filament`, `framework` | **Main monorepo** — all split packages, bundled modules, integration tests |
+| [**velmphp/velm**](https://github.com/velmphp/velm) | `velmphp/core`, `views`, `modules`, `console`, `web`, `ui`, `admin`, `framework` | **Main monorepo** — all split packages, bundled modules, integration tests |
 | [**velmphp/skeleton**](https://github.com/velmphp/skeleton) | *(none — application template)* | Greenfield Laravel app scaffolded by `php velm init` |
 | [**velmphp/docs**](https://github.com/velmphp/docs) | *(none)* | Public documentation site (mirrors PyVelm docs structure) |
 | [**velmphp/composer-plugin**](https://github.com/velmphp/composer-plugin) | `velmphp/composer-plugin` | Phase 6+ — optional `type: velm-module` installer |
@@ -1497,8 +1519,8 @@ velm/                              # github.com/velmphp/velm
 │   │   └── src/                   # Velm\Web\ — routes, middleware, JSON API
 │   ├── ui/                        # velmphp/ui
 │   │   └── src/                   # Velm\Ui\ — WidgetRegistry, Livewire components
-│   ├── filament/                  # velmphp/filament
-│   │   └── src/                   # Velm\Filament\ — Infolist/Table/Form arch adapters
+│   ├── admin/                     # velmphp/admin
+│   │   └── src/                   # Velm\Admin\ — Infolist/Table/Form arch adapters
 │   └── framework/                 # velmphp/framework
 │       └── composer.json          # metapackage — requires all siblings + Laravel/Filament pins
 ├── tests/                         # cross-package integration tests
@@ -1518,10 +1540,10 @@ velm/                              # github.com/velmphp/velm
 | **`velmphp/console`** | `modules` | `bin/velm`, Symfony commands, `make:*` |
 | **`velmphp/web`** | `core`, `modules`, `views` | HTTP layer, Environment middleware, `/web/views`, `/api/*` |
 | **`velmphp/ui`** | `core`, `views` | Widget registry, custom Livewire (kanban, O2M, M2O combobox) |
-| **`velmphp/filament`** | `core`, `views`, `web`, `ui`, `filament/filament` | ArchListPage, ArchViewPage, ArchFormPage, ActionResolver |
+| **`velmphp/admin`** | `core`, `views`, `web`, `ui` | ArchListPage, ArchViewPage, ArchFormPage, ActionResolver |
 | **`velmphp/framework`** | all above + Laravel/Filament/Livewire | Metapackage + `VelmServiceProvider`, default `config/velm.php` publishable |
 
-**Dependency direction (no cycles):** `core` → `views` → `modules` → (`console` \| `web` → `ui` → `filament`). `framework` sits on top.
+**Dependency direction (no cycles):** `core` → `views` → `modules` → (`console` \| `web` → `ui` → `admin`). `framework` sits on top.
 
 Apps never require `velmphp/core` directly unless building low-level tooling — use `velmphp/framework`.
 
@@ -1542,7 +1564,7 @@ Apps never require `velmphp/core` directly unless building low-level tooling —
     "velmphp/console": "^1.0",
     "velmphp/web": "^1.0",
     "velmphp/ui": "^1.0",
-    "velmphp/filament": "^1.0"
+    "velmphp/admin": "^1.0"
   },
   "extra": {
     "laravel": {
@@ -1696,7 +1718,7 @@ Develop as the **`velmphp/velm` monorepo**; publish split **`velmphp/*`** packag
 | `velmphp/console` | `Velm\Console\` | `bin/velm`, Command base, generators |
 | `velmphp/web` | `Velm\Web\` | Routes, middleware, API controllers |
 | `velmphp/ui` | `Velm\Ui\` | WidgetRegistry, Livewire components |
-| `velmphp/filament` | `Velm\Filament\` | Infolist/Table/Form adapters, ActionResolver |
+| `velmphp/admin` | `Velm\Admin\` | Infolist/Table/Form adapters, ActionResolver |
 | `velmphp/framework` | `Velm\Framework\` | Metapackage + service provider |
 
 #### Meta-package for apps

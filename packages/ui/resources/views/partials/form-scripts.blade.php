@@ -1,0 +1,540 @@
+<script>
+    (function () {
+        function embedUrl(fullPageUrl) {
+            const url = new URL(fullPageUrl, window.location.origin);
+            url.searchParams.set('embed', '1');
+
+            return url.pathname + url.search + url.hash;
+        }
+
+        function dialogTarget() {
+            if (window.parent !== window && window.parent.Alpine?.store('recordDialog')) {
+                return window.parent;
+            }
+
+            return window;
+        }
+
+        window.pvCloseRecordDialog = function () {
+            const target = dialogTarget();
+            target.Alpine?.store('recordDialog')?.close();
+        };
+
+        window.pvOpenRecord = function (fullPageUrl, title) {
+            if (!fullPageUrl) {
+                return;
+            }
+
+            const target = dialogTarget();
+            const store = target.Alpine?.store('recordDialog');
+
+            if (!store) {
+                target.location.href = fullPageUrl;
+
+                return;
+            }
+
+            store.show(embedUrl(fullPageUrl), fullPageUrl, title || '');
+        };
+    })();
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('pvM2o', (cfg) => ({
+            wireKey: cfg.wireKey,
+            comodel: cfg.comodel,
+            searchUrl: cfg.searchUrl,
+            formViewUrl: cfg.formViewUrl || null,
+            createUrl: cfg.createUrl || null,
+            readonly: !!cfg.readonly,
+            canQuickCreate: !!cfg.canQuickCreate,
+
+            value: cfg.initialId != null ? Number(cfg.initialId) : null,
+            label: cfg.initialLabel || '',
+            query: '',
+            results: [],
+            cursor: 0,
+            open: false,
+            loading: false,
+            _abort: null,
+            _initialFetched: false,
+
+            init() {
+                this.query = this.label;
+                this.syncWire();
+            },
+
+            get exactMatch() {
+                const q = this.query.trim().toLowerCase();
+                if (!q) return null;
+                return this.results.find((r) => r.label.toLowerCase() === q) || null;
+            },
+
+            get createCandidate() {
+                if (this.readonly || !this.canQuickCreate) return false;
+                const q = this.query.trim();
+                return q.length > 0 && !this.exactMatch;
+            },
+
+            get canCreateAndEdit() {
+                return !this.readonly && !!this.createUrl;
+            },
+
+            get createAndEditIndex() {
+                return this.results.length + (this.createCandidate ? 1 : 0);
+            },
+
+            syncWire() {
+                if (!this.wireKey) return;
+                this.$wire.set(this.wireKey, this.value);
+            },
+
+            async fetchResults() {
+                if (this._abort) this._abort.abort();
+                const ctl = new AbortController();
+                this._abort = ctl;
+                this.loading = true;
+                try {
+                    const url = this.searchUrl + '&q=' + encodeURIComponent(this.query);
+                    const r = await fetch(url, { signal: ctl.signal, credentials: 'same-origin' });
+                    if (!r.ok) throw new Error('fetch failed');
+                    const data = await r.json();
+                    this.results = data.results || [];
+                    this.cursor = 0;
+                } catch (e) {
+                    if (e.name !== 'AbortError') this.results = [];
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            onFocus() {
+                this.open = true;
+                if (!this._initialFetched) {
+                    this._initialFetched = true;
+                    this.fetchResults();
+                }
+            },
+
+            onInput() {
+                this.open = true;
+                if (this.query !== this.label) {
+                    this.value = null;
+                    this.label = '';
+                    this.syncWire();
+                }
+                this.fetchResults();
+            },
+
+            close() {
+                this.open = false;
+                this.query = this.label;
+            },
+
+            moveCursor(delta) {
+                if (!this.open) {
+                    this.open = true;
+                    return;
+                }
+                const extra = (this.createCandidate ? 1 : 0) + (this.canCreateAndEdit ? 1 : 0);
+                const max = this.results.length + extra - 1;
+                if (max < 0) return;
+                this.cursor = Math.max(0, Math.min(max, this.cursor + delta));
+            },
+
+            onEnter() {
+                if (!this.open) return;
+                if (this.cursor < this.results.length) {
+                    this.pick(this.results[this.cursor]);
+                } else if (this.createCandidate && this.cursor === this.results.length) {
+                    this.createFromQuery();
+                } else if (this.canCreateAndEdit) {
+                    this.createAndEdit();
+                }
+            },
+
+            pick(item) {
+                this.value = item.id;
+                this.label = item.label;
+                this.query = item.label;
+                this.open = false;
+                this.syncWire();
+            },
+
+            clearSelection() {
+                this.value = null;
+                this.label = '';
+                this.query = '';
+                this.cursor = 0;
+                this.open = false;
+                this.syncWire();
+                this.$refs.input?.focus();
+            },
+
+            recordUrl(id) {
+                if (!this.formViewUrl || id == null) return null;
+                return this.formViewUrl.replace(/\/$/, '') + '/' + id;
+            },
+
+            openRecord() {
+                if (this.value === null || !this.formViewUrl) return;
+                const url = this.recordUrl(this.value);
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, this.label);
+                } else if (url) {
+                    window.location.href = url;
+                }
+            },
+
+            async createFromQuery() {
+                const name = this.query.trim();
+                if (!name) return;
+                const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                try {
+                    const r = await fetch('/api/m2o/quick-create', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        body: JSON.stringify({ model: this.comodel, name }),
+                    });
+                    if (r.status === 400 && this.createUrl) {
+                        this.createAndEdit();
+                        return;
+                    }
+                    if (!r.ok) return;
+                    const item = await r.json();
+                    this.results = [item, ...this.results.filter((x) => x.id !== item.id)];
+                    this.pick(item);
+                } catch (_) {}
+            },
+
+            createAndEdit() {
+                if (!this.createUrl) return;
+                this.open = false;
+                const q = (this.query || '').trim();
+                const url = this.createUrl + (q ? '?name=' + encodeURIComponent(q) : '');
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, q || '{{ __('New record') }}');
+                } else {
+                    window.location.href = url;
+                }
+            },
+        }));
+
+        Alpine.data('pvM2m', (cfg) => ({
+            wireKey: cfg.wireKey,
+            comodel: cfg.comodel,
+            searchUrl: cfg.searchUrl,
+            formViewUrl: cfg.formViewUrl || null,
+            readonly: !!cfg.readonly,
+            dialogOnly: !!cfg.dialogOnly,
+            canQuickCreate: !!cfg.canQuickCreate,
+            linkOpen: false,
+            selected: Array.isArray(cfg.initial) ? cfg.initial.slice() : [],
+            query: '',
+            results: [],
+            cursor: 0,
+            open: false,
+            loading: false,
+            _abort: null,
+
+            init() {
+                this.syncWire();
+                window.addEventListener('velm-dialog-saved', (event) => this.onDialogSaved(event));
+            },
+
+            get exactMatch() {
+                const q = this.query.trim().toLowerCase();
+                if (!q) return null;
+                return this.results.find((r) => r.label.toLowerCase() === q) || null;
+            },
+
+            get createCandidate() {
+                if (this.readonly || !this.canQuickCreate) return false;
+                const q = this.query.trim();
+                return q.length > 0 && !this.exactMatch;
+            },
+
+            syncWire() {
+                if (!this.wireKey || this.readonly) return;
+                this.$wire.set(this.wireKey, this.selected.map((s) => s.id));
+            },
+
+            async searchNow() {
+                if (this.readonly) return;
+                if (this._abort) this._abort.abort();
+                const ctl = new AbortController();
+                this._abort = ctl;
+                this.loading = true;
+                try {
+                    const url = this.searchUrl + '&q=' + encodeURIComponent(this.query);
+                    const r = await fetch(url, { signal: ctl.signal, credentials: 'same-origin' });
+                    if (!r.ok) throw new Error('fetch failed');
+                    const data = await r.json();
+                    this.results = data.results || [];
+                    this.cursor = 0;
+                    this.open = true;
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        this.results = [];
+                        this.open = false;
+                    }
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            onFocus() {
+                if (this.readonly) return;
+                this.open = true;
+                this.searchNow();
+            },
+
+            filteredResults() {
+                const taken = new Set(this.selected.map((s) => s.id));
+                return this.results.filter((r) => !taken.has(r.id));
+            },
+
+            moveCursor(delta) {
+                if (!this.open) {
+                    this.open = true;
+                    return;
+                }
+                const opts = this.filteredResults();
+                const extra = (this.createCandidate ? 1 : 0);
+                const max = opts.length + extra - 1;
+                if (max < 0) return;
+                this.cursor = Math.max(0, Math.min(max, this.cursor + delta));
+            },
+
+            onEnter() {
+                if (!this.open) return;
+                const opts = this.filteredResults();
+                if (this.cursor < opts.length) {
+                    this.add(opts[this.cursor]);
+                } else if (this.createCandidate) {
+                    this.createFromQuery();
+                }
+            },
+
+            add(item) {
+                if (this.readonly) return;
+                if (this.selected.some((s) => s.id === item.id)) return;
+                this.selected.push(item);
+                this.query = '';
+                this.results = [];
+                this.open = false;
+                this.linkOpen = false;
+                this.syncWire();
+            },
+
+            remove(id) {
+                if (this.readonly) return;
+                this.selected = this.selected.filter((s) => s.id !== id);
+                this.syncWire();
+            },
+
+            openChip(item) {
+                if (!this.formViewUrl || !item?.id) return;
+                const url = this.formViewUrl.replace(/\/$/, '') + '/' + item.id + '/edit';
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, item.label || '');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            async createFromQuery() {
+                const name = this.query.trim();
+                if (!name) return;
+                const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                try {
+                    const r = await fetch('/api/m2o/quick-create', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        body: JSON.stringify({ model: this.comodel, name }),
+                    });
+                    if (!r.ok) return;
+                    const item = await r.json();
+                    this.add(item);
+                } catch (_) {}
+            },
+
+            createAndEdit() {
+                if (!this.formViewUrl) return;
+                const q = (this.query || '').trim();
+                const url = this.formViewUrl.replace(/\/$/, '') + '/create' + (q ? '?name=' + encodeURIComponent(q) : '');
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, q || '{{ __('New record') }}');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            onDialogSaved(event) {
+                const detail = event?.detail;
+                if (!detail || detail.model !== this.comodel || detail.id == null) return;
+                const id = Number(detail.id);
+                const label = detail.label || String(id);
+                if (!this.selected.some((s) => s.id === id)) {
+                    this.add({ id, label });
+                }
+            },
+        }));
+
+        Alpine.data('pvO2mDialog', (cfg) => ({
+            wireKey: cfg.wireKey,
+            comodel: cfg.comodel,
+            inverseName: cfg.inverseName,
+            searchUrl: cfg.searchUrl,
+            formViewUrl: cfg.formViewUrl || null,
+            columns: cfg.columns || [],
+            rows: Array.isArray(cfg.rows) ? cfg.rows.map((r) => ({ ...r })) : [],
+            parentRecordId: cfg.parentRecordId,
+            readonly: !!cfg.readonly,
+            query: '',
+            results: [],
+            cursor: 0,
+            open: false,
+            linkOpen: false,
+            loading: false,
+            _abort: null,
+
+            init() {
+                this.syncWire();
+            },
+
+            syncWire() {
+                if (!this.wireKey || this.readonly) return;
+                this.$wire.set(this.wireKey, this.rows.map((r) => r.id));
+            },
+
+            recordUrl(id, edit = false) {
+                if (!this.formViewUrl || id == null) return null;
+                const base = this.formViewUrl.replace(/\/$/, '') + '/' + id;
+                return edit ? base + '/edit' : base;
+            },
+
+            openRecord(id, label) {
+                const url = this.recordUrl(id);
+                if (!url) return;
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, label || '');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            createNew() {
+                if (!this.formViewUrl || !this.parentRecordId) return;
+                const url = this.formViewUrl.replace(/\/$/, '') + '/create?' + encodeURIComponent(this.inverseName) + '=' + this.parentRecordId;
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, '{{ __('New line') }}');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            async searchNow() {
+                if (this._abort) this._abort.abort();
+                const ctl = new AbortController();
+                this._abort = ctl;
+                this.loading = true;
+                try {
+                    const r = await fetch(this.searchUrl + '&q=' + encodeURIComponent(this.query), {
+                        signal: ctl.signal,
+                        credentials: 'same-origin',
+                    });
+                    if (!r.ok) throw new Error('fetch failed');
+                    const data = await r.json();
+                    this.results = data.results || [];
+                    this.cursor = 0;
+                    this.open = true;
+                } catch (e) {
+                    if (e.name !== 'AbortError') this.results = [];
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            filteredResults() {
+                const taken = new Set(this.rows.map((r) => r.id));
+                return this.results.filter((r) => !taken.has(r.id));
+            },
+
+            moveCursor(delta) {
+                const opts = this.filteredResults();
+                const max = opts.length - 1;
+                if (max < 0) return;
+                this.cursor = Math.max(0, Math.min(max, this.cursor + delta));
+            },
+
+            onEnter() {
+                const opts = this.filteredResults();
+                if (this.cursor < opts.length) {
+                    this.add(opts[this.cursor]);
+                }
+            },
+
+            add(item) {
+                if (this.readonly) return;
+                const row = { id: item.id, label: item.label };
+                this.columns.forEach((col) => {
+                    if (col.name !== 'id' && row[col.name] === undefined) {
+                        row[col.name] = item.label;
+                    }
+                });
+                this.rows.push(row);
+                this.query = '';
+                this.open = false;
+                this.linkOpen = false;
+                this.syncWire();
+            },
+
+            remove(id) {
+                if (this.readonly) return;
+                this.rows = this.rows.filter((r) => r.id !== id);
+                this.syncWire();
+            },
+        }));
+
+        Alpine.data('pvFormNotebook', (storageKey, defaultTab, pageNames) => ({
+            tab: defaultTab,
+            init() {
+                try {
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved && pageNames.includes(saved)) {
+                        this.tab = saved;
+                    }
+                } catch (_) {}
+            },
+            pick(name) {
+                this.tab = name;
+                try {
+                    localStorage.setItem(storageKey, name);
+                } catch (_) {}
+            },
+        }));
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 's') {
+            return;
+        }
+
+        const form = document.getElementById('velm-form');
+
+        if (!form) {
+            return;
+        }
+
+        event.preventDefault();
+        form.requestSubmit();
+    });
+</script>

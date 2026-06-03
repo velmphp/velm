@@ -10,7 +10,7 @@ Install the skeleton app so you can develop and test Velm modules locally. Model
 
 - PHP 8.3+
 - Composer
-- Node.js 20+ (Filament assets and this docs site)
+- Node.js 20+ (Velm UI assets and this docs site)
 - SQLite or the database configured in `apps/skeleton/.env`
 
 ## Skeleton app
@@ -33,7 +33,11 @@ composer run setup
 composer run dev
 ```
 
-Sign in with the credentials from your `.env` (default seed: `admin@velm.test` / `password`).
+Sign in with the credentials from your `.env` (default seed: `admin@velm.test` / `password`). Velm’s `res.users` uses Laravel’s **`users`** table; override bootstrap credentials with `VELM_ADMIN_EMAIL` and `VELM_ADMIN_PASSWORD` in `.env` or `config/velm.php`.
+
+After login you land on the **apps catalog** (`/velm/apps`). Open **Demos → Projects** to exercise relational fields, or install more modules from the catalog.
+
+See [Platform features](./features) for a full feature list, [Admin panel](./admin-panel) for navigation and branding, and [Views and forms](./views-and-forms) for list/form UX.
 
 ## Modules
 
@@ -48,12 +52,12 @@ php artisan velm:module:sync partners
 php artisan velm:db:diff --module=partners
 php artisan velm:db:status
 php artisan velm:db:autogen inventory --with-views
-php artisan velm:make:module my_module       # scaffold under addons/
+php artisan velm:make:module my_module       # scaffold under app/modules/
 ```
 
 See [Module migrations](./migrations) for schema diff, versioned scripts, and hooks. See [Scaffolding modules](./scaffolding) for the full `make:*` workflow.
 
-The skeleton app installs a **`demo_relations`** addon (`apps/skeleton/addons/demo_relations/`) that seeds sample projects, tasks, and tags — open **Demos** in the Velm shell after `composer run setup`.
+The skeleton app installs a **`demo_relations`** module (`apps/skeleton/app/modules/demo_relations/`) that seeds sample projects, tasks, and tags — open **Demos** in the Velm shell after `composer run setup`.
 
 Installing a module:
 
@@ -70,6 +74,22 @@ The test fixture `partners_ext` (under `packages/modules/tests/fixtures/`) exten
 composer test -- packages/modules/tests/Feature/ModelInheritTest.php
 ```
 
+## Panel configuration (optional)
+
+In `apps/skeleton/.env`:
+
+```env
+# Sidebar layout: apps (default) or sidebar
+VELM_MENU_LAYOUT=apps
+
+# Header branding when company app_name is empty
+VELM_APP_NAME="My ERP"
+```
+
+Company-specific branding (logos, colors, application name) is edited under **Settings → Companies**. See [Admin panel](./admin-panel#company-branding).
+
 ## What's next
 
-Read [Models](../models/) for an overview, then [Defining models](../models/defining-a-model) if you are adding a new table, or [Extending models](../models/extending-a-model) if you are building on another module's model.
+- [Admin panel](./admin-panel) — navigation, apps catalog, branding
+- [Views and forms](./views-and-forms) — lists, filters, forms, relational dialogs
+- [Models](../models/) — overview, then [Defining models](../models/defining-a-model) or [Extending models](../models/extending-a-model)

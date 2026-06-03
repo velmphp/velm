@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Modules\Base;
 
+use Illuminate\Support\Facades\Hash;
 use Velm\Environment;
 
 final class BaseInstallHooks
@@ -26,10 +27,14 @@ final class BaseInstallHooks
             $company = $env->model('res.company')->search(limit: 1);
         }
 
+        $email = (string) config('velm.bootstrap_admin.email', 'admin@velm.test');
+        $password = (string) config('velm.bootstrap_admin.password', 'password');
+
         $userValues = [
             'name' => 'Administrator',
-            'login' => 'admin',
-            'password' => 'admin',
+            'email' => $email,
+            'password' => Hash::make($password),
+            'active' => true,
             'group_ids' => $adminGroup->ids(),
         ];
 
@@ -37,7 +42,9 @@ final class BaseInstallHooks
             $userValues['company_id'] = $company->ids()[0];
         }
 
-        $env->model('res.users')->create($userValues);
+        if ($env->model('res.users')->search()->count() === 0) {
+            $env->model('res.users')->create($userValues);
+        }
 
         $access = $env->model('ir.model.access');
 

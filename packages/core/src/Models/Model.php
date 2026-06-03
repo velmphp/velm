@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Models;
 
 use Velm\Fields\CharField;
+use Velm\Fields\DatetimeField;
 use Velm\Fields\Field;
 use Velm\Fields\IntegerField;
 use Velm\Recordset\Recordset;
@@ -20,6 +21,9 @@ abstract class Model
     protected static ?string $table = null;
 
     protected static string $recName = 'name';
+
+    /** When true, {@code created_at} and {@code updated_at} are added and maintained automatically. */
+    protected static bool $timestamps = true;
 
     /** @var array<class-string<static>, static> */
     private static array $behaviorInstances = [];
@@ -50,7 +54,28 @@ abstract class Model
         $fields['id'] = IntegerField::make()->label('ID')->readonly()->bind('id');
         $fields['display_name'] = CharField::make()->label('Display Name')->readonly()->bind('display_name');
 
+        if (static::usesTimestamps()) {
+            if (! isset($fields['created_at'])) {
+                $fields['created_at'] = DatetimeField::make()
+                    ->label('Created on')
+                    ->readonly()
+                    ->bind('created_at');
+            }
+
+            if (! isset($fields['updated_at'])) {
+                $fields['updated_at'] = DatetimeField::make()
+                    ->label('Last updated on')
+                    ->readonly()
+                    ->bind('updated_at');
+            }
+        }
+
         self::$fieldsByClass[$class] = $fields;
+    }
+
+    public static function usesTimestamps(): bool
+    {
+        return static::$timestamps && ! static::isExtension();
     }
 
     /**
@@ -177,6 +202,17 @@ abstract class Model
         }
 
         return str_replace('.', '_', static::name());
+    }
+
+    /**
+     * Columns present on the physical table but not owned by Velm field definitions
+     * (e.g. Laravel auth columns on {@code users}).
+     *
+     * @return list<string>
+     */
+    public static function schemaExternalColumns(): array
+    {
+        return [];
     }
 
     /**

@@ -6,10 +6,11 @@ namespace Velm\Framework;
 
 use Illuminate\Support\ServiceProvider;
 use Velm\Environment;
-use Velm\Filament\FilamentServiceProvider;
+use Velm\Admin\AdminServiceProvider;
 use Velm\Framework\VelmManager;
 use Velm\Modules\ModulesServiceProvider;
 use Velm\Views\ViewsServiceProvider;
+use Velm\Ui\UiServiceProvider;
 use Velm\Web\WebServiceProvider;
 
 final class VelmServiceProvider extends ServiceProvider
@@ -19,7 +20,8 @@ final class VelmServiceProvider extends ServiceProvider
         $this->app->register(ModulesServiceProvider::class);
         $this->app->register(ViewsServiceProvider::class);
         $this->app->register(WebServiceProvider::class);
-        $this->app->register(FilamentServiceProvider::class);
+        $this->app->register(UiServiceProvider::class);
+        $this->app->register(AdminServiceProvider::class);
         $this->mergeConfigFrom(__DIR__.'/../config/velm.php', 'velm');
 
         $this->app->singleton(VelmManager::class);
@@ -45,6 +47,7 @@ final class VelmServiceProvider extends ServiceProvider
                 Console\CronRunCommand::class,
                 Console\ModuleInstallCommand::class,
                 Console\ModuleSyncCommand::class,
+                Console\ModuleSyncAllCommand::class,
                 Console\ModuleListCommand::class,
                 Console\MakeModuleCommand::class,
                 Console\MakeModelCommand::class,

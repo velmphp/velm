@@ -1,0 +1,90 @@
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('recordDialog', {
+            isOpen: false,
+            iframeUrl: null,
+            fullPageUrl: null,
+            title: '',
+            posX: null,
+            posY: null,
+            _dragging: false,
+            _dragOffsetX: 0,
+            _dragOffsetY: 0,
+
+            show(iframeUrl, fullPageUrl, title) {
+                this.iframeUrl = iframeUrl;
+                this.fullPageUrl = fullPageUrl;
+                this.title = title;
+                this.isOpen = true;
+                document.body.classList.add('pv-record-dialog-open');
+            },
+
+            close() {
+                this.isOpen = false;
+                this.iframeUrl = null;
+                this.fullPageUrl = null;
+                this.title = '';
+                document.body.classList.remove('pv-record-dialog-open');
+            },
+
+            panelStyle() {
+                if (this.posX === null || this.posY === null) {
+                    return '';
+                }
+
+                return `left:${this.posX}px;top:${this.posY}px;transform:none;margin:0;`;
+            },
+
+            startDrag(event) {
+                if (event.button !== 0) {
+                    return;
+                }
+
+                const panel = event.currentTarget.closest('.pv-record-dialog-panel');
+                if (!panel) {
+                    return;
+                }
+
+                const rect = panel.getBoundingClientRect();
+
+                if (this.posX === null) {
+                    this.posX = rect.left;
+                    this.posY = rect.top;
+                }
+
+                this._dragging = true;
+                this._dragOffsetX = event.clientX - this.posX;
+                this._dragOffsetY = event.clientY - this.posY;
+
+                const onMove = (e) => {
+                    if (!this._dragging) {
+                        return;
+                    }
+                    this.posX = Math.max(8, e.clientX - this._dragOffsetX);
+                    this.posY = Math.max(8, e.clientY - this._dragOffsetY);
+                };
+
+                const onUp = () => {
+                    this._dragging = false;
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                };
+
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+            },
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            if (event.data?.type !== 'velm-dialog-saved') {
+                return;
+            }
+
+            window.dispatchEvent(new CustomEvent('velm-dialog-saved', { detail: event.data }));
+        });
+    });
+</script>

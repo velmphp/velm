@@ -6,7 +6,9 @@ namespace Velm;
 
 use Velm\Database\Connection;
 use Velm\Exception\AccessDeniedException;
+use Velm\Fields\Many2oneField;
 use Velm\Recordset\Recordset;
+use Velm\Support\VelmDatetime;
 
 final class Environment
 {
@@ -52,6 +54,244 @@ final class Environment
     public function isSuperuser(): bool
     {
         return $this->uid === self::SUPERUSER_ID;
+    }
+
+    public function companyId(): ?int
+    {
+        $id = $this->context['company_id'] ?? null;
+
+        if ($id === null || $id === '') {
+            return null;
+        }
+
+        return (int) $id;
+    }
+
+    /**
+     * Active company timezone for datetime display and form input (defaults to UTC).
+     */
+    public function timezone(): string
+    {
+        $tz = $this->context['timezone'] ?? null;
+
+        if (! is_string($tz) || $tz === '') {
+            return 'UTC';
+        }
+
+        return VelmDatetime::normalizeTimezone($tz);
+    }
+
+    /**
+     * Load {@see res.company} timezone for binding into request context.
+     */
+    public function resolveCompanyTimezone(?int $companyId = null): string
+    {
+        $companyId ??= $this->companyId();
+
+        if ($companyId === null || ! $this->registry->has('res.company')) {
+            return 'UTC';
+        }
+
+        return $this->withAclBypass(function () use ($companyId): string {
+            $rows = $this->browse('res.company', [$companyId])->read(['timezone']);
+            $tz = (string) ($rows[0]['timezone'] ?? 'UTC');
+
+            return VelmDatetime::normalizeTimezone($tz);
+        });
+    }
+
+    /**
+     * Active company from the cookie/request, validated against allowed companies.
+     */
+    public function resolveActiveCompanyId(?int $requestedFromCookie): ?int
+    {
+        $allowed = $this->allowedCompanyIds();
+
+        if ($requestedFromCookie !== null && $requestedFromCookie > 0) {
+            if (($this->isSuperuser() || in_array($requestedFromCookie, $allowed, true))
+                && $this->companyExists($requestedFromCookie)) {
+                return $requestedFromCookie;
+            }
+        }
+
+        if ($this->allowsAllCompaniesMode()) {
+            return null;
+        }
+
+        return $allowed[0] ?? null;
+    }
+
+    public function allowsAllCompaniesMode(): bool
+    {
+        return $this->isSuperuser();
+    }
+
+    public function userDefaultCompanyId(): ?int
+    {
+        if ($this->uid === null || ! $this->registry->has('res.users')) {
+            return null;
+        }
+
+        return $this->withAclBypass(function (): ?int {
+            $users = $this->model('res.users')->search([['id', '=', $this->uid]], limit: 1);
+
+            if ($users->count() === 0) {
+                return null;
+            }
+
+            $row = $users->read(['company_id'])[0] ?? [];
+            $companyId = $row['company_id'] ?? null;
+
+            if ($companyId === null || $companyId === '') {
+                return null;
+            }
+
+            return (int) $companyId;
+        });
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function allowedCompanyIds(): array
+    {
+        if (! $this->registry->has('res.company')) {
+            return [];
+        }
+
+        if ($this->isSuperuser()) {
+            return $this->withAclBypass(function (): array {
+                $ids = [];
+
+                foreach ($this->model('res.company')->search()->read(['id']) as $row) {
+                    $id = (int) ($row['id'] ?? 0);
+
+                    if ($id > 0) {
+                        $ids[] = $id;
+                    }
+                }
+
+                return $ids;
+            });
+        }
+
+        $default = $this->userDefaultCompanyId();
+
+        return $default !== null && $default > 0 ? [$default] : [];
+    }
+
+    public function modelHasCompanyField(string $modelName): bool
+    {
+        if (! $this->registry->has($modelName)) {
+            return false;
+        }
+
+        $fields = $this->registry->hasFieldSet($modelName)
+            ? $this->registry->fieldSet($modelName)
+            : $this->registry->modelClass($modelName)::fields();
+
+        $field = $fields['company_id'] ?? null;
+
+        return $field instanceof Many2oneField && $field->comodel === 'res.company';
+    }
+
+    /**
+     * Domain leaves applied to search/read/write when a company is active.
+     *
+     * @return list<list<mixed>>
+     */
+    public function companySearchConstraints(string $modelName): array
+    {
+        $companyId = $this->companyId();
+
+        if ($companyId === null || ! $this->modelHasCompanyField($modelName)) {
+            return [];
+        }
+
+        return [['company_id', '=', $companyId]];
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    public function enforceCompanyOnCreate(string $modelName, array $values): array
+    {
+        if (! $this->modelHasCompanyField($modelName)) {
+            return $values;
+        }
+
+        $companyId = $this->companyId();
+
+        if ($companyId === null) {
+            return $values;
+        }
+
+        if (! array_key_exists('company_id', $values) || $values['company_id'] === null || $values['company_id'] === '') {
+            $values['company_id'] = $companyId;
+
+            return $values;
+        }
+
+        if ((int) $values['company_id'] !== $companyId) {
+            throw AccessDeniedException::forCompanyMismatch($modelName, $this->uid);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    public function enforceCompanyOnWrite(string $modelName, array $values): array
+    {
+        if (! array_key_exists('company_id', $values) || ! $this->modelHasCompanyField($modelName)) {
+            return $values;
+        }
+
+        $companyId = $this->companyId();
+
+        if ($companyId === null) {
+            return $values;
+        }
+
+        $written = $values['company_id'];
+
+        if ($written === null || $written === '') {
+            return $values;
+        }
+
+        if ((int) $written !== $companyId) {
+            throw AccessDeniedException::forCompanyMismatch($modelName, $this->uid);
+        }
+
+        return $values;
+    }
+
+    public function companyExists(int $id): bool
+    {
+        if (! $this->registry->has('res.company')) {
+            return false;
+        }
+
+        return $this->withAclBypass(
+            fn (): bool => $this->model('res.company')->search([['id', '=', $id]], limit: 1)->count() > 0,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function withContext(array $context): self
+    {
+        return new self(
+            $this->connection,
+            $this->registry,
+            $this->uid,
+            [...$this->context, ...$context],
+            $this->cache,
+        );
     }
 
     /**

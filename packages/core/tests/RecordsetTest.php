@@ -8,6 +8,7 @@ use Velm\Registry;
 use Velm\Schema\SchemaBuilder;
 use Velm\Core\Tests\Support\Country;
 use Velm\Core\Tests\Support\Partner;
+use Velm\Support\VelmDatetime;
 
 function ormEnvironment(): Environment
 {
@@ -31,25 +32,61 @@ test('creates and reads a partner record', function (): void {
         'active' => true,
     ]);
 
+    $row = $partner->read()[0];
+
     expect($partner->ids())->toBe([1])
-        ->and($partner->read())->toBe([
-            [
-                'id' => 1,
-                'name' => 'Acme Corp',
-                'active' => true,
-                'country_id' => null,
-                'display_name' => 'Acme Corp',
-            ],
-        ]);
+        ->and($row['id'])->toBe(1)
+        ->and($row['name'])->toBe('Acme Corp')
+        ->and($row['active'])->toBeTrue()
+        ->and($row['country_id'])->toBeNull()
+        ->and($row['display_name'])->toBe('Acme Corp')
+        ->and($row['created_at'])->not->toBeNull()
+        ->and($row['updated_at'])->not->toBeNull()
+        ->and($row['created_at'])->toBe($row['updated_at']);
 });
 
 test('writes field values on existing records', function (): void {
     $env = ormEnvironment();
     $partner = $env->model('res.partner')->create(['name' => 'Before']);
+    $before = $partner->read()[0];
 
+    sleep(1);
     $partner->write(['name' => 'After']);
+    $after = $partner->read()[0];
 
-    expect($partner->read()[0]['name'])->toBe('After');
+    expect($after['name'])->toBe('After')
+        ->and($after['created_at'])->toBe($before['created_at'])
+        ->and($after['updated_at'])->not->toBe($before['updated_at']);
+});
+
+test('datetimes are stored in utc and read in company timezone', function (): void {
+    $env = ormEnvironment()->withContext(['timezone' => 'America/New_York']);
+    $partner = $env->model('res.partner')->create(['name' => 'TZ Partner']);
+    $id = $partner->ids()[0];
+
+    $row = $env->browse('res.partner', [$id])->read(['created_at'])[0];
+    $stored = $env->connection->fetchAll('SELECT created_at FROM res_partner WHERE id = ?', [$id])[0]['created_at'];
+
+    expect($stored)->not->toBe($row['created_at'])
+        ->and(VelmDatetime::toUtc($row['created_at'], 'America/New_York'))->toBe($stored);
+});
+
+test('write refreshes updated_at even when stale timestamps are submitted', function (): void {
+    $env = ormEnvironment();
+    $partner = $env->model('res.partner')->create(['name' => 'Stale TS']);
+    $before = $partner->read()[0];
+
+    sleep(1);
+    $partner->write([
+        'name' => 'Stale TS edited',
+        'created_at' => $before['created_at'],
+        'updated_at' => $before['updated_at'],
+    ]);
+    $after = $partner->read()[0];
+
+    expect($after['name'])->toBe('Stale TS edited')
+        ->and($after['created_at'])->toBe($before['created_at'])
+        ->and($after['updated_at'])->not->toBe($before['updated_at']);
 });
 
 test('searches with ilike operator on text fields', function (): void {

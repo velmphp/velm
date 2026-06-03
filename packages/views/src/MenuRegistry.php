@@ -13,7 +13,9 @@ final class MenuRegistry
      */
     public function tree(Environment $env): array
     {
-        $rows = $env->model('ir.ui.menu')->search([], order: '"sequence" ASC, "id" ASC')->read();
+        $rows = $env->model('ir.ui.menu')->search([
+            ['active', '=', true],
+        ], order: '"sequence" ASC, "id" ASC')->read();
 
         /** @var array<int, array{menu: array<string, mixed>, children: list<int>}> $nodes */
         $nodes = [];
