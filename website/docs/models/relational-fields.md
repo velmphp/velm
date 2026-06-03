@@ -92,3 +92,5 @@ $order->write(['line_ids' => [$line->ids()[0]]]); // single parent only
 ```
 
 See [Scaffolding](../guides/scaffolding) for generating modules that use these fields, and [Module migrations](../guides/migrations) for schema upgrades.
+
+**Try it:** run `composer run setup` in `apps/skeleton`, then open **Demos → Projects** (module `demo_relations`).

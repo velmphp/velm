@@ -53,6 +53,8 @@ php artisan velm:make:module my_module       # scaffold under addons/
 
 See [Module migrations](./migrations) for schema diff, versioned scripts, and hooks. See [Scaffolding modules](./scaffolding) for the full `make:*` workflow.
 
+The skeleton app installs a **`demo_relations`** addon (`apps/skeleton/addons/demo_relations/`) that seeds sample projects, tasks, and tags — open **Demos** in the Velm shell after `composer run setup`.
+
 Installing a module:
 
 - Resolves manifest `DEPENDS` and loads models in order.
