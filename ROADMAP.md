@@ -32,6 +32,19 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | Livewire arch pages (list / create / edit) in `velmphp/admin` | Done |
 | `res.company` on base module + default company on install | Done |
 
+## Phase 3b — Attachments & file manager (in progress)
+
+| Item | Status |
+|------|--------|
+| `ir.attachment` model + storage (Laravel Flysystem disk / db inline / legacy local path) | Done |
+| `POST/GET/DELETE /api/attachment/*` | Done |
+| `file_manager` module (`res.attachment.folder`, ACL install hook, list views) | Done |
+| Drive-style library shell (`/web/files/library`) | Done |
+| File picker widgets (`file`, `files`) | Pending |
+| `file_url` widget (company logos / favicon via library picker) | Done |
+| Bulk actions, properties page, Alpine `pvFileLibrary` | Done |
+| View/menu sync prunes stale views removed from disk | Done |
+
 ## Phase 3 — Views and menus
 
 | Item | Status |

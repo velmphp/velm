@@ -37,8 +37,8 @@
                 @foreach ($states as $state)
                     <button
                         type="button"
-                        @click="$store.velmAppsCatalog.setStateFilter(@js($state['key']))"
-                        :class="$store.velmAppsCatalog.stateFilter === @js($state['key'])
+                        @click="$store.velmAppsCatalog?.setStateFilter(@js($state['key']))"
+                        :class="($store.velmAppsCatalog?.stateFilter ?? '') === @js($state['key'])
                             ? 'nav-active'
                             : ''"
                         class="nav-item flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm"
@@ -56,8 +56,8 @@
                 <div class="pv-sidebar-links space-y-0.5">
                     <button
                         type="button"
-                        @click="$store.velmAppsCatalog.setCategoryFilter('')"
-                        :class="$store.velmAppsCatalog.categoryFilter === '' ? 'nav-active' : ''"
+                        @click="$store.velmAppsCatalog?.setCategoryFilter('')"
+                        :class="($store.velmAppsCatalog?.categoryFilter ?? '') === '' ? 'nav-active' : ''"
                         class="nav-item flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-left text-sm"
                     >
                         {{ __('All categories') }}
@@ -65,8 +65,8 @@
                     @foreach ($categories as $category)
                         <button
                             type="button"
-                            @click="$store.velmAppsCatalog.setCategoryFilter(@js($category))"
-                            :class="$store.velmAppsCatalog.categoryFilter === @js($category) ? 'nav-active' : ''"
+                            @click="$store.velmAppsCatalog?.setCategoryFilter(@js($category))"
+                            :class="($store.velmAppsCatalog?.categoryFilter ?? '') === @js($category) ? 'nav-active' : ''"
                             class="nav-item flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-left text-sm"
                         >
                             <span class="truncate">{{ $category }}</span>
@@ -84,7 +84,6 @@
                 @foreach ($workspaceRoots as $root)
                     <a
                         href="{{ $root['href'] }}"
-                        wire:navigate
                         data-nav-link
                         class="nav-item flex items-center gap-2.5 rounded-md px-3 py-2 text-sm"
                         @click="sidebarOpen = false"

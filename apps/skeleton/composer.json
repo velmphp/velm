@@ -49,7 +49,7 @@
         ],
         "velm-build-css": [
             "npm --prefix ../../packages/ui ci",
-            "npm --prefix ../../packages/ui run build:css",
+            "npm --prefix ../../packages/ui run build",
             "@php artisan vendor:publish --tag=velm-ui-assets --force"
         ],
         "velm-setup": [

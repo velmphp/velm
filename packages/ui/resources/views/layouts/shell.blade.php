@@ -3,6 +3,7 @@
 ])
 
 @php
+    $livewire = $livewire ?? (isset($this) && $this instanceof \Livewire\Component ? $this : null);
     $embed = request()->boolean('embed');
     $menu = $velmMenu ?? ['menu' => [], 'menu_layout' => 'apps'];
     $layoutMode = $menu['menu_layout'] ?? 'apps';
@@ -24,7 +25,7 @@
         </body>
     @else
         <body
-            class="flex min-h-screen bg-neutral-secondary font-sans text-body antialiased md:flex-row"
+            class="velm-shell flex min-h-screen bg-neutral-secondary font-sans text-body antialiased md:flex-row"
             x-data="{
                 sidebarOpen: false,
                 isDark: false,
@@ -59,7 +60,7 @@
             ></div>
 
             <aside
-                class="fixed inset-y-0 left-0 z-30 flex w-64 min-h-screen flex-shrink-0 flex-col bg-neutral-secondary transition-transform duration-200 ease-in-out md:relative md:translate-x-0"
+                class="velm-shell__aside fixed inset-y-0 left-0 z-30 flex w-64 min-h-screen flex-shrink-0 flex-col bg-neutral-secondary transition-transform duration-200 ease-in-out md:relative md:translate-x-0"
                 :class="{ '-translate-x-full': ! sidebarOpen }"
             >
                 <div
@@ -95,7 +96,12 @@
                 @include('velm-admin::partials.shell-user-sidebar')
             </aside>
 
-            <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
+            <div class="velm-shell__main flex min-h-screen w-full min-w-0 flex-1 flex-col">
+                @php
+                    ob_start();
+                    echo $slot;
+                    $__velmSlotHtml = ob_get_clean();
+                @endphp
                 <header
                     class="sticky top-0 z-30 flex min-h-[60px] shrink-0 items-center gap-3 overflow-visible border-b border-default bg-neutral-secondary px-4 md:px-6"
                 >
@@ -130,21 +136,21 @@
                         <div class="min-w-0 flex-1" aria-hidden="true"></div>
                     @endif
 
+                    <div class="velm-shell-page-actions flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        @stack('page-actions')
+                    </div>
                     @include('velm-admin::partials.shell-topbar-actions')
                 </header>
 
                 <div class="flex min-h-0 w-full flex-1 flex-col overflow-x-hidden">
                     <main class="flex-1 overflow-auto px-4 py-5 md:px-6">
-                        {{ $slot }}
+                        {!! $__velmSlotHtml !!}
                     </main>
                 </div>
             </div>
 
             @include('velm-ui::partials.record-dialog')
             @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
-            @if ($layoutMode === 'apps_catalog')
-                @include('velm-admin::partials.apps-catalog-store')
-            @endif
             @include('velm-ui::partials.record-dialog-scripts')
         </body>
     @endif

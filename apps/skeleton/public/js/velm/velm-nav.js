@@ -85,13 +85,45 @@
         navigate(backUrl(fallback));
     }
 
+    function syncDocumentTitle() {
+        const root = document.querySelector('[data-velm-nav-label]');
+        const label = (root?.getAttribute('data-velm-nav-label') || '').trim();
+        const app =
+            document.querySelector('meta[name="velm-app-name"]')?.content?.trim() || 'Velm';
+        const titleEl = document.getElementById('velm-document-title');
+        const nextTitle = label ? `${label} — ${app}` : app;
+
+        if (titleEl) {
+            titleEl.textContent = nextTitle;
+        } else {
+            document.title = nextTitle;
+        }
+
+        const meta = document.querySelector('meta[name="velm-nav-label"]');
+
+        if (meta) {
+            if (label) {
+                meta.setAttribute('content', label);
+            } else {
+                meta.removeAttribute('content');
+            }
+        }
+    }
+
     function dispatchChanged() {
+        syncDocumentTitle();
         document.dispatchEvent(new CustomEvent('velm:nav-changed'));
     }
 
     document.addEventListener('livewire:navigated', () => {
         requestAnimationFrame(() => requestAnimationFrame(dispatchChanged));
     });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncDocumentTitle);
+    } else {
+        syncDocumentTitle();
+    }
 
     document.addEventListener('alpine:init', () => {
         window.Alpine.data('velmBreadcrumbs', () => ({

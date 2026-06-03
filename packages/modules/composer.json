@@ -14,7 +14,8 @@
         "psr-4": {
             "Velm\\Modules\\": "src/",
             "Velm\\Modules\\Base\\Models\\": "modules/base/models/",
-            "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/"
+            "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/",
+            "Velm\\Modules\\FileManager\\Models\\": "modules/file_manager/models/"
         }
     },
     "autoload-dev": {

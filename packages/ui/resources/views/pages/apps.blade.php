@@ -5,8 +5,7 @@
 
 <div
     class="space-y-4"
-    x-data
-    x-init="$nextTick(() => { $store.velmAppsCatalog.apply(); $refs.searchInput?.focus(); })"
+    x-data="velmAppsCatalogHost"
     data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
     data-velm-nav-label="{{ $this->velmNavLabel() }}"
 >
@@ -31,21 +30,21 @@
             <input
                 type="search"
                 x-ref="searchInput"
-                x-model="$store.velmAppsCatalog.query"
-                @input="$store.velmAppsCatalog.apply()"
+                x-model="query"
+                @input="applyFilters()"
                 placeholder="{{ __('Search modules…') }}"
                 autocomplete="off"
                 class="w-full rounded-md border border-default bg-neutral-primary py-1.5 pr-3 pl-8 text-sm text-body placeholder:text-body-subtle focus:border-fg-brand focus:ring-2 focus:ring-fg-brand/40 focus:outline-none"
             />
         </div>
 
-        <span class="text-xs text-body-subtle" x-text="`${$store.velmAppsCatalog.visibleCount} of {{ count($catalog) }}`"></span>
+        <span class="text-xs text-body-subtle" x-text="`${visibleCount} of {{ count($catalog) }}`"></span>
 
         <button
             type="button"
-            @click="$store.velmAppsCatalog.reset(); $refs.searchInput?.focus()"
+            @click="clearFilters()"
             class="text-xs text-fg-brand hover:underline"
-            x-show="$store.velmAppsCatalog.query || $store.velmAppsCatalog.stateFilter || $store.velmAppsCatalog.categoryFilter"
+            x-show="hasActiveFilters"
             x-cloak
         >
             {{ __('Clear filters') }}
@@ -53,14 +52,14 @@
     </div>
 
     <div
-        x-show="$store.velmAppsCatalog.visibleCount === 0 && {{ count($catalog) }}"
+        x-show="visibleCount === 0 && {{ count($catalog) }}"
         x-cloak
         class="rounded-lg border border-default bg-neutral-primary p-5 text-center"
     >
         <p class="text-sm text-body-subtle">{{ __('No modules match the current filters.') }}</p>
         <button
             type="button"
-            @click="$store.velmAppsCatalog.reset(); $refs.searchInput?.focus()"
+            @click="clearFilters()"
             class="mt-2 text-xs text-fg-brand hover:underline"
         >
             {{ __('Clear filters') }}

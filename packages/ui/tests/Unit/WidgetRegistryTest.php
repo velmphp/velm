@@ -35,3 +35,16 @@ test('widget registry still resolves char default on new forms', function (): vo
 
     expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.char-input');
 });
+
+test('widget registry resolves file_url hint for char fields', function (): void {
+    $env = app(Environment::class);
+    $ctx = new WidgetContext(
+        $env,
+        'res.company',
+        ['name' => 'logo_url', 'widget' => 'file_url'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-url');
+});

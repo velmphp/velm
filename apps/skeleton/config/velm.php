@@ -28,6 +28,12 @@ return [
 
     'menu_layout' => env('VELM_MENU_LAYOUT', 'apps'),
 
+    'attachments' => [
+        'disk' => env('VELM_ATTACHMENT_DISK'),
+        'backend' => env('VELM_ATTACHMENT_BACKEND'),
+        'dir' => env('VELM_ATTACHMENT_DIR'),
+    ],
+
     'branding' => [
         'VELM_APP_NAME' => env('VELM_APP_NAME'),
         'VELM_APP_TAGLINE' => env('VELM_APP_TAGLINE'),

@@ -35,7 +35,11 @@
     },
     "scripts": {
         "test": "pest",
-        "analyse": "phpstan analyse --memory-limit=512M"
+        "analyse": "phpstan analyse --memory-limit=512M",
+        "build-ui": [
+            "npm --prefix packages/ui ci",
+            "npm --prefix packages/ui run build"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true

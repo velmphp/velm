@@ -31,6 +31,8 @@ final class ListView implements ViewDeclaration
     /** @var list<array{action: string, label: string, icon: string, href?: string}> */
     private array $rowActions = [];
 
+    private bool $readonly = false;
+
     private function __construct(
         private readonly string $name,
     ) {}
@@ -110,6 +112,16 @@ final class ListView implements ViewDeclaration
     }
 
     /**
+     * Read-only list: no create button, no default delete action, no edit navigation.
+     */
+    public function readonly(bool $readonly = true): self
+    {
+        $this->readonly = $readonly;
+
+        return $this;
+    }
+
+    /**
      * @param  list<ListRowAction|array{action: string, label: string, href?: string}>  $actions
      */
     public function rowActions(array $actions): self
@@ -164,6 +176,10 @@ final class ListView implements ViewDeclaration
 
         if ($this->rowActions !== []) {
             $arch['row_actions'] = $this->rowActions;
+        }
+
+        if ($this->readonly) {
+            $arch['readonly'] = true;
         }
 
         return [

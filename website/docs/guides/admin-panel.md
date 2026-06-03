@@ -50,7 +50,7 @@ Module **detail** pages inside the catalog (`/velm/apps/{name}`) hide Status/Cat
 | **Upgrade** | Manifest **version** increased — runs versioned migration scripts, then schema and view/menu sync. |
 | **Sync** | Installed module with **schema changes pending** (e.g. new model fields, no version bump) or **views/menus on disk** that differ from the database (no version bump). |
 
-After **Sync** or **Upgrade**, the catalog state returns to **Installed**. CLI equivalents: `php artisan velm:module:install`, `velm:migrate` / reconcile, and `velm:module:sync`.
+After **Sync** or **Upgrade**, the catalog state returns to **Installed** (including when the only pending change was a removed or renamed view/menu on disk). CLI equivalents: `php artisan velm:module:install`, `velm:migrate` / reconcile, and `velm:module:sync`.
 
 **Schema drift** (e.g. unsupported SQLite alters) may be shown on a module card for information; it does not change the actionable **Sync pending** state. See [Platform features](./features#module-states-in-the-catalog).
 
@@ -65,8 +65,9 @@ White-label settings live on **`res.company`** (form section **Branding & white-
 | **Application name** (`app_name`) | Header title and login page (preferred over company **Name**) |
 | `VELM_APP_NAME` | Fallback when `app_name` is empty |
 | `APP_NAME` | Laravel default; used only if nothing else is set |
-| `logo_url` / `logo_url_dark` | Header logos (light/dark) |
+| `logo_url` / `logo_url_dark` | Header logos (light/dark); use **Browse…** on the company form to pick from the file library |
 | `VELM_LOGO_URL` / `VELM_LOGO_URL_DARK` | Env overrides for logos |
+| Dark logo fallback | When `logo_url_dark` is empty, the light logo is shown in dark mode |
 | `primary_color` | Theme accent CSS |
 | `header_logo_height` | Logo height in the header (px) |
 | `show_header_brand_text` | Show or hide the app name beside the logo |
@@ -75,9 +76,29 @@ White-label settings live on **`res.company`** (form section **Branding & white-
 
 Configure env keys under `config/velm.php` → `branding` (e.g. `VELM_APP_NAME=My ERP`).
 
-**Dark mode** follows `velm-tokens.css`. Rebuild after theme changes: `composer velm-build-css` in `apps/skeleton`.
+**Dark mode** follows `velm-tokens.css`. Rebuild after theme or shell changes:
+
+```bash
+# Monorepo root — Tailwind CSS + Flowbite JS
+composer build-ui
+
+# Skeleton — build and publish assets to public/
+cd apps/skeleton && composer velm-build-css
+```
 
 Clicking the **brand mark** in the header goes to the apps catalog (`/velm/apps`).
+
+## File manager
+
+Install the **`file_manager`** module from the apps catalog. The shell adds **Files** in the module rail:
+
+| Menu | Purpose |
+|------|---------|
+| **Library** | Drive-style UI at `/web/files/library` |
+| **All files** | Read-only list of `ir.attachment` records |
+| **Folders** | Manage `res.attachment.folder` |
+
+Company branding forms use the same library via the **`file_url`** widget (logos, favicon). See [Platform features — File manager](./features#file-manager-and-attachments).
 
 ## Company switcher
 
@@ -99,11 +120,15 @@ After installing **`admin`**, the shell exposes:
 If the panel looks unstyled or colors are wrong:
 
 ```bash
+# From monorepo root (packages/ui only)
+composer build-ui
+
+# From skeleton (build + vendor:publish velm-ui-assets)
 cd apps/skeleton
 composer velm-build-css
 ```
 
-This rebuilds Tailwind/Flowbite in `packages/ui` and publishes `public/css/velm/velm.css`.
+This runs `npm run build` in `packages/ui` (Tailwind CSS and Flowbite JS) and, in the skeleton, copies assets to `public/css/velm/` and `public/js/velm/`.
 
 ## HTTP surfaces
 
@@ -115,6 +140,8 @@ This rebuilds Tailwind/Flowbite in `packages/ui` and publishes `public/css/velm/
 | `/velm/views/{module}/{viewName}/{id}` | Record display |
 | `/velm/views/{module}/{viewName}/{id}/edit` | Record edit |
 | `/velm/views/{module}/{viewName}/create` | Create (editable form; uses `formView`, not `detailView`) |
+| `/web/files/library` | File library (requires `file_manager` module) |
+| `/web/files/picker` | File picker (embed / dialog) |
 
 The **New** list button targets `/create`. Create routes are registered before the generic `/{record}` detail route so `create` is not parsed as a record id.
 

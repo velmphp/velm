@@ -26,7 +26,10 @@ final class ShareVelmMenuContext
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->is('velm*') || ! app()->bound(Environment::class)) {
+        if (
+            (! $request->is('velm*') && ! $request->is('web/files*'))
+            || ! app()->bound(Environment::class)
+        ) {
             return $next($request);
         }
 

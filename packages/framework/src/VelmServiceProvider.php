@@ -11,12 +11,15 @@ use Velm\Framework\VelmManager;
 use Velm\Modules\ModulesServiceProvider;
 use Velm\Views\ViewsServiceProvider;
 use Velm\Ui\UiServiceProvider;
+use Velm\Framework\Storage\AttachmentStorageConfigurator;
 use Velm\Web\WebServiceProvider;
 
 final class VelmServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        AttachmentStorageConfigurator::register($this->app);
+
         $this->app->register(ModulesServiceProvider::class);
         $this->app->register(ViewsServiceProvider::class);
         $this->app->register(WebServiceProvider::class);

@@ -37,6 +37,19 @@ final class MenuTreeBuilder
     private function toEntry(array $node): array
     {
         $menu = $node['menu'];
+        $children = $node['children'];
+        usort(
+            $children,
+            static function (array $a, array $b): int {
+                $seq = ((int) ($a['menu']['sequence'] ?? 10)) <=> ((int) ($b['menu']['sequence'] ?? 10));
+
+                if ($seq !== 0) {
+                    return $seq;
+                }
+
+                return ((int) ($a['menu']['id'] ?? 0)) <=> ((int) ($b['menu']['id'] ?? 0));
+            },
+        );
 
         return [
             'label' => (string) $menu['label'],
@@ -44,7 +57,7 @@ final class MenuTreeBuilder
             'icon' => $menu['icon'] ?? null,
             'children' => array_map(
                 fn (array $child): array => $this->toEntry($child),
-                $node['children'],
+                $children,
             ),
         ];
     }

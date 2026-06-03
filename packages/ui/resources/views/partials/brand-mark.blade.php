@@ -13,21 +13,36 @@
     aria-label="{{ $appName }} home"
 >
     @if ($logoLight !== '')
-        <img
-            src="{{ $logoLight }}"
-            alt=""
-            class="shrink-0 object-contain"
-            style="{{ $logoStyle }}"
-            x-show="! isDark"
-        />
         @if ($logoDark !== '' && $logoDark !== $logoLight)
             <img
-                src="{{ $logoDark }}"
                 alt=""
                 class="shrink-0 object-contain"
                 style="{{ $logoStyle }}"
-                x-show="isDark"
-                x-cloak
+                x-data="{
+                    light: @js($logoLight),
+                    dark: @js($logoDark),
+                    src: @js($logoLight),
+                    sync() {
+                        this.src = document.documentElement.classList.contains('dark')
+                            ? this.dark
+                            : this.light;
+                    },
+                    init() {
+                        this.sync();
+                        new MutationObserver(() => this.sync()).observe(
+                            document.documentElement,
+                            { attributes: true, attributeFilter: ['class'] }
+                        );
+                    },
+                }"
+                :src="src"
+            />
+        @else
+            <img
+                src="{{ $logoLight }}"
+                alt=""
+                class="shrink-0 object-contain"
+                style="{{ $logoStyle }}"
             />
         @endif
     @else

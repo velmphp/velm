@@ -31,6 +31,10 @@ trait ResolvesStoredView
 
     protected function listFormViewName(): ?string
     {
+        if ($this->listIsReadonly()) {
+            return null;
+        }
+
         $arch = $this->arch();
 
         $view = $arch['form_view'] ?? null;
@@ -59,6 +63,10 @@ trait ResolvesStoredView
 
     protected function listEditViewName(): ?string
     {
+        if ($this->listIsReadonly()) {
+            return null;
+        }
+
         $arch = $this->arch();
 
         $view = $arch['edit_view'] ?? $arch['form_view'] ?? null;
@@ -68,6 +76,10 @@ trait ResolvesStoredView
 
     protected function createPageUrl(): ?string
     {
+        if ($this->listIsReadonly()) {
+            return null;
+        }
+
         $formView = $this->listFormViewName();
 
         if ($formView === null) {
@@ -75,6 +87,11 @@ trait ResolvesStoredView
         }
 
         return StoredViewRoutes::createPageUrl($this->velmViewModule(), $formView);
+    }
+
+    protected function listIsReadonly(): bool
+    {
+        return filter_var($this->arch()['readonly'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     protected function openRecordUrl(int $recordId): ?string
@@ -114,6 +131,10 @@ trait ResolvesStoredView
 
     protected function supportsRecordEdit(): bool
     {
+        if ($this->listIsReadonly()) {
+            return false;
+        }
+
         return $this->listEditViewName() !== null;
     }
 

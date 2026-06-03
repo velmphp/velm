@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Velm\Ui\Widgets;
 
 use Velm\Fields\BooleanField;
+use Velm\Fields\CharField;
 use Velm\Fields\Field;
+use Velm\Fields\TextField;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\One2manyField;
@@ -36,6 +38,8 @@ final class WidgetRegistry
         $this->register(One2manyField::class, 'dialog', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
         $this->register(One2manyField::class, 'inline', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
         $this->register(One2manyField::class, 'table', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
+        $this->register(CharField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
+        $this->register(TextField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
         $this->registerDefault(FormMode::Edit, 'velm-ui::widgets.char-input');
     }
 

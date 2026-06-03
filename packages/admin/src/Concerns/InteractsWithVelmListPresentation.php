@@ -90,11 +90,20 @@ trait InteractsWithVelmListPresentation
     {
         $types = array_column($actions, 'action');
 
-        if (! in_array('delete', $types, true) && $this->listModelCanUnlink()) {
+        if (
+            ! $this->listIsReadonly()
+            && ! in_array('delete', $types, true)
+            && $this->listModelCanUnlink()
+        ) {
             $actions[] = ListRowAction::delete()->toArray();
         }
 
         return $actions;
+    }
+
+    private function listIsReadonly(): bool
+    {
+        return filter_var($this->arch()['readonly'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     private function listModelName(): string

@@ -38,7 +38,114 @@
         };
     })();
 
+    function createVelmAppsCatalogStore() {
+        return {
+            query: '',
+            stateFilter: '',
+            categoryFilter: '',
+            visibleCount: 0,
+
+            setStateFilter(key) {
+                this.stateFilter = key;
+                this.apply();
+            },
+
+            setCategoryFilter(key) {
+                this.categoryFilter = key;
+                this.apply();
+            },
+
+            apply() {
+                const q = (this.query || '').trim().toLowerCase();
+                let visible = 0;
+
+                document.querySelectorAll('[data-velm-app]').forEach((card) => {
+                    const stateOk = ! this.stateFilter || card.dataset.velmAppState === this.stateFilter;
+                    const catOk = ! this.categoryFilter || card.dataset.velmAppCategory === this.categoryFilter;
+                    const queryOk = ! q || (card.dataset.velmAppHaystack || '').includes(q);
+                    const show = stateOk && catOk && queryOk;
+                    card.style.display = show ? '' : 'none';
+
+                    if (show) {
+                        visible++;
+                    }
+                });
+
+                this.visibleCount = visible;
+            },
+
+            reset() {
+                this.query = '';
+                this.stateFilter = '';
+                this.categoryFilter = '';
+                this.apply();
+            },
+        };
+    }
+
+    function ensureVelmAppsCatalogStore() {
+        if (typeof Alpine === 'undefined') {
+            return;
+        }
+
+        if (Alpine.store('velmAppsCatalog')) {
+            return;
+        }
+
+        Alpine.store('velmAppsCatalog', createVelmAppsCatalogStore());
+    }
+
+    document.addEventListener('livewire:navigating', ensureVelmAppsCatalogStore);
+    document.addEventListener('livewire:navigated', () => {
+        ensureVelmAppsCatalogStore();
+        Alpine.store('velmAppsCatalog')?.apply();
+    });
+
     document.addEventListener('alpine:init', () => {
+        ensureVelmAppsCatalogStore();
+
+        Alpine.data('velmAppsCatalogHost', () => ({
+            init() {
+                ensureVelmAppsCatalogStore();
+                this.$nextTick(() => {
+                    this.$store.velmAppsCatalog?.apply();
+                    this.$refs.searchInput?.focus();
+                });
+            },
+
+            get query() {
+                return this.$store.velmAppsCatalog?.query ?? '';
+            },
+
+            set query(value) {
+                if (this.$store.velmAppsCatalog) {
+                    this.$store.velmAppsCatalog.query = value;
+                }
+            },
+
+            get visibleCount() {
+                return this.$store.velmAppsCatalog?.visibleCount ?? 0;
+            },
+
+            get hasActiveFilters() {
+                const store = this.$store.velmAppsCatalog;
+                if (! store) {
+                    return false;
+                }
+
+                return !!(store.query || store.stateFilter || store.categoryFilter);
+            },
+
+            applyFilters() {
+                this.$store.velmAppsCatalog?.apply();
+            },
+
+            clearFilters() {
+                this.$store.velmAppsCatalog?.reset();
+                this.$refs.searchInput?.focus();
+            },
+        }));
+
         Alpine.data('pvM2o', (cfg) => ({
             wireKey: cfg.wireKey,
             comodel: cfg.comodel,
@@ -519,6 +626,104 @@
                 try {
                     localStorage.setItem(storageKey, name);
                 } catch (_) {}
+            },
+        }));
+
+        Alpine.data('pvFileUrl', (cfg) => ({
+            wireKey: cfg.wireKey || '',
+            fallbackWireKey: cfg.fallbackWireKey || '',
+            accept: cfg.accept || 'image/*',
+            readonly: !!cfg.readonly,
+            pickerTitle: cfg.pickerTitle || '{{ __('Choose file') }}',
+            value: cfg.initial || '',
+
+            init() {
+                if (typeof this.$wire === 'undefined' || !this.wireKey) {
+                    return;
+                }
+                const wireVal = this.$wire.get(this.wireKey);
+                if (wireVal !== undefined && wireVal !== null && String(wireVal) !== this.value) {
+                    this.value = String(wireVal);
+                }
+                this.$watch('value', (v) => {
+                    this.$wire.set(this.wireKey, v ?? '');
+                });
+                if (this.fallbackWireKey) {
+                    this.$wire.$watch(this.fallbackWireKey, () => {});
+                }
+            },
+
+            resolvedUrl() {
+                const own = (this.value || '').trim();
+                if (own !== '') {
+                    return own;
+                }
+                if (this.fallbackWireKey && typeof this.$wire !== 'undefined') {
+                    return String(this.$wire.get(this.fallbackWireKey) || '').trim();
+                }
+                return '';
+            },
+
+            get previewUrl() {
+                const v = this.resolvedUrl();
+                if (!v || !this.looksLikeImage(v)) {
+                    return '';
+                }
+                return v;
+            },
+
+            looksLikeImage(url) {
+                if (/^data:image\//i.test(url)) {
+                    return true;
+                }
+                if (/\/api\/attachment\/\d+\/download/i.test(url)) {
+                    return true;
+                }
+                return /\.(png|jpe?g|gif|webp|svg|ico)(\?|$)/i.test(url);
+            },
+
+            pick() {
+                if (this.readonly) {
+                    return;
+                }
+                const params = new URLSearchParams({ accept: this.accept });
+                const url = '/web/files/picker?' + params.toString();
+                if (!window.PvDialog) {
+                    window.location.href = url;
+                    return;
+                }
+                window.PvDialog.open({
+                    url,
+                    title: this.pickerTitle,
+                    onResult: (row) => this.applyPick(row),
+                });
+            },
+
+            async applyPick(row) {
+                if (!row || !row.id) {
+                    return;
+                }
+                const downloadUrl = '/api/attachment/' + row.id + '/download';
+                try {
+                    await fetch('/web/files/bulk/public', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        },
+                        body: JSON.stringify({ ids: [row.id], public: true }),
+                    });
+                } catch (_) {}
+                this.value = downloadUrl;
+            },
+
+            clear() {
+                if (this.readonly) {
+                    return;
+                }
+                this.value = '';
             },
         }));
     });

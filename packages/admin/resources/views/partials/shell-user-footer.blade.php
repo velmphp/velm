@@ -6,7 +6,7 @@
     <div class="shrink-0 space-y-2 border-t border-default/60 px-4 py-3 text-xs text-body-subtle">
         <p class="truncate">
             {{ __('Signed in as') }}
-            <span class="font-semibold text-heading">{{ $user->name ?? $user->email }}</span>
+            <span class="font-semibold text-heading">{{ data_get($user, 'name') ?: data_get($user, 'email') }}</span>
         </p>
         <form method="post" action="{{ \Velm\Admin\Support\VelmPanel::getLogoutUrl() }}">
             @csrf

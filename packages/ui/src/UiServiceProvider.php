@@ -24,6 +24,10 @@ final class UiServiceProvider extends ServiceProvider
             UiAssets::stylesheetPath() => public_path('css/velm/velm.css'),
             UiAssets::flowbiteScriptPath() => public_path('js/velm/flowbite.min.js'),
             UiAssets::navigationScriptPath() => public_path('js/velm/velm-nav.js'),
+            dirname(__DIR__).'/resources/js/pv-file-helpers.js' => public_path('js/velm/pv-file-helpers.js'),
+            dirname(__DIR__).'/resources/js/pv-files-alpine.js' => public_path('js/velm/pv-files-alpine.js'),
+            dirname(__DIR__).'/resources/js/pv-file-library.js' => public_path('js/velm/pv-file-library.js'),
+            dirname(__DIR__).'/resources/js/pv-file-url.js' => public_path('js/velm/pv-file-url.js'),
         ], 'velm-ui-assets');
     }
 }

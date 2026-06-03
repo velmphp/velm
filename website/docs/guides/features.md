@@ -53,6 +53,8 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 | **Sync pending** | Same version but **actionable** schema diff (new columns, etc.) **or** views/menus on disk differ from `ir.ui.view` / `ir.ui.menu` | **Sync** |
 | **Schema drift** | Unsupported diff (e.g. SQLite nullability-only changes) | Informational only — does not block “Installed”; fix manually or bump version |
 
+**Sync** re-applies schema, reloads views and menus from disk, **removes stale menu entries**, and **removes views** that no longer exist in module data files (so renamed or deleted views do not leave the module stuck on Sync pending).
+
 `schemaExternalColumns()` on a model (e.g. Laravel-owned `users.password`) excludes columns from actionable sync diff so Laravel tables do not show false “sync pending”.
 
 CLI: `php artisan velm:module:install`, `velm:module:sync`, `velm:migrate` / reconcile. See [Admin panel — Install](./admin-panel#install-upgrade-and-sync) and [Migrations](./migrations).
@@ -62,6 +64,8 @@ CLI: `php artisan velm:module:install`, `velm:module:sync`, `velm:migrate` / rec
 White-label fields on **`res.company`** (section **Branding & white-label**):
 
 - Application name, logos (light/dark), primary color, font, favicon
+- **Logo and favicon fields** use the **`file_url` widget** — browse the file library, store `/api/attachment/{id}/download` URLs, and mark picked files **public** for header use
+- If **Logo URL (dark)** is empty, the **light logo** is used in dark mode
 - Copyright, support email/URL, “powered by Velm” toggle
 - Header logo height, show/hide brand text next to logo
 
@@ -69,11 +73,30 @@ Environment overrides: `VELM_APP_NAME`, `VELM_LOGO_URL`, `VELM_LOGO_URL_DARK`, e
 
 **Company switcher** in the header (cookie-backed) sets active `company_id` for record rules and default `company_id` on create.
 
-**Dark mode** uses shared design tokens (`packages/ui/resources/css/velm-tokens.css`). After token changes, rebuild CSS:
+**Dark mode** uses shared design tokens (`packages/ui/resources/css/velm-tokens.css`). Rebuild UI assets after token or Blade changes:
 
 ```bash
+# Monorepo root (Tailwind CSS + Flowbite JS in packages/ui)
+composer build-ui
+
+# Skeleton app (build + publish to public/)
 cd apps/skeleton && composer velm-build-css
 ```
+
+## File manager and attachments
+
+The **`file_manager`** module adds Drive-style storage over **`ir.attachment`**:
+
+| Surface | URL / API |
+|---------|-----------|
+| **File library** | `/web/files/library` — folders, grid/tiles/details, upload, bulk actions, properties panel |
+| **File picker** | `/web/files/picker` — opened from **`file_url`** fields via the record dialog |
+| **Upload / download / delete** | `POST /api/attachment/upload`, `GET /api/attachment/{id}/download`, `DELETE /api/attachment/{id}` |
+| **Web file routes** | `/web/files/*` — tree, move/copy, bulk download/public, picker browse/upload |
+
+Install from the apps catalog or `php artisan velm:module:install file_manager`. Menus: **Files → Library**, **All files**, **Folders**.
+
+Storage backend: `VELM_ATTACHMENT_BACKEND` (`local` or `db`); local path via `VELM_ATTACHMENT_DIR`. See module manifest under `packages/modules/modules/file_manager/`.
 
 ## Users, groups, and ACL in the shell
 
@@ -113,6 +136,7 @@ Panel login uses Laravel session guard; Velm ACL applies after bind. See [Securi
 | **Keyboard** | `Ctrl+S` / `Cmd+S` submits `#velm-form` |
 | **Embedded forms** | `?embed=1` for record dialogs; `postMessage` updates parent M2M chips |
 | **Relational widgets** | M2O combobox, M2M/O2M dialog widgets — work on **New** forms (same widgets as edit) |
+| **`file_url` widget** | Char fields with `Field::make('logo_url')->widget('file_url')` — library picker, image preview, public attachment URLs |
 | **M2O prefill** | Query params on create URL (e.g. `?project_id=3` from O2M “new line”) |
 
 Stored view URLs:
@@ -158,6 +182,9 @@ Menu: **Demos → Projects**. Install/sync: `php artisan velm:module:sync demo_r
 | `PATCH/DELETE /api/records/{id}` | Write and unlink |
 | `GET /api/m2o/search` | Combobox search |
 | `POST /api/m2o/quick-create` | Name-only quick create |
+| `POST /api/attachment/upload` | Upload binary (optional `public`, `folder_id`) |
+| `GET /api/attachment/{id}/download` | Download attachment bytes |
+| `DELETE /api/attachment/{id}` | Remove attachment |
 
 Datetime fields in API responses follow the same company timezone as the panel when `BindVelmEnvironment` runs on `/api/*`.
 
