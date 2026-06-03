@@ -49,6 +49,7 @@ final class VelmServiceProvider extends ServiceProvider
                 Console\MakeModuleCommand::class,
                 Console\MakeModelCommand::class,
                 Console\MakeViewCommand::class,
+                Console\MakeMenuCommand::class,
             ]);
         }
     }

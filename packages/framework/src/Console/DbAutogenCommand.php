@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Velm\Framework\Console;
 
 use Illuminate\Console\Command;
+use Velm\Console\Scaffold\AutogenViewEnsurer;
+use Velm\Console\Scaffold\ScaffoldRegistryLoader;
 use Velm\Console\Support\ModuleRoots;
 use Velm\Modules\Migrations\ModuleMigrationAutogen;
 use Velm\Modules\ModuleInstaller;
@@ -14,6 +16,7 @@ final class DbAutogenCommand extends Command
     protected $signature = 'velm:db:autogen
                             {--module= : Technical module name}
                             {--version= : Explicit target version (e.g. 0.2.0)}
+                            {--with-views : Scaffold list+form views for models touched by the schema diff}
                             {--dry-run : Print the migration file without writing}';
 
     protected $description = 'Write a versioned migration file and bump manifest VERSION';
@@ -44,6 +47,22 @@ final class DbAutogenCommand extends Command
 
         try {
             $diff = $installer->diff($module, $roots);
+
+            if ((bool) $this->option('with-views') && ! $diff->isEmpty()) {
+                $registry = (new ScaffoldRegistryLoader)->loadForModule($module);
+                $ensurer = new AutogenViewEnsurer;
+                $affected = $ensurer->modelsAffectedByDiff($spec, $registry, $diff);
+                $created = $ensurer->ensureViews($spec, $affected, $registry);
+
+                foreach ($created as $path) {
+                    $this->components->info("Created view {$path}");
+                }
+
+                if ($affected !== [] && $created === []) {
+                    $this->components->warn('All affected models already have list views.');
+                }
+            }
+
             $from = $spec->version;
             $autogen = new ModuleMigrationAutogen;
             $to = $autogen->targetVersion($from, $targetVersion);

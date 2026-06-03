@@ -13,6 +13,7 @@ This site documents how to **author modules** and use the ORM. For repository ar
 | Topic | Where to start |
 |-------|----------------|
 | Install the skeleton app and modules | [Installation](./guides/installation) |
+| Scaffold modules, models, views, menus | [Scaffolding](./guides/scaffolding) |
 | Models — fields, registry, recordsets | [Models](./models/) |
 | Add a new business model and table | [Defining models](./models/defining-a-model) |
 | Extend another module's model | [Extending models](./models/extending-a-model) |
