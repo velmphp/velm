@@ -8,6 +8,7 @@ use Velm\Domain\Domain;
 use Velm\Environment;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
+use Velm\Fields\One2manyField;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -97,7 +98,7 @@ final class Recordset
         $this->env->checkAccess($this->modelName(), 'create');
 
         $modelClass = $this->modelClass;
-        [$columnValues, $m2mValues] = $this->splitValues($values);
+        [$columnValues, $m2mValues, $o2mValues] = $this->splitValues($values);
         $fields = $this->modelFields();
         $columns = [];
         $placeholders = [];
@@ -111,7 +112,7 @@ final class Recordset
         }
 
         foreach ($fields as $name => $field) {
-            if ($name === 'id' || $name === 'display_name' || $field instanceof Many2manyField || array_key_exists($name, $columnValues)) {
+            if ($name === 'id' || $name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField || array_key_exists($name, $columnValues)) {
                 continue;
             }
 
@@ -142,6 +143,10 @@ final class Recordset
             $created->writeM2m($m2mValues);
         }
 
+        if ($o2mValues !== []) {
+            $created->writeO2m($o2mValues);
+        }
+
         return $created;
     }
 
@@ -168,11 +173,16 @@ final class Recordset
         $fieldNames = array_values(array_unique($fieldNames));
 
         $m2mNames = [];
+        $o2mNames = [];
         foreach ($fieldNames as $name) {
             $field = $fields[$name] ?? null;
 
             if ($field instanceof Many2manyField) {
                 $m2mNames[] = $name;
+            }
+
+            if ($field instanceof One2manyField) {
+                $o2mNames[] = $name;
             }
         }
 
@@ -182,7 +192,7 @@ final class Recordset
             if ($name === 'id' || $name === 'display_name') {
                 continue;
             }
-            if (! isset($fields[$name]) || $fields[$name] instanceof Many2manyField) {
+            if (! isset($fields[$name]) || $fields[$name] instanceof Many2manyField || $fields[$name] instanceof One2manyField) {
                 continue;
             }
             $sql .= ', "'.$fields[$name]->column.'"';
@@ -191,6 +201,7 @@ final class Recordset
 
         $rows = $this->env->connection->fetchAll($sql, $this->ids);
         $m2mByRecord = $m2mNames !== [] ? $this->loadM2mMaps($m2mNames) : [];
+        $o2mByRecord = $o2mNames !== [] ? $this->loadO2mMaps($o2mNames) : [];
         $result = [];
 
         foreach ($rows as $row) {
@@ -203,6 +214,12 @@ final class Recordset
 
                 if ($field instanceof Many2manyField) {
                     $record[$name] = $m2mByRecord[$name][$record['id']] ?? [];
+
+                    continue;
+                }
+
+                if ($field instanceof One2manyField) {
+                    $record[$name] = $o2mByRecord[$name][$record['id']] ?? [];
 
                     continue;
                 }
@@ -242,7 +259,7 @@ final class Recordset
 
         $this->env->checkAccess($this->modelName(), 'write');
 
-        [$columnValues, $m2mValues] = $this->splitValues($values);
+        [$columnValues, $m2mValues, $o2mValues] = $this->splitValues($values);
         $modelClass = $this->modelClass;
         $fields = $this->modelFields();
         $sets = [];
@@ -265,7 +282,11 @@ final class Recordset
             $this->writeM2m($m2mValues);
         }
 
-        if ($sets !== [] || $m2mValues !== []) {
+        if ($o2mValues !== []) {
+            $this->writeO2m($o2mValues);
+        }
+
+        if ($sets !== [] || $m2mValues !== [] || $o2mValues !== []) {
             foreach ($this->ids as $id) {
                 $this->env->cache->forget($modelClass::name(), $id);
             }
@@ -454,13 +475,14 @@ final class Recordset
 
     /**
      * @param  array<string, mixed>  $values
-     * @return array{0: array<string, mixed>, 1: array<string, list<int>>}
+     * @return array{0: array<string, mixed>, 1: array<string, list<int>>, 2: array<string, list<int>>}
      */
     private function splitValues(array $values): array
     {
         $fields = $this->modelFields();
         $columnValues = [];
         $m2mValues = [];
+        $o2mValues = [];
 
         foreach ($values as $name => $value) {
             if ($name === 'id' || $name === 'display_name') {
@@ -474,7 +496,13 @@ final class Recordset
             $field = $fields[$name];
 
             if ($field instanceof Many2manyField) {
-                $m2mValues[$name] = $this->normalizeM2mIds($value);
+                $m2mValues[$name] = $this->normalizeRelationIds($value);
+
+                continue;
+            }
+
+            if ($field instanceof One2manyField) {
+                $o2mValues[$name] = $this->normalizeRelationIds($value);
 
                 continue;
             }
@@ -482,20 +510,20 @@ final class Recordset
             $columnValues[$name] = $value;
         }
 
-        return [$columnValues, $m2mValues];
+        return [$columnValues, $m2mValues, $o2mValues];
     }
 
     /**
      * @return list<int>
      */
-    private function normalizeM2mIds(mixed $value): array
+    private function normalizeRelationIds(mixed $value): array
     {
         if ($value instanceof self) {
             return $value->ids();
         }
 
         if (! is_array($value)) {
-            throw new \InvalidArgumentException('Many2many values must be a list of ids.');
+            throw new \InvalidArgumentException('Relation field values must be a list of ids or a recordset.');
         }
 
         return array_values(array_map(intval(...), $value));
@@ -565,6 +593,92 @@ final class Recordset
             foreach ($rows as $row) {
                 $ownerId = (int) $row['owner_id'];
                 $map[$ownerId][] = (int) $row['peer_id'];
+            }
+
+            $maps[$name] = $map;
+        }
+
+        return $maps;
+    }
+
+    /**
+     * @param  array<string, list<int>>  $o2mValues
+     */
+    private function writeO2m(array $o2mValues): void
+    {
+        if (count($this->ids) !== 1) {
+            throw new \InvalidArgumentException('One2many writes require a single parent record.');
+        }
+
+        $parentId = $this->ids[0];
+        $fields = $this->modelFields();
+
+        foreach ($o2mValues as $name => $childIds) {
+            $field = $fields[$name];
+
+            if (! $field instanceof One2manyField) {
+                continue;
+            }
+
+            $comodelClass = $this->env->registry->modelClass($field->comodel);
+            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverseColumn = $inverse->column;
+            $table = $comodelClass::table();
+            $placeholders = implode(', ', array_fill(0, count($childIds), '?'));
+
+            $this->env->connection->execute(
+                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = NULL WHERE "'.$inverseColumn.'" = ?'
+                .($childIds !== [] ? ' AND "id" NOT IN ('.$placeholders.')' : ''),
+                $childIds !== [] ? [$parentId, ...$childIds] : [$parentId],
+            );
+
+            if ($childIds === []) {
+                continue;
+            }
+
+            $linkPlaceholders = implode(', ', array_fill(0, count($childIds), '?'));
+            $this->env->connection->execute(
+                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = ? WHERE "id" IN ('.$linkPlaceholders.')',
+                [$parentId, ...$childIds],
+            );
+        }
+    }
+
+    /**
+     * @param  list<string>  $o2mNames
+     * @return array<string, array<int, list<int>>>
+     */
+    private function loadO2mMaps(array $o2mNames): array
+    {
+        $fields = $this->modelFields();
+        $maps = [];
+
+        foreach ($o2mNames as $name) {
+            $field = $fields[$name];
+
+            if (! $field instanceof One2manyField) {
+                continue;
+            }
+
+            $comodelClass = $this->env->registry->modelClass($field->comodel);
+            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverseColumn = $inverse->column;
+            $table = $comodelClass::table();
+            $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
+            $rows = $this->env->connection->fetchAll(
+                'SELECT "id", "'.$inverseColumn.'" AS owner_id FROM "'.$table.'" '
+                .'WHERE "'.$inverseColumn.'" IN ('.$ownerPlaceholders.') ORDER BY "id"',
+                $this->ids,
+            );
+            $map = [];
+
+            foreach ($this->ids as $id) {
+                $map[$id] = [];
+            }
+
+            foreach ($rows as $row) {
+                $ownerId = (int) $row['owner_id'];
+                $map[$ownerId][] = (int) $row['id'];
             }
 
             $maps[$name] = $map;

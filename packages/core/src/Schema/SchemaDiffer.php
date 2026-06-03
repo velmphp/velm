@@ -7,6 +7,7 @@ namespace Velm\Schema;
 use Velm\Database\Connection;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
+use Velm\Fields\One2manyField;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -178,7 +179,7 @@ final class SchemaDiffer
         $columns = [];
 
         foreach ($fields as $field) {
-            if ($field->name === 'display_name' || $field instanceof Many2manyField) {
+            if ($field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
                 continue;
             }
 

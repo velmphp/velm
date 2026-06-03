@@ -7,6 +7,7 @@ namespace Velm\Schema;
 use Velm\Database\Connection;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
+use Velm\Fields\One2manyField;
 use Velm\Models\Model;
 use Velm\Registry;
 
@@ -70,7 +71,7 @@ final class SchemaBuilder
         $columns = ['"id" INTEGER PRIMARY KEY AUTOINCREMENT'];
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField) {
+            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
                 continue;
             }
 
@@ -99,7 +100,7 @@ final class SchemaBuilder
         }
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField) {
+            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
                 continue;
             }
 

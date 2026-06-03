@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'models/defining-a-model',
+        'models/relational-fields',
         'models/extending-a-model',
         'models/method-overrides-and-super',
         {

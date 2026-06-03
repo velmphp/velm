@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm;
 
 use Velm\Fields\Field;
+use Velm\Fields\One2manyField;
 use Velm\Models\Model;
 
 final class Registry
@@ -81,6 +82,12 @@ final class Registry
         $this->models[$name] = $modelClass;
         $this->fieldSets[$name] = $modelClass::baseFields();
         $this->extensionChain[$name] = [$modelClass];
+
+        foreach ($this->fieldSets[$name] as $field) {
+            if ($field instanceof One2manyField) {
+                $field->validateInverse($modelClass, $this);
+            }
+        }
     }
 
     /**
