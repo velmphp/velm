@@ -58,6 +58,7 @@ final class BaseInstallHooks
             'ir.ui.menu',
             'ir.actions.server',
             'ir.cron',
+            'ir.attachment',
         ] as $model) {
             if (! $env->registry->has($model)) {
                 continue;

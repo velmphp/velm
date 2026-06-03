@@ -12,6 +12,8 @@ final class ModuleModelLoader
     public function load(ModuleSpec $spec, Registry $registry): void
     {
         foreach ($spec->models as $modelClass) {
+            self::ensureModelClassLoaded($modelClass, $spec->path);
+
             if (! class_exists($modelClass)) {
                 throw new \RuntimeException("Model class {$modelClass} for module {$spec->name} was not found.");
             }
@@ -46,6 +48,32 @@ final class ModuleModelLoader
             }
 
             $this->load($spec, $registry);
+        }
+    }
+
+    /**
+     * Require {module}/models/{Class}.php when Composer PSR-4 was not dumped
+     * after adding a new bundled module (e.g. file_manager).
+     */
+    private static function ensureModelClassLoaded(string $modelClass, string $modulePath): void
+    {
+        if (class_exists($modelClass, false)) {
+            return;
+        }
+
+        $short = strrchr($modelClass, '\\');
+
+        if ($short === false) {
+            return;
+        }
+
+        $file = rtrim($modulePath, '/\\')
+            .DIRECTORY_SEPARATOR.'models'
+            .DIRECTORY_SEPARATOR.substr($short, 1)
+            .'.php';
+
+        if (is_file($file)) {
+            require_once $file;
         }
     }
 }

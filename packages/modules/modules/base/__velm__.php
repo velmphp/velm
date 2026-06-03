@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Velm\Modules\Base\BaseInstallHooks;
+use Velm\Modules\Base\Models\Attachment;
 use Velm\Modules\Base\Models\Company;
 use Velm\Modules\Base\Models\Cron;
 use Velm\Modules\Base\Models\Group;
@@ -19,8 +20,9 @@ use Velm\Modules\Manifest;
  * @see PLAN.md — Custom module system
  */
 return Manifest::make('base')
-    ->version(0, 1, 0)
+    ->version(0, 2, 0)
     ->models(
+        Attachment::class,
         Company::class,
         Group::class,
         User::class,

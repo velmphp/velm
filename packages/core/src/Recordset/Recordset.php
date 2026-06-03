@@ -314,6 +314,26 @@ final class Recordset
             return;
         }
 
+        $implementor = $this->resolveRecordMethodClass('unlink');
+
+        if ($implementor !== null) {
+            Registry::with(
+                $this->env->registry,
+                fn (): mixed => $implementor::behavior()->unlink($this),
+            );
+
+            return;
+        }
+
+        $this->unlinkFromDatabase();
+    }
+
+    public function unlinkFromDatabase(): void
+    {
+        if ($this->ids === []) {
+            return;
+        }
+
         $this->assertAllIdsInCompanyScope();
 
         $this->env->checkAccess($this->modelName(), 'unlink');
