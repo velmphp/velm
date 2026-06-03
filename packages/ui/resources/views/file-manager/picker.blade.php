@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    @if ($multi)
+    @if ($multi ?? ($pickerConfig['multi'] ?? false))
     <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-default">
         <span class="text-xs text-body-subtle">
             <span x-text="selected.length"></span> {{ __('selected') }}

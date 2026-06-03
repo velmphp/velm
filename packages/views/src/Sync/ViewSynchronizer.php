@@ -25,6 +25,13 @@ final class ViewSynchronizer
 
         $this->syncBaseViews($spec, $env, $loaded['views']);
         $this->syncViewInherits($spec, $env, $loaded['view_inherits']);
+
+        $syncedNames = array_map(
+            static fn (array $view): string => (string) $view['name'],
+            [...$loaded['views'], ...$loaded['view_inherits']],
+        );
+
+        $this->pruneStaleViews($spec->name, $syncedNames, $env);
     }
 
     /**
@@ -145,6 +152,25 @@ final class ViewSynchronizer
             } else {
                 $View->create($values);
             }
+        }
+    }
+
+    /**
+     * @param  list<string>  $syncedNames
+     */
+    private function pruneStaleViews(string $module, array $syncedNames, Environment $env): void
+    {
+        $View = $env->model('ir.ui.view');
+        $declared = array_flip($syncedNames);
+
+        foreach ($View->search([['module', '=', $module]])->read() as $row) {
+            $name = (string) ($row['name'] ?? '');
+
+            if ($name === '' || isset($declared[$name])) {
+                continue;
+            }
+
+            $env->browse('ir.ui.view', [(int) $row['id']])->unlink();
         }
     }
 

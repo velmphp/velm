@@ -27,6 +27,16 @@ composer run setup
 
 `composer run setup` runs migrations and installs bundled Velm modules (`base`, `admin`, `partners`, …).
 
+### UI assets
+
+Build Tailwind CSS and Flowbite JS for the shell (from monorepo root):
+
+```bash
+composer build-ui
+```
+
+The skeleton `composer run setup` also runs `velm-build-css`, which builds and publishes assets to `apps/skeleton/public/`.
+
 ## Development server
 
 ```bash
@@ -64,6 +74,8 @@ Installing a module:
 - Resolves manifest `DEPENDS` and loads models in order.
 - Creates or alters database tables (additive column diff for extensions).
 - Syncs views and menus into `ir.ui.view` / `ir.ui.menu`.
+
+Optional modules such as **`file_manager`** (attachments library) are installed from the apps catalog or `php artisan velm:module:install file_manager`.
 
 ## Verifying model inheritance
 

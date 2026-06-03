@@ -69,7 +69,18 @@
                 else this.selected.push(row);
                 return;
             }
-            window.PvDialog && window.PvDialog.close(row);
+            if (window.PvDialog) {
+                window.PvDialog.close(row);
+                return;
+            }
+            const parent = window.parent;
+            if (parent && parent !== window && parent.PvDialog) {
+                parent.PvDialog.close(row);
+                return;
+            }
+            if (parent && parent !== window) {
+                parent.postMessage({ type: 'velm-picker-picked', row }, window.location.origin);
+            }
         },
         confirmMulti() {
             if (!this.selected.length) return;

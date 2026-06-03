@@ -10,6 +10,8 @@ final class FileManagerInstallHooks
 {
     public static function install(Environment $env): void
     {
+        FileManagerCompanyScope::backfillOrphans($env);
+
         $admin = $env->model('res.groups')->search([['name', '=', 'Admin']], limit: 1);
 
         if ($admin->count() === 0) {

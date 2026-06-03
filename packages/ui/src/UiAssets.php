@@ -10,7 +10,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/css/velm.css',
-            'Missing packages/ui/resources/css/velm.css. Run: cd packages/ui && npm install && npm run build:css',
+            'Missing packages/ui/resources/css/velm.css. Run: cd packages/ui && npm install && npm run build',
         );
     }
 
@@ -18,7 +18,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/flowbite.min.js',
-            'Missing packages/ui/resources/js/flowbite.min.js. Run: cd packages/ui && npm install && npm run build:css',
+            'Missing packages/ui/resources/js/flowbite.min.js. Run: cd packages/ui && npm install && npm run build',
         );
     }
 
@@ -70,6 +70,11 @@ final class UiAssets
     public static function fileLibraryScriptHref(): string
     {
         return self::publishedOrVendor('js/velm/pv-file-library.js', 'resources/js/pv-file-library.js');
+    }
+
+    public static function fileUrlScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-file-url.js', 'resources/js/pv-file-url.js');
     }
 
     private static function publishedOrVendor(string $publicRelative, string $packageRelative): string

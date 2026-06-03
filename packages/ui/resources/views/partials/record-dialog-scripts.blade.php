@@ -75,8 +75,46 @@
             },
         });
 
+        window.PvDialog = {
+            _onResult: null,
+
+            open({ url, title, onResult }) {
+                this._onResult = typeof onResult === 'function' ? onResult : null;
+                let iframeUrl = url;
+                try {
+                    const parsed = new URL(url, window.location.origin);
+                    if (! parsed.searchParams.has('embed')) {
+                        parsed.searchParams.set('embed', '1');
+                    }
+                    iframeUrl = parsed.pathname + parsed.search;
+                } catch (_) {
+                    /* keep raw url */
+                }
+                Alpine.store('recordDialog').show(
+                    iframeUrl,
+                    null,
+                    title || '{{ __('Choose file') }}',
+                );
+            },
+
+            close(result) {
+                const callback = this._onResult;
+                this._onResult = null;
+                Alpine.store('recordDialog')?.close();
+                if (callback) {
+                    callback(result);
+                }
+            },
+        };
+
         window.addEventListener('message', (event) => {
             if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            if (event.data?.type === 'velm-picker-picked') {
+                window.PvDialog?.close(event.data.row);
+
                 return;
             }
 

@@ -4,7 +4,7 @@
     "description": "Tailwind + Flowbite build for velm-ui shell (PyVelm parity)",
     "scripts": {
         "vendor": "mkdir -p ./resources/js && cp ./node_modules/flowbite/dist/flowbite.min.js ./resources/js/flowbite.min.js",
-        "build:css": "tailwindcss -i ./resources/css/velm.src.css -o ./resources/css/velm.css --minify && npm run vendor",
+        "build": "tailwindcss -i ./resources/css/velm.src.css -o ./resources/css/velm.css --minify && npm run vendor",
         "dev:css": "tailwindcss -i ./resources/css/velm.src.css -o ./resources/css/velm.css --watch"
     },
     "dependencies": {

@@ -85,9 +85,8 @@
                 @elseif ($layoutMode === 'sidebar')
                     @include('velm-admin::partials.nav-sidebar', ['menu' => $menu['menu'] ?? []])
                 @else
-                    <div class="hidden min-h-0 flex-1 flex-col overflow-hidden md:flex">
+                    <div class="hidden min-h-0 flex-1 flex-col md:contents">
                         @include('velm-admin::partials.nav-app-rail', ['menu' => $menu])
-                        @include('velm-admin::partials.nav-app-secondary', ['menu' => $menu])
                     </div>
                     <div class="flex min-h-0 flex-1 flex-col overflow-hidden md:hidden">
                         @include('velm-admin::partials.nav-sidebar', ['menu' => $menu['menu'] ?? []])
@@ -152,9 +151,6 @@
 
             @include('velm-ui::partials.record-dialog')
             @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
-            @if ($layoutMode === 'apps_catalog')
-                @include('velm-admin::partials.apps-catalog-store')
-            @endif
             @include('velm-ui::partials.record-dialog-scripts')
         </body>
     @endif

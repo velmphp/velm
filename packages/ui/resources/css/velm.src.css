@@ -1,6 +1,6 @@
 /**
  * Velm UI — Tailwind v4 + Flowbite (PyVelm parity).
- * Run `npm run build:css` in packages/ui after Blade or token edits.
+ * Run `npm run build` in packages/ui after Blade or token edits.
  */
 @import 'tailwindcss';
 

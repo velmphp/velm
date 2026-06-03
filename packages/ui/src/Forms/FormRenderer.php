@@ -200,6 +200,11 @@ final class FormRenderer
             $props = array_merge($props, $this->one2manyProps($ctx, $velmField, $parentRecordId));
         }
 
+        $whenEmptyUse = $ctx->spec['when_empty_use'] ?? null;
+        if (is_string($whenEmptyUse) && $whenEmptyUse !== '') {
+            $props['fallbackWireKey'] = 'data.'.$whenEmptyUse;
+        }
+
         return $props;
     }
 

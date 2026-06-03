@@ -194,20 +194,12 @@ final class FileManagerService
             'public' => $public,
         ];
 
-        if ($this->env->companyId() !== null && $this->env->registry->hasFieldSet('ir.attachment')) {
-            $fields = $this->env->registry->fieldSet('ir.attachment');
-
-            if (isset($fields['company_id'])) {
-                $values['company_id'] = $this->env->companyId();
-            }
-        }
-
         if ($folderId !== null && $folderId > 0) {
             $this->folderOrFail($folderId);
             $values['folder_id'] = $folderId;
         }
 
-        $att = $this->env->model('ir.attachment')->create($values);
+        $att = FileManagerCompanyScope::envForCreate($this->env)->model('ir.attachment')->create($values);
         $row = $att->read(['id', 'name', 'mimetype', 'file_size', 'type', 'url', 'public', 'folder_id'])[0] ?? [];
 
         return $this->attachmentToRow($row);
@@ -337,7 +329,6 @@ final class FileManagerService
         }
 
         $backend = AttachmentStorage::backend();
-        $hasCompany = isset($this->env->registry->fieldSet('ir.attachment')['company_id']);
         $copied = 0;
 
         foreach ($ids as $id) {
@@ -364,10 +355,6 @@ final class FileManagerService
                 'folder_id' => $folderId,
             ];
 
-            if ($hasCompany && $this->env->companyId() !== null) {
-                $values['company_id'] = $this->env->companyId();
-            }
-
             if (($values['type'] ?? '') === 'url') {
                 $values['url'] = (string) ($row['url'] ?? '');
             } else {
@@ -377,7 +364,7 @@ final class FileManagerService
                 $values['datas'] = $storageKey === '' && $content !== '' ? base64_encode($content) : null;
             }
 
-            $this->env->model('ir.attachment')->create($values);
+            FileManagerCompanyScope::envForCreate($this->env)->model('ir.attachment')->create($values);
             $copied++;
         }
 
@@ -436,7 +423,9 @@ final class FileManagerService
             $values['parent_id'] = (int) $parentId;
         }
 
-        $folder = $this->env->model('res.attachment.folder')->create($values);
+        $folder = FileManagerCompanyScope::envForCreate($this->env)
+            ->model('res.attachment.folder')
+            ->create($values);
 
         return [
             'id' => $folder->ids()[0],

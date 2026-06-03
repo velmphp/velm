@@ -32,6 +32,14 @@ final class Field implements ViewDeclaration
         return $this->widget('toggle');
     }
 
+    /** Use another field’s value when this one is empty (e.g. dark logo → light logo). */
+    public function whenEmptyUse(string $fieldName): self
+    {
+        $this->options['when_empty_use'] = $fieldName;
+
+        return $this;
+    }
+
     /**
      * Column span inside the section grid. Use {@see wide()} or the string `full` for a full-width row.
      */

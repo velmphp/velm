@@ -12,6 +12,8 @@ After changing view files, sync the module:
 php artisan velm:module:sync <module>
 ```
 
+Sync writes views and menus from disk into `ir.ui.view` / `ir.ui.menu` and **deletes** module views/menus that were removed from data files (matching menu prune behavior).
+
 ## List views
 
 ### Authoring
@@ -149,6 +151,25 @@ Default **dialog** widget: table of linked rows with **Create new**, **Link exis
 
 Use `->widget('inline')` in field arch when you want the relation edited inline (future/table embed).
 
+### File URL (`file_url`)
+
+For char fields that store a public URL (logos, favicons, static assets):
+
+```php
+Field::make('logo_url')->widget('file_url'),
+Field::make('logo_url_dark')->widget('file_url')->whenEmptyUse('logo_url'),
+```
+
+| Behavior | Detail |
+|----------|--------|
+| **Browse…** | Opens the file library picker in the record dialog (`/web/files/picker`) |
+| **Stored value** | `/api/attachment/{id}/download` (relative URL) |
+| **Public flag** | Picked attachments are marked public for use in the shell header |
+| **Preview** | Image preview when the URL points at an image or attachment download |
+| **Dark logo** | `whenEmptyUse('logo_url')` shows the light logo in the field preview when dark is unset |
+
+Requires the **`file_manager`** module and `ir.attachment` API. Used on **Settings → Companies → Branding**.
+
 ### Record dialog
 
 Related records open in a **draggable floating dialog** (iframe with `?embed=1`):
@@ -157,7 +178,7 @@ Related records open in a **draggable floating dialog** (iframe with `?embed=1`)
 - Body: full form with **Save** / **Create** / **Cancel**
 - After save/create, the iframe navigates to the record (embed) and notifies the parent so **many2many** chips can update
 
-Implemented in `window.pvOpenRecord()` / `Alpine.store('recordDialog')`.
+Implemented in `window.pvOpenRecord()` / `Alpine.store('recordDialog')`. The file picker uses the same dialog shell via `window.PvDialog`.
 
 ## Menus
 

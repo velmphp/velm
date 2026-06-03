@@ -10,6 +10,7 @@
 @stack('before-livewire')
 
 @if ($usesLivewire)
+    <script src="{{ \Velm\Ui\UiAssets::fileHelpersScriptHref() }}" data-navigate-track></script>
     @livewireScripts
 @endif
 
