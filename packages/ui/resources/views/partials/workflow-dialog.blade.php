@@ -2,14 +2,18 @@
     x-show="$store.workflowDialog.isOpen"
     x-cloak
     class="pv-record-dialog-root"
-    style="display: none;"
+    :class="{ 'pv-record-dialog-root--open': $store.workflowDialog.isOpen }"
     @keydown.escape.window="$store.workflowDialog.close()"
 >
     <div
+        x-show="$store.workflowDialog.isOpen"
+        x-transition.opacity
         class="pv-record-dialog-backdrop"
         @click="$store.workflowDialog.close()"
     ></div>
     <div
+        x-show="$store.workflowDialog.isOpen"
+        x-transition
         class="pv-record-dialog-panel max-w-lg w-full"
         :style="$store.workflowDialog.panelStyle()"
         @click.stop

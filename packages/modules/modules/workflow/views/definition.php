@@ -44,6 +44,8 @@ return ViewsData::make()
                 'model',
                 Field::make('active')->toggle(),
             ])
-            ->section('definition', 'Definition', ['definition'])
+            ->section('definition', 'Definition', [
+                Field::make('definition')->code('json')->wide(),
+            ])
             ->section('access', 'Access', ['group_ids']),
     );

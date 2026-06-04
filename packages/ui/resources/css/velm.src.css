@@ -10,6 +10,7 @@
 
 @import './velm-palette.css';
 @import './velm-tokens.css';
+@import './tiptap-simple-theme.css';
 
 @source '../views/**/*.blade.php';
 @source '../../admin/resources/views/**/*.blade.php';
@@ -227,6 +228,23 @@
         .pv-workflow-aside {
             width: 24rem;
         }
+    }
+
+    .pv-code-editor__host {
+        min-height: 12rem;
+    }
+
+    .pv-code-editor__host .cm-editor {
+        min-height: 12rem;
+    }
+
+    .pv-code-editor__host .cm-scroller {
+        min-height: 12rem;
+    }
+
+    .pv-code-display code {
+        white-space: pre-wrap;
+        word-break: break-word;
     }
 
     .pv-focus-within {
@@ -584,7 +602,11 @@
     pointer-events: none;
 }
 
-.pv-record-dialog-root > * {
+.pv-record-dialog-root.pv-record-dialog-root--open {
+    pointer-events: auto;
+}
+
+.pv-record-dialog-root.pv-record-dialog-root--open > * {
     pointer-events: auto;
 }
 

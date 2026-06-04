@@ -1,7 +1,12 @@
 @php
     $livewire ??= null;
-    $usesLivewire = $livewire !== null && $livewire instanceof \Livewire\Component;
+    $livewire = $livewire instanceof \Livewire\Component
+        ? $livewire
+        : (\Livewire\Livewire::current() instanceof \Livewire\Component ? \Livewire\Livewire::current() : null);
+    $usesLivewire = $livewire !== null;
 @endphp
+
+@include('velm-ui::partials.editor-widget-scripts')
 
 @include('velm-ui::partials.form-scripts')
 @include('velm-ui::partials.flash-notify')

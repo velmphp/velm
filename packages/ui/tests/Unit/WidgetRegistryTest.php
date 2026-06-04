@@ -48,3 +48,29 @@ test('widget registry resolves file_url hint for char fields', function (): void
 
     expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-url');
 });
+
+test('widget registry resolves rich_text hint for text fields', function (): void {
+    $env = app(Environment::class);
+    $ctx = new WidgetContext(
+        $env,
+        'ir.ui.view',
+        ['name' => 'arch', 'widget' => 'rich_text'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.rich-text');
+});
+
+test('widget registry resolves code hint for text fields', function (): void {
+    $env = app(Environment::class);
+    $ctx = new WidgetContext(
+        $env,
+        'ir.ui.view',
+        ['name' => 'operations', 'widget' => 'code', 'code_language' => 'json'],
+        FormMode::Display,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.display.code');
+});

@@ -40,6 +40,8 @@ final class WidgetRegistry
         $this->register(One2manyField::class, 'table', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
         $this->register(CharField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
         $this->register(TextField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
+        $this->register(TextField::class, 'rich_text', FormMode::Edit, 'velm-ui::widgets.rich-text');
+        $this->register(TextField::class, 'code', FormMode::Edit, 'velm-ui::widgets.code-editor');
         $this->registerDefault(FormMode::Edit, 'velm-ui::widgets.char-input');
     }
 
@@ -53,6 +55,10 @@ final class WidgetRegistry
         $this->register(One2manyField::class, null, FormMode::Display, 'velm-ui::widgets.display.o2m');
         $this->register(One2manyField::class, 'dialog', FormMode::Display, 'velm-ui::widgets.display.o2m');
         $this->register(One2manyField::class, 'inline', FormMode::Display, 'velm-ui::widgets.display.o2m');
+        $this->register(CharField::class, 'file_url', FormMode::Display, 'velm-ui::widgets.display.char');
+        $this->register(TextField::class, 'file_url', FormMode::Display, 'velm-ui::widgets.display.char');
+        $this->register(TextField::class, 'rich_text', FormMode::Display, 'velm-ui::widgets.display.rich-text');
+        $this->register(TextField::class, 'code', FormMode::Display, 'velm-ui::widgets.display.code');
         $this->registerDefault(FormMode::Display, 'velm-ui::widgets.display.char');
     }
 

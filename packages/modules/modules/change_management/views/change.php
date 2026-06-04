@@ -41,8 +41,8 @@ return ViewsData::make()
                 'company_id',
             ])
             ->section('description', 'Description', [
-                'description',
-                'business_justification',
+                Field::make('description')->richText()->wide(),
+                Field::make('business_justification')->richText()->wide(),
             ])
             ->section('people', 'People', [
                 'requester_id',
@@ -66,8 +66,8 @@ return ViewsData::make()
                 'company_id',
             ])
             ->section('description', 'Description', [
-                'description',
-                'business_justification',
+                Field::make('description')->richText()->wide(),
+                Field::make('business_justification')->richText()->wide(),
             ])
             ->section('people', 'People', [
                 'requester_id',

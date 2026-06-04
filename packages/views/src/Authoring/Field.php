@@ -32,6 +32,19 @@ final class Field implements ViewDeclaration
         return $this->widget('toggle');
     }
 
+    public function richText(): self
+    {
+        return $this->widget('rich_text');
+    }
+
+    public function code(string $language = 'json'): self
+    {
+        $this->options['widget'] = 'code';
+        $this->options['code_language'] = $language;
+
+        return $this;
+    }
+
     /** Use another field’s value when this one is empty (e.g. dark logo → light logo). */
     public function whenEmptyUse(string $fieldName): self
     {

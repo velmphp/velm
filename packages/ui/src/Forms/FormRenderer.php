@@ -205,6 +205,16 @@ final class FormRenderer
             $props['fallbackWireKey'] = 'data.'.$whenEmptyUse;
         }
 
+        $codeLanguage = $ctx->spec['code_language'] ?? null;
+        if (is_string($codeLanguage) && $codeLanguage !== '') {
+            $props['codeLanguage'] = $codeLanguage;
+        }
+
+        $placeholder = $ctx->spec['placeholder'] ?? null;
+        if (is_string($placeholder) && $placeholder !== '') {
+            $props['placeholder'] = $placeholder;
+        }
+
         return $props;
     }
 
