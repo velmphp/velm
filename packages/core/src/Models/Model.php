@@ -25,6 +25,14 @@ abstract class Model
     /** When true, {@code created_at} and {@code updated_at} are added and maintained automatically. */
     protected static bool $timestamps = true;
 
+    /**
+     * When true, the model supports the mail.thread chatter (messages and followers).
+     * Set on the model class (or on an extension class that targets the model).
+     *
+     * Temporary until abstract mixins exist (Odoo-style {@code _inherit = ['mail.thread']}).
+     */
+    protected static bool $mailThread = false;
+
     /** @var array<class-string<static>, static> */
     private static array $behaviorInstances = [];
 
@@ -76,6 +84,11 @@ abstract class Model
     public static function usesTimestamps(): bool
     {
         return static::$timestamps && ! static::isExtension();
+    }
+
+    public static function usesMailThread(): bool
+    {
+        return static::$mailThread;
     }
 
     /**

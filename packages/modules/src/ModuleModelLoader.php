@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Modules;
 
 use Velm\Models\Model;
+use Velm\Modules\Mail\MailThreadService;
 use Velm\Registry;
 
 final class ModuleModelLoader
@@ -27,6 +28,26 @@ final class ModuleModelLoader
             } else {
                 $registry->register($modelClass);
             }
+
+            self::registerMailThreadIfEnabled($modelClass);
+        }
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    private static function registerMailThreadIfEnabled(string $modelClass): void
+    {
+        if (! $modelClass::usesMailThread()) {
+            return;
+        }
+
+        $modelName = $modelClass::isExtension()
+            ? (string) $modelClass::inherit()
+            : (string) $modelClass::name();
+
+        if ($modelName !== '') {
+            MailThreadService::registerModel($modelName);
         }
     }
 

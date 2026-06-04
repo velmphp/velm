@@ -185,6 +185,31 @@ Field::make('description')->richText()->wide(),
 | Display | Rendered HTML on detail/read-only forms |
 | Layout | Use `->wide()` or `->colspan('full')` for a comfortable editing area |
 
+### Mail thread & chatter
+
+Enable discussion on a model by setting **`$mailThread`** on the model class (requires the **`mail`** module to be installed). This is an interim API; a future **abstract mixin** design (Odoo-style `_inherit = ['mail.thread']`) will replace it.
+
+```php
+class Change extends Model
+{
+    protected static ?string $name = 'it.change';
+    protected static ?string $table = 'it_change';
+    protected static bool $mailThread = true;
+
+    // ...
+}
+```
+
+Extensions can set `$mailThread = true` on an extension class instead; the target model name is taken from `$inherit`.
+
+On **display** record pages, a **Chatter** sidebar loads next to the form (under the workflow panel when both apply). Users can post log notes, read the message history, and follow/unfollow the record.
+
+| Piece | Detail |
+|-------|--------|
+| Storage | `mail.message` and `mail.follower` rows keyed by `(model, res_id)` |
+| API | `GET /web/mail/thread`, `POST /web/mail/messages`, `POST /web/mail/follow` |
+| Module | Install **`mail`**; chatter appears only on models with `$mailThread = true` |
+
 ### Code editor (`code`)
 
 For JSON, scripts, or other structured text on `text` fields:

@@ -16,6 +16,8 @@ class Change extends Model
 
     protected static ?string $table = 'it_change';
 
+    protected static bool $mailThread = true;
+
     public static function defineFields(): array
     {
         return [

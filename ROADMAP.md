@@ -107,6 +107,16 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | One2many / Many2many on recordsets | Done |
 | Relational fields docs | Done |
 
+## Phase 4e — Mail thread & chatter (in progress)
+
+| Item | Status |
+|------|--------|
+| `mail` module (`mail.message`, `mail.follower`) | Done |
+| `mail.thread` opt-in via model `$mailThread = true` | Done (interim; see mixins below) |
+| Chatter sidebar on record display (messages, follow, post) | Done |
+| `it.change` wired with chatter | Done |
+| Abstract model mixins (`mail.thread` via `$mixins` / registry) | Deferred |
+
 ## Next up (not done)
 
 | Item | Notes |

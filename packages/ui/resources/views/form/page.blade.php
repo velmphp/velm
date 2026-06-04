@@ -8,13 +8,17 @@
         && method_exists($this, 'velmWorkflowModel')
         && $this->velmWorkflowModel() !== ''
         && $this->velmWorkflowRecordId() > 0;
+    $mailThreadOnRecord = $mode === FormMode::Display
+        && method_exists($this, 'velmMailThreadEnabled')
+        && $this->velmMailThreadEnabled();
+    $sidebarsOnRecord = $workflowOnRecord || $mailThreadOnRecord;
 @endphp
 
 <div
     @class([
         'mx-auto space-y-6',
-        'max-w-5xl' => ! $workflowOnRecord,
-        'max-w-[90rem]' => $workflowOnRecord,
+        'max-w-5xl' => ! $sidebarsOnRecord,
+        'max-w-[90rem]' => $sidebarsOnRecord,
     ])
     data-pv-form-shell
     data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
@@ -29,6 +33,13 @@
         ])
     @endif
 
+    @if ($mailThreadOnRecord)
+        @include('velm-ui::mail.chatter-panel', [
+            'mailModel' => $this->velmMailThreadModel(),
+            'mailRecordId' => $this->velmMailThreadRecordId(),
+        ])
+    @endif
+
     @include('velm-ui::form.actions-bar', [
         'mode' => $mode,
         'listUrl' => $this->listPageUrl(),
@@ -36,19 +47,26 @@
         'embed' => request()->boolean('embed'),
     ])
 
-    @if ($workflowOnRecord)
+    @if ($sidebarsOnRecord)
         <div
-            class="pv-workflow-record"
-            data-pv-workflow
-            data-res-model="{{ $this->velmWorkflowModel() }}"
-            data-res-id="{{ $this->velmWorkflowRecordId() }}"
-            x-data="pvWorkflowBar()"
-            x-init="load()"
+            @class([
+                'pv-record-sidebars',
+                'pv-workflow-record' => $workflowOnRecord,
+            ])
+            @if ($workflowOnRecord)
+                data-pv-workflow
+                data-res-model="{{ $this->velmWorkflowModel() }}"
+                data-res-id="{{ $this->velmWorkflowRecordId() }}"
+                x-data="pvWorkflowBar()"
+                x-init="load()"
+            @endif
         >
-            @include('velm-ui::workflow.panel-status')
+            @if ($workflowOnRecord)
+                @include('velm-ui::workflow.panel-status')
+            @endif
 
-            <div class="pv-workflow-record__body">
-                <div class="pv-workflow-record__main min-w-0 flex-1 space-y-6">
+            <div class="pv-record-sidebars__body">
+                <div class="pv-record-sidebars__main min-w-0 flex-1 space-y-6">
                     @if ($this->formError)
                         <div
                             data-pv-form-error
@@ -68,7 +86,23 @@
                     @endforeach
                 </div>
 
-                @include('velm-ui::workflow.panel-aside')
+                <div class="pv-record-sidebars__rail">
+                    @if ($workflowOnRecord)
+                        @include('velm-ui::workflow.panel-aside')
+                    @endif
+
+                    @if ($mailThreadOnRecord)
+                        <div
+                            data-pv-mail-chatter
+                            data-res-model="{{ $this->velmMailThreadModel() }}"
+                            data-res-id="{{ $this->velmMailThreadRecordId() }}"
+                            x-data="pvMailChatter()"
+                            x-init="load()"
+                        >
+                            @include('velm-ui::mail.chatter-aside')
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     @else
