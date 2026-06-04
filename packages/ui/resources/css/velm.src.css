@@ -207,11 +207,18 @@
         }
     }
 
-    .pv-record-aside,
+    /* Right rail: workflow panel on top, activity/chatter panel below (separate cards) */
+    .pv-record-sidebars__rail {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        width: 100%;
+        flex-shrink: 0;
+    }
+
     .pv-workflow-aside,
     .pv-mail-chatter {
         width: 100%;
-        flex-shrink: 0;
         border-radius: var(--radius-xl);
         border: 1px solid var(--color-default);
         background-color: var(--color-neutral-primary-soft);
@@ -220,9 +227,7 @@
     }
 
     @media (min-width: 1024px) {
-        .pv-record-aside,
-        .pv-workflow-aside,
-        .pv-mail-chatter {
+        .pv-record-sidebars__rail {
             position: sticky;
             top: 5.5rem;
             width: 20rem;
@@ -232,9 +237,7 @@
     }
 
     @media (min-width: 1280px) {
-        .pv-record-aside,
-        .pv-workflow-aside,
-        .pv-mail-chatter {
+        .pv-record-sidebars__rail {
             width: 24rem;
         }
     }

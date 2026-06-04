@@ -1,6 +1,6 @@
-<aside class="pv-mail-chatter" aria-label="{{ __('Chatter') }}">
+<aside class="pv-mail-chatter" aria-label="{{ __('Activity') }}">
     <div class="flex items-center justify-between gap-2 border-b border-default pb-3">
-        <h2 class="text-sm font-semibold text-heading">{{ __('Chatter') }}</h2>
+        <h2 class="text-sm font-semibold text-heading">{{ __('Activity') }}</h2>
         <template x-if="ctx && !ctx.readonly">
             <button
                 type="button"

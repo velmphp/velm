@@ -50,8 +50,8 @@
     @if ($sidebarsOnRecord)
         <div
             @class([
-                'pv-record-sidebars pv-workflow-record' => $workflowOnRecord,
-                'pv-record-sidebars' => ! $workflowOnRecord,
+                'pv-record-sidebars',
+                'pv-workflow-record' => $workflowOnRecord,
             ])
             @if ($workflowOnRecord)
                 data-pv-workflow
@@ -65,8 +65,8 @@
                 @include('velm-ui::workflow.panel-status')
             @endif
 
-            <div class="pv-record-sidebars__body pv-workflow-record__body">
-                <div class="pv-record-sidebars__main pv-workflow-record__main min-w-0 flex-1 space-y-6">
+            <div class="pv-record-sidebars__body">
+                <div class="pv-record-sidebars__main min-w-0 flex-1 space-y-6">
                     @if ($this->formError)
                         <div
                             data-pv-form-error
@@ -86,7 +86,7 @@
                     @endforeach
                 </div>
 
-                <div class="pv-record-aside pv-workflow-aside space-y-6">
+                <div class="pv-record-sidebars__rail">
                     @if ($workflowOnRecord)
                         @include('velm-ui::workflow.panel-aside')
                     @endif
