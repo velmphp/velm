@@ -1,13 +1,10 @@
 import { Editor } from '@tiptap/core';
 import Highlight from '@tiptap/extension-highlight';
-import Link from '@tiptap/extension-link';
-import Placeholder from '@tiptap/extension-placeholder';
+import { TaskItem, TaskList } from '@tiptap/extension-list';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
-import TaskItem from '@tiptap/extension-task-item';
-import TaskList from '@tiptap/extension-task-list';
 import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
+import { Placeholder } from '@tiptap/extensions';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
 
@@ -126,8 +123,10 @@ function pvRichText(cfg) {
                 extensions: [
                     StarterKit.configure({
                         heading: { levels: [1, 2, 3, 4] },
+                        link: {
+                            openOnClick: false,
+                        },
                     }),
-                    Underline,
                     Highlight.configure({ multicolor: false }),
                     Subscript,
                     Superscript,
@@ -135,9 +134,6 @@ function pvRichText(cfg) {
                     TaskItem.configure({ nested: true }),
                     TextAlign.configure({
                         types: ['heading', 'paragraph'],
-                    }),
-                    Link.configure({
-                        openOnClick: false,
                     }),
                     VelmImageResize.configure({
                         inline: false,

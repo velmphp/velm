@@ -180,7 +180,7 @@ Field::make('description')->richText()->wide(),
 
 | Behavior | Detail |
 |----------|--------|
-| Editor | TipTap (StarterKit: bold, italic, headings, lists, links, undo/redo) |
+| Editor | TipTap 3 (StarterKit: bold, italic, headings, lists, links, undo/redo; image resize/align via file library) |
 | Storage | HTML string in the field |
 | Display | Rendered HTML on detail/read-only forms |
 | Layout | Use `->wide()` or `->colspan('full')` for a comfortable editing area |
