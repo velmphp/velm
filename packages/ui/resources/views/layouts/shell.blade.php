@@ -150,8 +150,10 @@
             </div>
 
             @include('velm-ui::partials.record-dialog')
+            @include('velm-ui::partials.workflow-dialog')
             @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
             @include('velm-ui::partials.record-dialog-scripts')
+            @include('velm-ui::partials.workflow-dialog-scripts')
         </body>
     @endif
 </html>

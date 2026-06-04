@@ -7,6 +7,8 @@ namespace Velm\Admin\Support;
 use Illuminate\Http\Request;
 use Velm\Admin\Pages\FileLibraryPage;
 use Velm\Admin\Pages\FilePropertiesPage;
+use Velm\Admin\Pages\WorkflowBuilderPage;
+use Velm\Admin\Pages\WorkflowInboxPage;
 use Velm\Admin\Pages\StoredViewCreatePage;
 use Velm\Admin\Pages\StoredViewEditPage;
 use Velm\Admin\Pages\StoredViewListPage;
@@ -34,6 +36,16 @@ final class MenuActivePath
             if ($pageClass === FileLibraryPage::class) {
                 return '/web/files/library';
             }
+
+            if ($pageClass === WorkflowInboxPage::class) {
+                return '/web/workflow/inbox';
+            }
+
+            if ($pageClass === WorkflowBuilderPage::class) {
+                return $request->route('workflowId') !== null
+                    ? '/web/workflow/'.$request->route('workflowId').'/build'
+                    : '/web/workflow/build';
+            }
         }
 
         return self::shellPathFromRequest($request);
@@ -44,7 +56,7 @@ final class MenuActivePath
      */
     private static function shellPathFromRequest(Request $request): ?string
     {
-        if ($request->is('web/files', 'web/files/*')) {
+        if ($request->is('web/files', 'web/files/*', 'web/workflow', 'web/workflow/*')) {
             $path = '/'.ltrim($request->path(), '/');
 
             return $path !== '/' ? $path : null;
@@ -97,7 +109,12 @@ final class MenuActivePath
             return $class;
         }
 
-        if ($class === FileLibraryPage::class || $class === FilePropertiesPage::class) {
+        if (
+            $class === FileLibraryPage::class
+            || $class === FilePropertiesPage::class
+            || $class === WorkflowInboxPage::class
+            || $class === WorkflowBuilderPage::class
+        ) {
             return $class;
         }
 

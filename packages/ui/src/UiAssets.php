@@ -77,6 +77,11 @@ final class UiAssets
         return self::publishedOrVendor('js/velm/pv-file-url.js', 'resources/js/pv-file-url.js');
     }
 
+    public static function workflowBuilderScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-workflow-builder.js', 'resources/js/pv-workflow-builder.js');
+    }
+
     private static function publishedOrVendor(string $publicRelative, string $packageRelative): string
     {
         $published = public_path($publicRelative);

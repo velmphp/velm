@@ -6,6 +6,7 @@ namespace Velm\Admin\Pages;
 
 use Illuminate\Contracts\Support\Htmlable;
 use Velm\Admin\Concerns\InteractsWithStoredViewEmbedForm;
+use Velm\Admin\Concerns\InteractsWithVelmWorkflow;
 use Velm\Environment;
 use Velm\Admin\Support\StoredViewRoutes;
 use Velm\Ui\Concerns\InteractsWithVelmArchForm;
@@ -16,6 +17,7 @@ final class StoredViewRecordPage extends VelmShellPage
 {
     use InteractsWithStoredViewEmbedForm;
     use InteractsWithVelmArchForm;
+    use InteractsWithVelmWorkflow;
 
     protected static ?string $slug = 'views/{module}/{viewName}/{record}';
 

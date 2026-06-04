@@ -15,7 +15,9 @@
             "Velm\\Modules\\": "src/",
             "Velm\\Modules\\Base\\Models\\": "modules/base/models/",
             "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/",
-            "Velm\\Modules\\FileManager\\Models\\": "modules/file_manager/models/"
+            "Velm\\Modules\\FileManager\\Models\\": "modules/file_manager/models/",
+            "Velm\\Modules\\Workflow\\Models\\": "modules/workflow/models/",
+            "Velm\\Modules\\ChangeManagement\\Models\\": "modules/change_management/models/"
         }
     },
     "autoload-dev": {

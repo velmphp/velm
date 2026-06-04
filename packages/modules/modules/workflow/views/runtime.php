@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\ListView;
+use Velm\Views\Data\ViewsData;
+
+return ViewsData::make()
+    ->views(
+        ListView::make('workflow_instance.list')
+            ->model('workflow.instance')
+            ->title('Workflow instances')
+            ->columns([
+                'definition_id',
+                'res_model',
+                'res_id',
+                'state',
+                'pending_transition',
+                'started_by',
+            ]),
+        FormView::make('workflow_instance.form')
+            ->model('workflow.instance')
+            ->section('main', 'Instance', [
+                'definition_id',
+                'res_model',
+                'res_id',
+                'state',
+                'pending_transition',
+                'started_by',
+                'state_updated_at',
+            ]),
+        ListView::make('workflow_approval.list')
+            ->model('workflow.approval')
+            ->title('Approval requests')
+            ->columns([
+                'instance_id',
+                'transition_key',
+                'status',
+                'requester_id',
+                'assignee_user_id',
+                'assignee_group_id',
+                'acted_by',
+            ]),
+        FormView::make('workflow_approval.form')
+            ->model('workflow.approval')
+            ->section('main', 'Approval', [
+                'instance_id',
+                'transition_key',
+                'status',
+                'requester_id',
+                'assignee_user_id',
+                'assignee_group_id',
+                'acted_by',
+                'acted_at',
+                'comment',
+            ]),
+        ListView::make('workflow_task.list')
+            ->model('workflow.task')
+            ->title('Tasks')
+            ->columns([
+                'name',
+                'user_id',
+                'state',
+                'priority',
+                'date_deadline',
+                'res_model',
+                'res_id',
+            ]),
+        FormView::make('workflow_task.form')
+            ->model('workflow.task')
+            ->section('main', 'Task', [
+                'name',
+                'description',
+                'user_id',
+                'state',
+                'priority',
+                'date_deadline',
+                'res_model',
+                'res_id',
+                'instance_id',
+            ]),
+    );
