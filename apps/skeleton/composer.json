@@ -58,6 +58,8 @@
             "@php artisan migrate --force",
             "@php artisan velm:migrate",
             "@php artisan velm:module:install partners",
+            "@php artisan velm:module:install workflow",
+            "@php artisan velm:module:install change_management",
             "@php artisan velm:module:install demo_relations",
             "@php artisan db:seed --class=Database\\\\Seeders\\\\VelmSeeder --force"
         ],

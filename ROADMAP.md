@@ -75,6 +75,19 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | O2M / M2M record dialog + `?embed=1` form save bar | Done |
 | `demo_relations` skeleton addon + website docs | Done |
 
+## Phase 5 — Workflows (in progress)
+
+| Item | Status |
+|------|--------|
+| `workflow` module (definition, instance, approval, task models) | Done |
+| Workflow engine port (schema v1, transitions, approvals, sequential/all/any) | Done |
+| `change_management` module (`it.change` + ICT lifecycle workflow) | Done |
+| Record detail workflow panel + `/web/workflow/*` API | Done |
+| Approval inbox (`/web/workflow/inbox`) | Done |
+| Overdue approval cron (`workflow_escalate` server action) | Done |
+| Visual workflow designer (PyVelm builder) | Done |
+| Rich transition / approval dialogs on record pages | Done |
+
 ## Phase 2+
 
 | Item | Status |

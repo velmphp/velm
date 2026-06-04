@@ -49,7 +49,11 @@ final class BindVelmEnvironment
     {
         $panelPath = (string) config('velm.panel_path', 'velm');
 
-        return $request->is($panelPath.'*') || $request->is('api/*');
+        return $request->is($panelPath.'*')
+            || $request->is('api/*')
+            || $request->is('web/files*')
+            || $request->is('web/workflow*')
+            || $request->is('api/workflow*');
     }
 
     private function resolveUid(Request $request, ?Environment $existing): int

@@ -28,6 +28,7 @@ final class UiServiceProvider extends ServiceProvider
             dirname(__DIR__).'/resources/js/pv-files-alpine.js' => public_path('js/velm/pv-files-alpine.js'),
             dirname(__DIR__).'/resources/js/pv-file-library.js' => public_path('js/velm/pv-file-library.js'),
             dirname(__DIR__).'/resources/js/pv-file-url.js' => public_path('js/velm/pv-file-url.js'),
+            dirname(__DIR__).'/resources/js/pv-workflow-builder.js' => public_path('js/velm/pv-workflow-builder.js'),
         ], 'velm-ui-assets');
     }
 }

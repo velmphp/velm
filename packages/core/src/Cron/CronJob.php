@@ -86,6 +86,9 @@ final class CronJob
             'write' => $target->count() > 0 ? $target->write($vals) : null,
             'create' => $env->model($targetModel)->create($vals),
             'unlink' => $target->count() > 0 ? $target->unlink() : null,
+            'workflow_escalate' => class_exists(\Velm\Modules\Workflow\WorkflowEscalation::class)
+                ? \Velm\Modules\Workflow\WorkflowEscalation::processOverdue($env)
+                : null,
             default => throw new \InvalidArgumentException("Unknown action_type {$kind}."),
         };
     }

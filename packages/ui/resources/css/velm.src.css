@@ -82,17 +82,151 @@
 /* PyVelm form controls (see pyvelm/templates/layouts/main.html inputClass) */
 @layer components {
     .pv-input {
-        @apply w-full border border-default bg-neutral-primary rounded-md px-3 py-2 text-sm text-heading;
+        @apply w-full border border-default bg-neutral-primary rounded-md px-3 py-2 text-sm text-body;
         @apply placeholder:text-body-subtle;
-        @apply focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand;
+        @apply focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/30;
         @apply disabled:cursor-not-allowed disabled:opacity-60;
     }
 
     .pv-input-sm {
-        @apply w-full border border-default bg-neutral-primary rounded px-2 py-1 text-sm text-heading;
+        @apply w-full border border-default bg-neutral-primary rounded px-2 py-1 text-sm text-body;
         @apply placeholder:text-body-subtle;
-        @apply focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand;
+        @apply focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/30;
         @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .pv-btn-primary {
+        @apply inline-flex items-center justify-center rounded-md bg-fg-brand px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .pv-btn-secondary {
+        @apply inline-flex items-center justify-center rounded-md border border-default bg-neutral-primary px-3 py-1.5 text-sm font-medium text-body transition hover:bg-neutral-secondary;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .pv-btn-sm {
+        @apply px-2 py-1 text-xs;
+    }
+
+    .pv-workflow-builder__steps {
+        @apply flex flex-wrap gap-1 rounded-lg border border-default bg-neutral-primary-soft p-1 text-sm;
+    }
+
+    .pv-workflow-builder__step {
+        @apply min-w-[100px] flex-1 rounded-md px-3 py-2 text-center text-body-subtle transition-colors hover:text-body;
+    }
+
+    .pv-workflow-builder__step--active {
+        @apply bg-brand-soft font-semibold text-fg-brand shadow-sm;
+    }
+
+    .pv-workflow-builder__panel {
+        @apply space-y-4 rounded-lg border border-default bg-neutral-primary p-5;
+    }
+
+    .pv-workflow-builder__approval {
+        @apply space-y-2 border-l-2 border-fg-brand/40 pl-3 text-sm;
+    }
+
+    /* Record form — status strip + right workflow aside (PyVelm layout) */
+    .pv-workflow-record {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .pv-workflow-status-strip {
+        width: 100%;
+        border: 1px solid var(--color-default);
+        border-radius: var(--radius-xl);
+        background-color: var(--color-neutral-primary-soft);
+        padding: 0.75rem 1rem;
+    }
+
+    .pv-workflow-statusbar {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.125rem;
+        scrollbar-width: thin;
+    }
+
+    .pv-workflow-status-pill {
+        flex-shrink: 0;
+        border-radius: 9999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.25rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .pv-workflow-status-pill--current {
+        border: 1px solid var(--color-fg-brand);
+        background-color: var(--color-brand-soft);
+        color: var(--color-fg-brand-strong);
+        font-weight: 600;
+    }
+
+    .pv-workflow-status-pill--cancelled {
+        border: 1px solid var(--color-fg-danger);
+        background-color: var(--color-danger-soft);
+        color: var(--color-fg-danger-strong);
+        font-weight: 600;
+    }
+
+    .pv-workflow-status-pill--done {
+        background-color: var(--color-success-soft);
+        color: var(--color-fg-success-strong);
+    }
+
+    .pv-workflow-status-pill--upcoming {
+        border: 1px solid var(--color-default);
+        background-color: var(--color-neutral-secondary-soft);
+        color: var(--color-body-subtle);
+    }
+
+    .pv-workflow-record__body {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: stretch;
+    }
+
+    @media (min-width: 1024px) {
+        .pv-workflow-record__body {
+            flex-direction: row;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+    }
+
+    .pv-workflow-aside {
+        width: 100%;
+        flex-shrink: 0;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--color-default);
+        background-color: var(--color-neutral-primary-soft);
+        padding: 1rem;
+        box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 0.05));
+    }
+
+    @media (min-width: 1024px) {
+        .pv-workflow-aside {
+            position: sticky;
+            top: 5.5rem;
+            width: 20rem;
+            max-height: calc(100vh - 7rem);
+            overflow-y: auto;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .pv-workflow-aside {
+            width: 24rem;
+        }
     }
 
     .pv-focus-within {
