@@ -4,6 +4,9 @@
 
 @php
     $livewire = $livewire ?? (isset($this) && $this instanceof \Livewire\Component ? $this : null);
+    $livewire = $livewire instanceof \Livewire\Component
+        ? $livewire
+        : (\Livewire\Livewire::current() instanceof \Livewire\Component ? \Livewire\Livewire::current() : null);
     $embed = request()->boolean('embed');
     $menu = $velmMenu ?? ['menu' => [], 'menu_layout' => 'apps'];
     $layoutMode = $menu['menu_layout'] ?? 'apps';

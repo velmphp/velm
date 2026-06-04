@@ -82,6 +82,32 @@ final class UiAssets
         return self::publishedOrVendor('js/velm/pv-workflow-builder.js', 'resources/js/pv-workflow-builder.js');
     }
 
+    public static function richTextScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-rich-text.js',
+            'Missing packages/ui/resources/js/pv-rich-text.js. Run: cd packages/ui && npm install && npm run build',
+        );
+    }
+
+    public static function codeEditorScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-code-editor.js',
+            'Missing packages/ui/resources/js/pv-code-editor.js. Run: cd packages/ui && npm install && npm run build',
+        );
+    }
+
+    public static function richTextScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-rich-text.js', 'resources/js/pv-rich-text.js');
+    }
+
+    public static function codeEditorScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-code-editor.js', 'resources/js/pv-code-editor.js');
+    }
+
     private static function publishedOrVendor(string $publicRelative, string $packageRelative): string
     {
         $published = public_path($publicRelative);

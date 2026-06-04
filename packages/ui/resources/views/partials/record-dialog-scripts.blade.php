@@ -1,4 +1,21 @@
 <script>
+    function closeVelmOverlayDialogs() {
+        if (typeof Alpine === 'undefined') {
+            return;
+        }
+
+        try {
+            Alpine.store('recordDialog')?.close?.();
+        } catch (_) {}
+
+        try {
+            Alpine.store('workflowDialog')?.close?.();
+        } catch (_) {}
+    }
+
+    document.addEventListener('livewire:navigated', closeVelmOverlayDialogs);
+    document.addEventListener('livewire:navigating', closeVelmOverlayDialogs);
+
     document.addEventListener('alpine:init', () => {
         Alpine.store('recordDialog', {
             isOpen: false,

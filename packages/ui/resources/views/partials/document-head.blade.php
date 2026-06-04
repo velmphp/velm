@@ -1,6 +1,7 @@
 @php
     $livewire ??= null;
-    $title = trim(strip_tags($livewire?->getTitle() ?? ''));
+    $title = trim(strip_tags((string) ($pageTitle ?? $livewire?->getTitle() ?? '')));
+    $usesLivewire = $livewire !== null && $livewire instanceof \Livewire\Component;
     $shell = $velmShell ?? [];
     $appName = (string) ($shell['app_name'] ?? config('app.name', 'Velm'));
     $favicon = (string) ($shell['favicon_url'] ?? '');
@@ -65,9 +66,11 @@
     }
 </style>
 
-@livewireStyles
+@if ($usesLivewire)
+    @livewireStyles
+@endif
 
-<link rel="stylesheet" href="{{ \Velm\Ui\UiAssets::stylesheetHref() }}" data-navigate-track />
+<link rel="stylesheet" href="{{ \Velm\Ui\UiAssets::stylesheetHref() }}" @if ($usesLivewire) data-navigate-track @endif />
 
 @if (\Velm\Admin\Support\VelmPanel::hasDarkMode() && ! \Velm\Admin\Support\VelmPanel::hasDarkModeForced())
     <script>
@@ -86,7 +89,9 @@
         };
 
         loadDarkMode();
-        document.addEventListener('livewire:navigated', loadDarkMode);
+        @if ($usesLivewire)
+            document.addEventListener('livewire:navigated', loadDarkMode);
+        @endif
     </script>
 @endif
 

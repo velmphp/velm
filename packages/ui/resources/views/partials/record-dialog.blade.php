@@ -3,6 +3,7 @@
     x-show="$store.recordDialog.isOpen"
     x-cloak
     class="pv-record-dialog-root"
+    :class="{ 'pv-record-dialog-root--open': $store.recordDialog.isOpen }"
     @keydown.escape.window="$store.recordDialog.close()"
 >
     <div

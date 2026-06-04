@@ -629,6 +629,36 @@
             },
         }));
 
+        window.pvWireGet = function (alpine, key) {
+            if (!alpine?.$wire || !key) {
+                return undefined;
+            }
+            const wire = alpine.$wire;
+            let value;
+            if (typeof wire.$get === 'function') {
+                value = wire.$get(key);
+            } else if (typeof wire.get === 'function') {
+                value = wire.get(key);
+            }
+            if (value !== undefined && value !== null && String(value) !== '') {
+                return value;
+            }
+
+            return undefined;
+        };
+
+        window.pvWireSet = function (alpine, key, value) {
+            if (!alpine?.$wire || !key) {
+                return;
+            }
+            const wire = alpine.$wire;
+            if (typeof wire.set === 'function') {
+                wire.set(key, value);
+            } else if (typeof wire.$set === 'function') {
+                wire.$set(key, value);
+            }
+        };
+
         Alpine.data('pvFileUrl', (cfg) => ({
             wireKey: cfg.wireKey || '',
             fallbackWireKey: cfg.fallbackWireKey || '',

@@ -170,6 +170,37 @@ Field::make('logo_url_dark')->widget('file_url')->whenEmptyUse('logo_url'),
 
 Requires the **`file_manager`** module and `ir.attachment` API. Used on **Settings → Companies → Branding**.
 
+### Rich text (`rich_text`)
+
+For long HTML content on `text` fields (descriptions, notes):
+
+```php
+Field::make('description')->richText()->wide(),
+```
+
+| Behavior | Detail |
+|----------|--------|
+| Editor | TipTap (StarterKit: bold, italic, headings, lists, links, undo/redo) |
+| Storage | HTML string in the field |
+| Display | Rendered HTML on detail/read-only forms |
+| Layout | Use `->wide()` or `->colspan('full')` for a comfortable editing area |
+
+### Code editor (`code`)
+
+For JSON, scripts, or other structured text on `text` fields:
+
+```php
+Field::make('definition')->code('json')->wide(),
+```
+
+| Option | Detail |
+|--------|--------|
+| `->code('json')` | Syntax highlighting (`json`, `javascript`, `html`, `css`, `python`, …) |
+| Editor | CodeMirror 6 with line numbers; follows light/dark shell theme |
+| Display | Monospace `pre` block on detail pages |
+
+After changing `packages/ui` JavaScript, run `cd packages/ui && npm install && npm run build`, then `php artisan vendor:publish --tag=velm-ui-assets --force` in the app.
+
 ### Record dialog
 
 Related records open in a **draggable floating dialog** (iframe with `?embed=1`):
