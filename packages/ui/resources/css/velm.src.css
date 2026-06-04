@@ -130,7 +130,8 @@
         @apply space-y-2 border-l-2 border-fg-brand/40 pl-3 text-sm;
     }
 
-    /* Record form — status strip + right workflow aside (PyVelm layout) */
+    /* Record form — status strip + right sidebar (workflow and/or chatter) */
+    .pv-record-sidebars,
     .pv-workflow-record {
         display: flex;
         flex-direction: column;
@@ -189,6 +190,7 @@
         color: var(--color-body-subtle);
     }
 
+    .pv-record-sidebars__body,
     .pv-workflow-record__body {
         display: flex;
         flex-direction: column;
@@ -197,6 +199,7 @@
     }
 
     @media (min-width: 1024px) {
+        .pv-record-sidebars__body,
         .pv-workflow-record__body {
             flex-direction: row;
             gap: 2rem;
@@ -204,7 +207,9 @@
         }
     }
 
-    .pv-workflow-aside {
+    .pv-record-aside,
+    .pv-workflow-aside,
+    .pv-mail-chatter {
         width: 100%;
         flex-shrink: 0;
         border-radius: var(--radius-xl);
@@ -215,7 +220,9 @@
     }
 
     @media (min-width: 1024px) {
-        .pv-workflow-aside {
+        .pv-record-aside,
+        .pv-workflow-aside,
+        .pv-mail-chatter {
             position: sticky;
             top: 5.5rem;
             width: 20rem;
@@ -225,9 +232,16 @@
     }
 
     @media (min-width: 1280px) {
-        .pv-workflow-aside {
+        .pv-record-aside,
+        .pv-workflow-aside,
+        .pv-mail-chatter {
             width: 24rem;
         }
+    }
+
+    .pv-mail-chatter__body a {
+        color: var(--color-fg-brand);
+        text-decoration: underline;
     }
 
     .pv-code-editor__host {
