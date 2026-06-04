@@ -53,8 +53,8 @@ test('widget registry resolves rich_text hint for text fields', function (): voi
     $env = app(Environment::class);
     $ctx = new WidgetContext(
         $env,
-        'it.change',
-        ['name' => 'description', 'widget' => 'rich_text'],
+        'ir.ui.view',
+        ['name' => 'arch', 'widget' => 'rich_text'],
         FormMode::Edit,
         [],
     );
@@ -66,8 +66,8 @@ test('widget registry resolves code hint for text fields', function (): void {
     $env = app(Environment::class);
     $ctx = new WidgetContext(
         $env,
-        'workflow.definition',
-        ['name' => 'definition', 'widget' => 'code', 'code_language' => 'json'],
+        'ir.ui.view',
+        ['name' => 'operations', 'widget' => 'code', 'code_language' => 'json'],
         FormMode::Display,
         [],
     );
