@@ -13,15 +13,10 @@ concurrency:
   group: split-packages-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  GITHUB_TOKEN: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
-
 jobs:
   split:
     name: ${{ matrix.package.composer }} → velmphp/${{ matrix.package.repository }}
     runs-on: ubuntu-latest
-    # Skipped until PACKAGIST_SPLIT_TOKEN is configured (see PACKAGIST.md).
-    if: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,13 +32,28 @@ jobs:
           - { composer: velmphp/app, directory: apps/app, repository: app }
 
     steps:
+      - name: Check split token is configured
+        id: gate
+        env:
+          PACKAGIST_SPLIT_TOKEN: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
+        run: |
+          if [ -z "$PACKAGIST_SPLIT_TOKEN" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PACKAGIST_SPLIT_TOKEN is not set — skipping split (see PACKAGIST.md)"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.enabled == 'true'
         with:
           fetch-depth: 0
 
       - name: Split to mirror (branch)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        if: steps.gate.outputs.enabled == 'true' && !startsWith(github.ref, 'refs/tags/')
         uses: danharrin/monorepo-split-github-action@v2.4.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
         with:
           package_directory: ${{ matrix.package.directory }}
           repository_organization: velmphp
@@ -52,8 +62,10 @@ jobs:
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Split to mirror (tag)
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        if: steps.gate.outputs.enabled == 'true' && startsWith(github.ref, 'refs/tags/')
         uses: danharrin/monorepo-split-github-action@v2.4.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
         with:
           tag: ${{ github.ref_name }}
           package_directory: ${{ matrix.package.directory }}
