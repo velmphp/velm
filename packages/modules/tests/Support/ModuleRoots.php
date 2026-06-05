@@ -7,7 +7,7 @@ namespace Velm\Modules\Tests\Support;
 final class ModuleRoots
 {
     /**
-     * Bundled modules plus skeleton demo addons (e.g. change_management).
+     * Bundled modules plus demo app addons (e.g. change_management).
      *
      * @return list<string>
      */
@@ -15,7 +15,7 @@ final class ModuleRoots
     {
         return [
             dirname(__DIR__, 2).'/modules',
-            dirname(__DIR__, 4).'/apps/skeleton/addons',
+            dirname(__DIR__, 4).'/apps/demo/addons',
         ];
     }
 }

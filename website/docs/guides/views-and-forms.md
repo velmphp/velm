@@ -298,7 +298,7 @@ Several modules may inherit the same parent view (e.g. two addons both patch `pa
 
 Protected modules (`base`, `admin`, and `velm.bootstrap_modules`) cannot be uninstalled.
 
-**Demo:** skeleton addon [`partners_ext`](https://github.com/velmphp/velm/blob/main/apps/skeleton/addons/partners_ext/views/partner.php) — model `$inherit` plus form/detail view inherits.
+**Demo:** addon [`partners_ext`](https://github.com/velmphp/velm/blob/main/apps/demo/addons/partners_ext/views/partner.php) — model `$inherit` plus form/detail view inherits.
 
 See also [Stacking extensions](../models/stacking-extensions#models-vs-views) (models vs views).
 
@@ -315,7 +315,7 @@ See [Scaffolding](./scaffolding#velmmakemenu).
 
 ## Demo module
 
-The skeleton installs **`demo_relations`** (Projects, Tasks, Tags) under **Demos** — useful for trying M2O, O2M, and M2M in the shell. See [Relational fields](../models/relational-fields).
+The monorepo demo app installs **`demo_relations`** (Projects, Tasks, Tags) under **Demos** — useful for trying M2O, O2M, and M2M in the shell. See [Relational fields](../models/relational-fields).
 
 ## See also
 

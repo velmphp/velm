@@ -69,7 +69,7 @@ test('manifest models merge with discovered models for non-conventional paths', 
 });
 
 test('registration order places one2many comodels before owners', function (): void {
-    $path = dirname(__DIR__, 4).'/apps/skeleton/addons/demo_relations';
+    $path = dirname(__DIR__, 4).'/apps/demo/addons/demo_relations';
 
     if (! is_dir($path)) {
         skip('demo_relations addon is not available.');

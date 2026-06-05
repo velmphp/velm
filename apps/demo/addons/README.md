@@ -1,4 +1,4 @@
-# Skeleton addons
+# Demo addons
 
 App-specific Velm modules live here. Velm autoloads `Addons\{StudlyModule}\…` from this directory — you do **not** register namespaces in `composer.json`.
 

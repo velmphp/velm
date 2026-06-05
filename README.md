@@ -76,16 +76,16 @@ php packages/console/bin/velm module:list --discovered-only
 
 ### Runnable Velm application (`velmphp/app`)
 
-Manual E2E (admin panel, module install, API). Monorepo path: `apps/skeleton/`:
+Manual E2E (admin panel, demo modules, API). Monorepo path: `apps/demo/`:
 
 ```bash
-cd apps/skeleton
+cd apps/demo
 composer install
 composer run setup
 composer run dev
 ```
 
-Sign in at `/velm` with `admin@velm.test` / `password`. See **[apps/skeleton/README.md](./apps/skeleton/README.md)**.
+Sign in at `/velm` with `admin@velm.test` / `password`. Minimal greenfield template: **`apps/app/`** (`velmphp/app` on Packagist). See **[apps/demo/README.md](./apps/demo/README.md)**.
 
 ## Status
 

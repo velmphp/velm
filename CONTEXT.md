@@ -18,7 +18,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 | `velmphp/admin` | Livewire pages (`ArchListPage`, stored views, apps catalog) — **not Filament** |
 | `velmphp/framework` | Metapackage + service provider |
 
-`packages/filament/` is a legacy mirror of early panel code; **`apps/skeleton` depends on `velmphp/admin` only.**
+`packages/filament/` is a legacy mirror of early panel code; **`apps/app` and `apps/demo` depend on `velmphp/admin` only.**
 
 ## Git workflow
 
@@ -28,10 +28,11 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 ## Runnable app & docs
 
-- **App:** `velmphp/app` (monorepo: `apps/skeleton`) — `composer run setup` then `composer run dev` → `/velm` (redirects to apps catalog).
+- **App:** `velmphp/app` (monorepo: `apps/app`) — minimal `create-project` template; bootstrap only.
+- **Demo:** `velmphp/velm-demo` (monorepo: `apps/demo`) — `composer run setup` then `composer run dev` → `/velm` with reference modules.
 - **CLI:** `php artisan velm:*` only (no standalone `bin/velm` in production path).
 - **User docs:** `website/` (Docusaurus) — guides [installation](website/docs/guides/installation.md), [addons](website/docs/guides/addons.md), [admin-panel](website/docs/guides/admin-panel.md); build with `cd website && npm run build`.
-- **Demo addon:** `apps/skeleton/addons/demo_relations` — M2O / O2M / M2M under **Demos** menu.
+- **Demo addon:** `apps/demo/addons/demo_relations` — M2O / O2M / M2M under **Demos** menu.
 
 ## Admin shell (current)
 
@@ -41,7 +42,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - **Stored views:** `/velm/views/{module}/{view}` (list), `…/{id}` (detail), `…/edit`, `…/create` — `ResolvesStoredView` + `StoredViewRoutes`; list pages must not override detail URLs if `clickToOpen()` is used.
 - **Branding:** `CompanyBranding` — company `app_name`, logos, `primary_color`; env `VELM_APP_NAME` / `VELM_LOGO_*`; header brand links to apps catalog.
 - **Users:** `res.users` model table **`users`** (Laravel); bootstrap `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD` in `config/velm.php`; ACL admin UI uses `email`.
-- **CSS:** edit `packages/ui/resources/css/velm.src.css`, then `composer velm-build-css` in skeleton.
+- **CSS:** edit `packages/ui/resources/css/velm.src.css`, then `composer run velm-rebuild-ui` in `apps/demo`.
 
 ## Key conventions
 
@@ -65,6 +66,6 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 - **Stable v1.0-rc1:** Packagist tags — see [ROADMAP.md — RC1 slice](./ROADMAP.md#rc1-slice--migratefresh--seed)
 - Kanban / graph / pivot **arch** renderers (home **dashboard** at `/velm/dashboard` is done)
-- Filament arch adapter (optional; not used by skeleton)
+- Filament arch adapter (optional; not used by app/demo)
 - Domain OR-groups, computed fields, O2M inline widget
 - Packagist split releases for `velmphp/app` and `velmphp/framework`
