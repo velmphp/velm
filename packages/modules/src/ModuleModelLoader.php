@@ -6,6 +6,7 @@ namespace Velm\Modules;
 
 use Velm\Models\Model;
 use Velm\Modules\Mail\MailThreadService;
+use Velm\Modules\Support\ModuleNaming;
 use Velm\Registry;
 
 final class ModuleModelLoader
@@ -82,19 +83,28 @@ final class ModuleModelLoader
             return;
         }
 
+        if (class_exists($modelClass)) {
+            return;
+        }
+
         $short = strrchr($modelClass, '\\');
 
         if ($short === false) {
             return;
         }
 
-        $file = rtrim($modulePath, '/\\')
-            .DIRECTORY_SEPARATOR.'models'
-            .DIRECTORY_SEPARATOR.substr($short, 1)
-            .'.php';
+        $shortName = substr($short, 1);
+        $modelsDir = rtrim($modulePath, '/\\').DIRECTORY_SEPARATOR.'models';
 
-        if (is_file($file)) {
-            require_once $file;
+        foreach ([
+            $modelsDir.DIRECTORY_SEPARATOR.ModuleNaming::classStemFromShortName($shortName).'.php',
+            $modelsDir.DIRECTORY_SEPARATOR.$shortName.'.php',
+        ] as $file) {
+            if (is_file($file)) {
+                require_once $file;
+
+                return;
+            }
         }
     }
 }

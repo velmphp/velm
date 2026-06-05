@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "velmphp/skeleton",
+    "name": "velmphp/app",
     "type": "project",
-    "description": "Velm Laravel application template for local development and greenfield ERP apps",
+    "description": "Official Velm Laravel application — greenfield ERP host with addons, panel, and setup scripts",
     "keywords": ["velm", "laravel", "erp", "admin"],
     "license": "LGPL-3.0-or-later",
     "require": {
@@ -29,13 +29,6 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "Addons\\ChangeManagement\\": "addons/change_management/",
-            "Addons\\ChangeManagement\\Dashboard\\": "addons/change_management/Dashboard/",
-            "Addons\\ChangeManagement\\Models\\": "addons/change_management/models/",
-            "Addons\\PartnersExt\\": "addons/partners_ext/",
-            "Addons\\PartnersExt\\Models\\": "addons/partners_ext/models/",
-            "Addons\\DemoRelations\\": "addons/demo_relations/",
-            "Addons\\DemoRelations\\Models\\": "addons/demo_relations/models/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 use Velm\Console\Scaffold\ModelScaffolder;
 use Velm\Console\Scaffold\ModuleScaffolder;
+use Velm\Modules\ModuleModelDiscovery;
 
-test('model scaffolder creates class and updates manifest', function (): void {
+test('model scaffolder creates model file discoverable from models directory', function (): void {
     $root = sys_get_temp_dir().'/velm_model_scaffold_'.uniqid('', true);
     mkdir($root, 0777, true);
 
@@ -18,8 +19,7 @@ test('model scaffolder creates class and updates manifest', function (): void {
         ->and($result['class'])->toBe('Product')
         ->and(is_file($modulePath.'/models/product.php'))->toBeTrue()
         ->and(file_get_contents($modulePath.'/models/product.php'))->toContain("protected static ?string \$name = 'inventory.product';")
-        ->and(file_get_contents($modulePath.'/__velm__.php'))->toContain('use Addons\\Inventory\\Models\\Product;')
-        ->and(file_get_contents($modulePath.'/__velm__.php'))->toContain('Product::class');
+        ->and(ModuleModelDiscovery::discover($modulePath, 'inventory'))->toBe(['Addons\Inventory\Models\Product']);
 
     unlink($modulePath.'/models/product.php');
     unlink($modulePath.'/models/.gitkeep');

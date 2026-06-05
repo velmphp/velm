@@ -29,6 +29,9 @@ final class Manifest
     /** @var list<class-string> */
     private array $models = [];
 
+    /** @var list<class-string> */
+    private array $seeders = [];
+
     private string $summary = '';
 
     private string $description = '';
@@ -105,6 +108,16 @@ final class Manifest
     public function models(string ...$modelClasses): self
     {
         $this->models = array_values($modelClasses);
+
+        return $this;
+    }
+
+    /**
+     * @param  class-string  ...$seederClasses
+     */
+    public function seeders(string ...$seederClasses): self
+    {
+        $this->seeders = array_values($seederClasses);
 
         return $this;
     }
@@ -187,6 +200,10 @@ final class Manifest
 
         if ($this->models !== []) {
             $manifest['MODELS'] = $this->models;
+        }
+
+        if ($this->seeders !== []) {
+            $manifest['SEEDERS'] = $this->seeders;
         }
 
         if ($this->summary !== '') {

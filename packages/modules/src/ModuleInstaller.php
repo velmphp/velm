@@ -12,6 +12,7 @@ use Velm\Modules\Database\LaravelConnection;
 use Velm\Modules\Migrations\ModuleMigrationRunner;
 use Velm\Modules\Schema\ModuleSchema;
 use Velm\Modules\ModuleVersion;
+use Velm\Modules\Seeding\ModuleSeederRunner;
 use Velm\Registry;
 use Velm\Schema\SchemaDiff;
 use Velm\Schema\SchemaDiffer;
@@ -79,6 +80,22 @@ final class ModuleInstaller
     public function install(string $moduleName, array $roots): void
     {
         $this->migrate($moduleName, $roots);
+    }
+
+    /**
+     * Run seeders for installed modules in dependency order.
+     *
+     * @param  list<string>  $roots
+     */
+    public function seed(array $roots, ?string $module = null): void
+    {
+        $env = $this->environment($roots);
+
+        (new ModuleSeederRunner(
+            $this->discovery,
+            $this->resolver,
+            $this->repository,
+        ))->run($env, $roots, $module);
     }
 
     /**

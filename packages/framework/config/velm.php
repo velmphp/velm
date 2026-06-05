@@ -7,6 +7,12 @@ return [
         base_path('vendor/velmphp/modules/modules'),
         base_path('addons'),
     ],
+
+    /** Roots scanned for {@code Addons\…} PHP classes (no composer.json PSR-4 per module). */
+    'addon_autoload_paths' => array_values(array_filter([
+        base_path('addons'),
+        ...array_filter(array_map('trim', explode(',', (string) env('VELM_ADDON_PATHS', '')))),
+    ])),
     'bootstrap_modules' => ['base', 'admin'],
 
     'views' => [

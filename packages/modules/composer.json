@@ -12,20 +12,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Velm\\Modules\\": "src/",
-            "Velm\\Modules\\Base\\Models\\": "modules/base/models/",
-            "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/",
-            "Velm\\Modules\\FileManager\\Models\\": "modules/file_manager/models/",
-            "Velm\\Modules\\Workflow\\Models\\": "modules/workflow/models/",
-            "Velm\\Modules\\Mail\\Models\\": "modules/mail/models/"
+            "Velm\\Modules\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Velm\\Modules\\Tests\\": "tests/",
-            "Addons\\ChangeManagement\\": "../../apps/skeleton/addons/change_management/",
-            "Addons\\ChangeManagement\\Dashboard\\": "../../apps/skeleton/addons/change_management/Dashboard/",
-            "Addons\\ChangeManagement\\Models\\": "../../apps/skeleton/addons/change_management/models/"
+            "Velm\\Modules\\Tests\\": "tests/"
         }
     },
     "extra": {

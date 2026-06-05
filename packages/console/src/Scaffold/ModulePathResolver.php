@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Console\Scaffold;
 
 use Velm\Console\Support\ModuleRoots;
+use Velm\Modules\Support\ModuleNaming;
 
 final class ModulePathResolver
 {
@@ -96,24 +97,16 @@ final class ModulePathResolver
 
     public static function studlyModuleName(string $moduleName): string
     {
-        return str_replace('_', '', ucwords($moduleName, '_'));
+        return ModuleNaming::studlyModuleName($moduleName);
     }
 
     public static function isBundledModulePath(string $modulePath): bool
     {
-        $normalized = str_replace('\\', '/', $modulePath);
-
-        return str_contains($normalized, '/modules/modules/');
+        return ModuleNaming::isBundledModulePath($modulePath);
     }
 
     public static function modelsNamespace(string $modulePath, string $moduleName): string
     {
-        $studly = self::studlyModuleName($moduleName);
-
-        if (self::isBundledModulePath($modulePath)) {
-            return "Velm\\Modules\\{$studly}\\Models";
-        }
-
-        return "Addons\\{$studly}\\Models";
+        return ModuleNaming::modelsNamespace($modulePath, $moduleName);
     }
 }

@@ -107,4 +107,4 @@ See [Scaffolding](../guides/scaffolding) for generating modules that use these f
 
 Record dialogs load the comodel form with `?embed=1` and show the full **Save** / **Create** action bar. See [Views and forms](../guides/views-and-forms).
 
-**Try it:** run `composer run setup` in `apps/skeleton`, then open **Demos → Projects** (module `demo_relations`).
+**Try it:** after [Installation](../guides/installation), open **Demos → Projects** (module `demo_relations`).

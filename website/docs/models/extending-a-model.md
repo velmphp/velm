@@ -15,7 +15,7 @@ You do **not** create a new table. Velm merges your fields into the existing mod
 | Extend `Model` | `class PartnerPro extends Model` — not the base `Partner` class. |
 | Set `$inherit` | `protected static ?string $inherit = 'res.partner';` |
 | No `$name` | The extension shares the inherited model name. |
-| Declare in manifest | `->models(PartnerPro::class)` on your module. |
+| Declare in manifest | Only if the extension class is **outside** `models/`; otherwise auto-discovered. |
 | Depend on owner | `->depends('partners')` so the base model loads first. |
 
 ## Extension class

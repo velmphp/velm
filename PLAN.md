@@ -12,7 +12,7 @@ todos:
     content: "ir.cron + CronJob::runDue; php artisan velm:cron:run on Laravel Scheduler"
     status: completed
   - id: composer-packaging
-    content: "Split velmphp/* Packagist releases, velmphp/skeleton template, unified semver (monorepo dev works via path repos)"
+    content: "Split velmphp/* Packagist releases, velmphp/app template, unified semver (monorepo dev works via path repos)"
     status: pending
   - id: core-env-registry
     content: "Environment, Registry, Recordset, field types (incl. O2M/M2M), Pest tests"
@@ -1467,7 +1467,7 @@ All first-party framework code lives under **[github.com/velmphp](https://github
 | GitHub repo | Composer package(s) | Role |
 |-------------|---------------------|------|
 | [**velmphp/velm**](https://github.com/velmphp/velm) | `velmphp/core`, `views`, `modules`, `console`, `web`, `ui`, `admin`, `framework` | **Main monorepo** — all split packages, bundled modules, integration tests |
-| [**velmphp/skeleton**](https://github.com/velmphp/skeleton) | *(none — application template)* | Greenfield Laravel app scaffolded by `php velm init` |
+| [**velmphp/app**](https://github.com/velmphp/velm/tree/main/apps/skeleton) | *(none — application project)* | Greenfield Velm Laravel application (`composer create-project velmphp/app`) |
 | [**velmphp/docs**](https://github.com/velmphp/docs) | *(none)* | Public documentation site (mirrors PyVelm docs structure) |
 | [**velmphp/composer-plugin**](https://github.com/velmphp/composer-plugin) | `velmphp/composer-plugin` | Phase 6+ — optional `type: velm-module` installer |
 
@@ -1577,7 +1577,7 @@ Apps never require `velmphp/core` directly unless building low-level tooling —
 
 Thin `src/` in framework package: service provider, facade, publishes config/routes/stubs.
 
-### Application template (`velmphp/skeleton`)
+### Application template (`velmphp/app`)
 
 Separate repo — **not** a Composer package users require. Cloned or copied by `php velm init my_erp`:
 
@@ -1659,7 +1659,7 @@ Core org stays lean: **framework + skeleton + docs + plugin**.
 ### Phase placement
 
 - **Phase 0**: create `velmphp/velm` monorepo with `core` + `modules` packages; empty `framework` metapackage
-- **Phase 1**: `velmphp/skeleton` + Packagist `velmphp/framework` alpha
+- **Phase 1**: `velmphp/app` + Packagist `velmphp/framework` alpha
 - **Phase 2–4**: fill `views`, `console`, `web`, `ui`, `filament` packages in monorepo
 - **Phase 6+**: `velmphp/composer-plugin`, `velmphp/docs` public site
 
@@ -1764,7 +1764,7 @@ Clone **`github.com/velmphp/velm`**; root `composer.json` uses path repositories
 }
 ```
 
-`php velm init my_erp` scaffolds from **`velmphp/skeleton`** with `composer require velmphp/framework` from Packagist.
+`composer create-project velmphp/app my_erp` installs the official application with **`velmphp/framework`** from Packagist.
 
 #### Laravel service provider
 
@@ -1854,7 +1854,7 @@ Document in scaffold README: *Composer installs the framework; Velm installs the
 ### Phase placement
 
 - **Phase 0**: create `github.com/velmphp/velm` with `velmphp/core` + `velmphp/modules` packages; empty `velmphp/framework` metapackage
-- **Phase 1**: `velmphp/skeleton` + `composer require velmphp/framework` in app template
+- **Phase 1**: `velmphp/app` on Packagist (includes `velmphp/framework`)
 - **Phase 6+**: `velmphp/composer-plugin` for `type: velm-module` distributable addons
 
 ---

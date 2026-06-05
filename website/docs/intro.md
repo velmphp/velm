@@ -12,7 +12,8 @@ This site documents how to **author modules** and use the ORM. For repository ar
 
 | Topic | Where to start |
 |-------|----------------|
-| Install the skeleton app and modules | [Installation](./guides/installation) |
+| **Install** — `composer create-project velmphp/app` | [Installation](./guides/installation) |
+| App addons and autoloading | [App addons](./guides/addons) |
 | Schema diff, versioned migrations, hooks | [Module migrations](./guides/migrations) |
 | Scaffold modules, models, views, menus | [Scaffolding](./guides/scaffolding) |
 | Timestamps, catalog, branding, ACL UI, relations | [Platform features](./guides/features) |
@@ -31,7 +32,7 @@ This site documents how to **author modules** and use the ORM. For repository ar
 Velm has **two** inheritance mechanisms:
 
 - **Model `$inherit`** — add columns and PHP methods to an existing model (same database table). Covered under **Models**.
-- **View `VIEW_INHERITS`** — patch list/form arch JSON without forking views (planned; see [Views and forms](./guides/views-and-forms) for current list/form authoring).
+- **View `VIEW_INHERITS`** — patch list/form arch JSON without forking views via `InheritView` (see [Views and forms — View inheritance](./guides/views-and-forms#view-inheritance)).
 
 Model inheritance is data and server logic; view inheritance is UI layout.
 

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 use Addons\ChangeManagement\ChangeManagementInstallHooks;
 use Addons\ChangeManagement\ChangeManagementSyncHooks;
-use Addons\ChangeManagement\Models\Change;
 use Velm\Modules\Manifest;
 
 return Manifest::make('change_management')
     ->version(0, 1, 0)
     ->depends('base', 'admin', 'mail', 'workflow')
-    ->models(Change::class)
     ->installHook(ChangeManagementInstallHooks::class)
     ->syncHook(ChangeManagementSyncHooks::class)
     ->data(

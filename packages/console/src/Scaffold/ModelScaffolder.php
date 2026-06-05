@@ -36,7 +36,6 @@ final class ModelScaffolder
         $table = str_replace('.', '_', $technical);
 
         file_put_contents($target, $this->modelContents($namespace, $className, $technical, $table));
-        ManifestPatcher::appendModel($modulePath.'/__velm__.php', $fqn, $className);
 
         return [
             'path' => $target,

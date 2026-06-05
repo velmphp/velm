@@ -1,6 +1,8 @@
-# Velm skeleton app
+# Velm application (`velmphp/app`)
 
-Runnable Laravel host for the Velm monorepo — Livewire panel, module install, and PyVelm-style shell navigation.
+Official Laravel host for a Velm ERP — Livewire panel, `addons/`, module install, and PyVelm-style shell navigation.
+
+In the monorepo this app lives at `apps/skeleton/`; on Packagist it is published as **`velmphp/app`**.
 
 ## Quick start (monorepo)
 
@@ -40,9 +42,42 @@ php artisan velm:module:uninstall <name>
 
 If the UI looks unstyled or colors are wrong, run `composer velm-build-css` (rebuilds `packages/ui` Tailwind and publishes assets). You can also re-run `composer run setup`.
 
+### Resetting the Velm schema
+
+When you want a clean Velm database (for example after changing modules or during local testing) you can drop Velm-owned tables and reinstall bootstrap modules without touching Laravel’s own tables:
+
+```bash
+php artisan velm:migrate:fresh       # ask for confirmation
+php artisan velm:migrate:fresh --yes # skip the prompt (CI-safe)
+```
+
+By default this will:
+
+- Drop Velm model tables and many-to-many relation tables, while keeping `users`, `sessions`, `jobs`, and other core Laravel tables.
+- Reinstall the bootstrap modules from `config/velm.php` (usually `base` and `admin`).
+- Optionally migrate additional modules when you pass `--module=` flags:
+
+```bash
+php artisan velm:migrate:fresh --yes --module=partners --module=demo_relations
+```
+
+After running `velm:migrate:fresh` you can sign in with the same Laravel user credentials as before, but all Velm business data (partners, projects, workflow items, etc.) will be empty until you create or seed it again.
+
 ## Configuration
 
-`config/velm.php` resolves addon paths for monorepo dev (`../../packages/modules/modules`) and Packagist installs (`vendor/velmphp/modules/modules`). Drop custom modules under `addons/` (see `addons/README.md` for the bundled `demo_relations` module).
+`config/velm.php` resolves addon paths for monorepo dev (`../../packages/modules/modules`) and Packagist installs (`vendor/velmphp/modules/modules`). Drop custom modules under `addons/` (see `addons/README.md`).
+
+**No per-addon `composer.json` PSR-4 entries.** Classes under `addons/{module}/` use `Addons\{StudlyModule}\…` and are autoloaded by Velm at runtime.
+
+### Production install (Packagist)
+
+```bash
+composer require velmphp/framework
+php artisan vendor:publish --tag=velm-config
+php artisan migrate && php artisan velm:migrate
+```
+
+Bundled modules come from `velmphp/modules`; your business modules stay in `addons/`. Full journey: [App addons](https://github.com/velmphp/velm/blob/main/website/docs/guides/addons.md).
 
 ```bash
 # Optional: nested sidebar instead of apps rail + top bar
@@ -66,6 +101,7 @@ VELM_MENU_LAYOUT=sidebar
 | Command | Description |
 |---------|-------------|
 | `php artisan velm:migrate` | Install or upgrade bootstrap modules |
+| `php artisan velm:migrate:fresh` | Drop Velm tables, reinstall bootstrap modules (keep Laravel tables) |
 | `php artisan velm:migrate --module={name}` | One module + dependencies |
 | `php artisan velm:module:install {name}` | Same as `velm:migrate --module={name}` |
 | `php artisan velm:module:sync {name}` | Reload module DATA + schema diff (no version bump) |
@@ -75,14 +111,13 @@ VELM_MENU_LAYOUT=sidebar
 | `php artisan velm:db:autogen --module={name}` | Scaffold migration + bump VERSION |
 | `php artisan velm:db:status` | Installed vs manifest versions |
 | `php artisan velm:cron:run` | Run due `ir.cron` jobs once |
+| `php artisan velm:seed` | Run manifest seeders for installed modules |
 | `php artisan list velm` | Full command list |
 
-## Standalone app (future)
-
-When `velmphp/skeleton` ships on Packagist:
+## Greenfield install (Packagist)
 
 ```bash
-composer create-project velmphp/skeleton my-erp
+composer create-project velmphp/app my-erp
 cd my-erp
 composer run setup
 composer run dev
