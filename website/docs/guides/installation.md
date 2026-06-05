@@ -59,6 +59,7 @@ php artisan velm:migrate                     # bootstrap modules (same as compos
 php artisan velm:module:list
 php artisan velm:module:install partners       # alias path: velm:migrate --module=partners
 php artisan velm:module:sync partners
+php artisan velm:module:uninstall partners_ext # remove install state + views/menus (keeps tables)
 php artisan velm:db:diff --module=partners
 php artisan velm:db:status
 php artisan velm:db:autogen inventory --with-views

@@ -26,6 +26,7 @@ Install more modules at `/velm/apps` or:
 ```bash
 php artisan velm:module:install <name>
 php artisan velm:module:sync <name>
+php artisan velm:module:uninstall <name>
 ```
 
 ## What `composer run setup` does
@@ -52,8 +53,8 @@ VELM_MENU_LAYOUT=sidebar
 
 | URL | Purpose |
 |-----|---------|
-| `/velm` | Velm admin panel (arch-driven list/form pages) |
-| `/velm/apps` | Module catalog |
+| `/velm` | Dashboard (default home) |
+| `/velm/apps` | Module catalog (install / sync / uninstall) |
 | `/api/views/{module}/{name}` | Resolved view arch JSON |
 | `/api/records?model=&domain=&fields=` | List records (GET) |
 | `/api/records?model=` | Create (POST JSON body) |
@@ -68,6 +69,7 @@ VELM_MENU_LAYOUT=sidebar
 | `php artisan velm:migrate --module={name}` | One module + dependencies |
 | `php artisan velm:module:install {name}` | Same as `velm:migrate --module={name}` |
 | `php artisan velm:module:sync {name}` | Reload module DATA + schema diff (no version bump) |
+| `php artisan velm:module:uninstall {name}` | Remove module from DB (views/menus; keeps tables) |
 | `php artisan velm:module:list` | Discovered modules and state |
 | `php artisan velm:db:diff --module={name}` | Schema drift report |
 | `php artisan velm:db:autogen --module={name}` | Scaffold migration + bump VERSION |

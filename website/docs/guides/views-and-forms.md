@@ -236,6 +236,72 @@ Related records open in a **draggable floating dialog** (iframe with `?embed=1`)
 
 Implemented in `window.pvOpenRecord()` / `Alpine.store('recordDialog')`. The file picker uses the same dialog shell via `window.PvDialog`.
 
+## View inheritance
+
+Extend an existing view arch without copying the whole form or list. Register inherits in a module `views/*.php` file via `ViewsData::make()->inherits(...)`.
+
+### Authoring API
+
+Use `InheritView` with a fluent builder. Patch the parent view identified as `module.view_name` (e.g. `partners.partner.form`):
+
+```php
+use Velm\Views\Authoring\Field;
+use Velm\Views\Authoring\InheritView;
+use Velm\Views\Authoring\Section;
+use Velm\Views\Data\ViewsData;
+
+return ViewsData::make()
+    ->inherits(
+        InheritView::make('partner.form.ext')
+            ->extends('partners.partner.form')
+            ->setCols(2)
+            ->updateSection('identity', title: 'Contact', cols: 2)
+            ->afterField('identity', 'name', Field::make('website'))
+            ->removeSection('organization', 'address')
+            ->afterSection(
+                'identity',
+                Section::make('location', 'Location')->cols(2)->fields('company_id', 'country_id'),
+            ),
+    );
+```
+
+| Method | Purpose |
+|--------|---------|
+| `->extends('module.view')` | Parent view ref (required) |
+| `->setCols(n)` | Set root column count on form/detail |
+| `->updateSection(name, title:, cols:, …)` | Merge attrs into a section |
+| `->removeSection('a', 'b', …)` | Remove sections by name |
+| `->afterField` / `->beforeField` | Insert a field relative to another field |
+| `->afterSection` / `->beforeSection` | Insert a `Section` arch node |
+| `->appendInSection` / `->prependInSection` | Add fields at end or start of a section |
+| `->updateColumn` / `->removeColumn` | Patch list view columns |
+
+`Field`, `Section`, and plain field name strings (`'website'`) are normalized automatically.
+
+Low-level ops (`update`, `after`, `remove`, dot paths, `ViewTarget`) remain available for advanced patches.
+
+After changing inherit files:
+
+```bash
+php artisan velm:module:sync <module>
+```
+
+### Third-party modules and apply order
+
+Several modules may inherit the same parent view (e.g. two addons both patch `partners.partner.form`). Velm does **not** rely on authors setting `priority` to coordinate.
+
+| Rule | Behavior |
+|------|----------|
+| **Module `depends`** | Inherits apply in **installed module dependency order** (same topo sort as model MRO). If B `depends('partners_ext')`, B's patches always run after `partners_ext`. |
+| **Missing targets** | If an earlier patch removed a section or field, later ops targeting it are **skipped** (page still loads). Default: `velm.views.skip_missing_inherit_targets` = `true`. Set `VELM_VIEWS_SKIP_MISSING_INHERIT_TARGETS=false` in dev to fail loud. |
+| **Unrelated siblings** | Order is stable but undefined between peers with no `depends` link; design patches to tolerate no-ops or declare `depends` on the layout module you build on. |
+
+Protected modules (`base`, `admin`, and `velm.bootstrap_modules`) cannot be uninstalled.
+
+**Demo:** skeleton addon [`partners_ext`](https://github.com/velmphp/velm/blob/main/apps/skeleton/addons/partners_ext/views/partner.php) — model `$inherit` plus form/detail view inherits.
+
+See also [Stacking extensions](../models/stacking-extensions#models-vs-views) (models vs views).
+
 ## Menus
 
 Register menus in `views/menu.php` and sync the module. Menu entries point at list view URLs (`/velm/views/{module}/{view}.list`).

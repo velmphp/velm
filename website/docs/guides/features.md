@@ -35,7 +35,8 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 
 | Feature | Description |
 |---------|-------------|
-| **Default home** | `/velm` redirects to `/velm/apps` |
+| **Default home** | `/velm` redirects to `/velm/dashboard` (ACL-gated widgets from installed modules) |
+| **Dashboard** | Composable stat/list widgets; modules register via `{module}/dashboard.php` |
 | **Catalog sidebar** | Dedicated filters: Catalog, Status, Category, Open app |
 | **Status filters** | All, Installed, **Upgrade**, **Sync pending**, Not installed |
 | **Module rail** | Flat list of installed apps (no “Installed” heading); **Apps** link last to return to the catalog |
@@ -48,7 +49,7 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 | State | Meaning | Action |
 |-------|---------|--------|
 | **Not installed** | Absent from `ir.module` | **Install** |
-| **Installed** | Up to date | **Open app** (if menus exist) |
+| **Installed** | Up to date | **Sync**, **Uninstall** (if allowed), **Open app** (if menus exist) |
 | **Upgrade** | Installed manifest **version** is newer | **Upgrade** (versioned migrations + sync) |
 | **Sync pending** | Same version but **actionable** schema diff (new columns, etc.) **or** views/menus on disk differ from `ir.ui.view` / `ir.ui.menu` | **Sync** |
 | **Schema drift** | Unsupported diff (e.g. SQLite nullability-only changes) | Informational only — does not block “Installed”; fix manually or bump version |
@@ -57,7 +58,23 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 
 `schemaExternalColumns()` on a model (e.g. Laravel-owned `users.password`) excludes columns from actionable sync diff so Laravel tables do not show false “sync pending”.
 
-CLI: `php artisan velm:module:install`, `velm:module:sync`, `velm:migrate` / reconcile. See [Admin panel — Install](./admin-panel#install-upgrade-and-sync) and [Migrations](./migrations).
+CLI: `php artisan velm:module:install`, `velm:module:sync`, `velm:module:uninstall`, `velm:migrate` / reconcile. See [Admin panel — Install](./admin-panel#install-upgrade-sync-and-uninstall) and [Migrations](./migrations).
+
+### Uninstall
+
+Remove a module from `ir.module` and delete its synced views and menus. **Database tables and row data are kept.**
+
+| Blocker | Meaning |
+|---------|---------|
+| Protected module | `base`, `admin`, or entries in `velm.bootstrap_modules` |
+| Reverse dependency | Another **installed** module lists this one in `DEPENDS` |
+| Model extension | Another installed module extends this module's models via `$inherit` |
+
+The catalog shows a disabled **Uninstall** button with a short summary (e.g. “The following modules depend on it: …”). Uninstall dependents first.
+
+```bash
+php artisan velm:module:uninstall partners_ext
+```
 
 ## Company branding and switcher
 

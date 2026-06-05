@@ -21,6 +21,8 @@ php artisan velm:module:install partners_ext
 
 Open **Contacts → Partners** and create or edit a partner to see the customized form.
 
+View inherits use the `InheritView` fluent API (`updateSection`, `afterField`, `afterSection`, …). See [Views and forms — View inheritance](https://github.com/velmphp/velm/blob/main/website/docs/guides/views-and-forms.md#view-inheritance).
+
 ## `demo_relations`
 
 Demonstrates **Many2one**, **One2many**, and **Many2many** (see [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md)):

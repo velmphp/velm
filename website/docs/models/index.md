@@ -87,4 +87,4 @@ List, form, and relational field behavior in the shell are documented under **Gu
 - [Admin panel](../guides/admin-panel) — apps catalog, navigation, branding, users
 - [Views and forms](../guides/views-and-forms) — search/filters, form layout, M2M/O2M dialogs, delete actions
 
-View inheritance (`VIEW_INHERITS`) is planned; today you author full list/form/detail arch in module `views/*.php` files.
+View inheritance patches existing list/form/detail arch via `InheritView` in module `views/*.php` files — see [Views and forms — View inheritance](../guides/views-and-forms#view-inheritance).
