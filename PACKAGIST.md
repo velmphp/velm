@@ -24,9 +24,11 @@ Instead, this monorepo splits each publishable tree into **mirror repos** via Gi
 
 ### 1. Create empty mirror repositories
 
-Under the **velmphp** GitHub org, create **nine empty public repos** (no README, no `.gitignore`):
+Under the **velmphp** GitHub org, create **nine empty public repos** (no README, no `.gitignore` — completely empty is fine):
 
 `core`, `views`, `modules`, `console`, `web`, `ui`, `admin`, `framework`, `app`
+
+The split workflow uses **splitsh-lite** and pushes directly to `main` on each mirror, so the first run bootstraps empty repos.
 
 ### 2. Add split token secret
 
@@ -100,4 +102,5 @@ cd /tmp/velm-smoke && composer run setup
 | Packagist shows `velmphp/velm-dev` | You submitted the monorepo URL — use mirror URLs instead |
 | Split workflow skipped | Add `PACKAGIST_SPLIT_TOKEN` secret |
 | Split push 403 | PAT needs write access to all mirror repos |
+| `src refspec main does not match` (danharrin action) | Use splitsh-lite workflow — empty mirrors need direct SHA push |
 | `create-project` fails on PHP 8.3 | App lock uses `config.platform.php` 8.3.31 (Symfony 7.4) |
