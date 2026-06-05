@@ -11,7 +11,7 @@ Velm uses a **two-layer** migration model (same as PyVelm/Odoo):
 
 ## CLI
 
-Run from your Laravel app root (e.g. `apps/skeleton`). All Velm commands use **Artisan**:
+Run from your Laravel app root (e.g. `apps/app` or `apps/demo`). All Velm commands use **Artisan**:
 
 ```bash
 php artisan velm:migrate --module=partners   # install or upgrade (deps first)

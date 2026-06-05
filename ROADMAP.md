@@ -4,7 +4,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 
 ## Stable v1.0 target
 
-**Stable** means a third-party developer can install the skeleton, author modules, run the panel in production, and reset dev databases without monorepo-only hacks.
+**Stable** means a third-party developer can install `velmphp/app`, author modules, run the panel in production, and reset dev databases without monorepo-only hacks.
 
 | Milestone | Goal |
 |-----------|------|
@@ -19,7 +19,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |---|------|--------|-------|
 | 1.1 | `velm:migrate:fresh` | **Done** | Dev reset: drop Velm schema + reinstall bootstrap — see [RC1 slice](#rc1-slice--migratefresh--seed) |
 | 1.2 | `velm:seed` + manifest `SEEDERS` | **Done** | Module-scoped seeders in topo order — see [RC1 slice](#rc1-slice--migratefresh--seed) |
-| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | Pending | Path repos OK for monorepo dev; need `@stable` constraints |
+| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **In progress** | `^1.0@dev` constraints, `velmphp/app` without path repos; tag `v1.0.0-rc1` + org registration remain |
 | 1.4 | Production ops guide (cron, attachments disk, DB choice) | Pending | `website/docs/guides/` |
 | 1.5 | CI matrix (PHP 8.3+, SQLite + MySQL/Postgres smoke) | Pending | Extend root `composer test` |
 | 1.6 | Docs / ROADMAP sync | Ongoing | `intro.md`, `CONTEXT.md`, guides |
@@ -50,7 +50,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |------|-------|
 | Graph / pivot views | Reporting |
 | `velmphp/composer-plugin` (`type: velm-module`) | Marketplace-style addons |
-| Publish `velmphp/app` on Packagist | Monorepo copy at `apps/skeleton/` today |
+| Publish `velmphp/app` on Packagist | Monorepo copy at `apps/app/`; demos in `apps/demo/` |
 | Filament arch adapter | Superseded by `velm-ui` |
 
 ---
@@ -66,8 +66,8 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |------|------|
 | A1 | `VelmSchemaReset` in `packages/modules` — discover all model tables + M2M junctions from addon roots; `DROP TABLE` in safe order (junctions → models → `ir_*` metadata). **Do not** drop Laravel `users` / `sessions` / `jobs` unless `--purge-app` (optional, defer). |
 | A2 | Clear `ir_module` rows (or drop + recreate `ir_module` via existing migration). |
-| A3 | `MigrateFreshCommand` — `velm:migrate:fresh {--yes} {--modules=*}` — confirm prompt unless `--yes`; call reset → `installBootstrap` (default `base`, `admin`) → optional `--modules=partners,workflow,…` like skeleton setup. |
-| A4 | Wire in `VelmServiceProvider`; document in `apps/skeleton/README.md` + `website/docs/guides/installation.md`. |
+| A3 | `MigrateFreshCommand` — `velm:migrate:fresh {--yes} {--modules=*}` — confirm prompt unless `--yes`; call reset → `installBootstrap` (default `base`, `admin`) → optional `--modules=partners,workflow,…` like demo setup. |
+| A4 | Wire in `VelmServiceProvider`; document in `apps/app/README.md` + `website/docs/guides/installation.md`. |
 | A5 | Feature test: install partners → fresh → assert `ir_module` + `res_partner` recreated empty. |
 
 **PyVelm parity:** `migrate:fresh` = drop Velm DDL + reinstall; not `migrate:reset` (uninstall all modules).
@@ -89,7 +89,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 ### Suggested PR checklist
 
 - [x] `VelmSchemaReset` + tests
-- [x] `velm:migrate:fresh` command + skeleton docs
+- [x] `velm:migrate:fresh` command + app/demo docs
 - [x] `SEEDERS` manifest key + `ModuleSeederRunner`
 - [x] `velm:seed` command + one bundled seeder
 - [ ] `ROADMAP.md` / `CONTEXT.md` status bumps
@@ -106,7 +106,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `php artisan velm:module:*` / `velm:migrate` / `velm:db:*` | Done (Laravel app required) |
 | Bundled `base` + `admin` manifests | Done |
 | Apps catalog UI (`/velm/apps`, install/sync/upgrade/**uninstall**, module detail) | Done |
-| Runnable Velm app — `velmphp/app` (`apps/skeleton`) | Done |
+| Runnable Velm app — `velmphp/app` (`apps/app`) + demo (`apps/demo`) | Done |
 | DATA / VIEW sync on install | Done |
 | Module uninstall (CLI + Apps UI, dependency blockers) | Done |
 
@@ -172,7 +172,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `res.users` on Laravel `users` + bootstrap admin env | Done |
 | ACL admin UI (users, groups, model access, rules) | Done |
 | O2M / M2M record dialog + `?embed=1` form save bar | Done |
-| `demo_relations` + `partners_ext` skeleton addons + website docs | Done |
+| `demo_relations` + `partners_ext` demo addons (`apps/demo`) + website docs | Done |
 
 ## Phase 3c — Home dashboard
 
@@ -189,7 +189,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |------|--------|
 | `workflow` module (definition, instance, approval, task models) | Done |
 | Workflow engine port (schema v1, transitions, approvals, sequential/all/any) | Done |
-| `change_management` skeleton demo (`it.change` + ICT lifecycle workflow) | Done |
+| `change_management` demo addon (`it.change` + ICT lifecycle workflow) | Done |
 | Record detail workflow panel + `/web/workflow/*` API | Done |
 | Approval inbox (`/web/workflow/inbox`) | Done |
 | Overdue approval cron (`workflow_escalate` server action) | Done |

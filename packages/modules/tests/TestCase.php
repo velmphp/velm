@@ -22,10 +22,10 @@ abstract class TestCase extends Orchestra
     {
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
 
-        $skeletonAddons = dirname(__DIR__, 3).'/apps/skeleton/addons';
+        $demoAddons = dirname(__DIR__, 3).'/apps/demo/addons';
 
-        if (is_dir($skeletonAddons)) {
-            $app['config']->set('velm.addon_autoload_paths', [$skeletonAddons]);
+        if (is_dir($demoAddons)) {
+            $app['config']->set('velm.addon_autoload_paths', [$demoAddons]);
         }
 
         $app['config']->set('database.default', 'testing');

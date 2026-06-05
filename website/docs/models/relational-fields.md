@@ -72,7 +72,7 @@ Self-referential many2many requires an explicit `->relation(...)`.
 
 ## Try it in the shell
 
-The skeleton **`demo_relations`** addon (`apps/skeleton/addons/demo_relations`) installs **Demos → Projects** with M2M tags, O2M tasks, and M2O `project_id` on tasks. UI widgets (dialog, combobox, embed forms) are described in [Views and forms](../guides/views-and-forms#relational-fields-in-the-ui) and [Platform features](../guides/features#relational-ui-dialogs).
+The **`demo_relations`** addon (`apps/demo/addons/demo_relations`) installs **Demos → Projects** with M2M tags, O2M tasks, and M2O `project_id` on tasks. UI widgets (dialog, combobox, embed forms) are described in [Views and forms](../guides/views-and-forms#relational-fields-in-the-ui) and [Platform features](../guides/features#relational-ui-dialogs).
 
 ## Example
 

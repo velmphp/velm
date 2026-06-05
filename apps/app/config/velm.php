@@ -2,29 +2,18 @@
 
 declare(strict_types=1);
 
-$monorepoModules = realpath(base_path('../../packages/modules/modules')) ?: null;
-$vendorModules = base_path('vendor/velmphp/modules/modules');
+$frameworkConfigPath = base_path('vendor/velmphp/framework/config/velm.php');
 
-$addonPaths = [];
-
-if ($monorepoModules !== false && is_dir($monorepoModules)) {
-    $addonPaths[] = $monorepoModules;
-} elseif (is_dir($vendorModules)) {
-    $addonPaths[] = $vendorModules;
+if (! is_file($frameworkConfigPath)) {
+    throw new RuntimeException(
+        'velmphp/framework is not installed. Run composer install in the application root.',
+    );
 }
 
-$addonPaths[] = base_path('addons');
+/** @var array<string, mixed> $config */
+$config = require $frameworkConfigPath;
 
-$addonAutoloadPaths = [base_path('addons')];
-
-return [
-    'addon_paths' => $addonPaths,
-
-    'addon_autoload_paths' => $addonAutoloadPaths,
-
-    'bootstrap_modules' => ['base', 'admin'],
-
-    /** Panel login + Velm {@code res.users} bootstrap (same {@code users} table). */
+return array_replace_recursive($config, [
     'bootstrap_admin' => [
         'email' => env('VELM_ADMIN_EMAIL', 'admin@velm.test'),
         'password' => env('VELM_ADMIN_PASSWORD', 'password'),
@@ -51,4 +40,4 @@ return [
         'VELM_SUPPORT_URL' => env('VELM_SUPPORT_URL'),
         'VELM_SHOW_POWERED_BY' => env('VELM_SHOW_POWERED_BY'),
     ],
-];
+]);

@@ -22,3 +22,51 @@ jobs:
       - run: composer install --prefer-dist --no-progress
       - run: composer test
       - run: composer analyse || true
+
+  app-install:
+    name: velmphp/app install smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: intl, pdo_sqlite
+      - name: Link monorepo packages (pre-Packagist)
+        run: cp apps/app/composer.local.json.example apps/app/composer.local.json
+      - name: composer install
+        working-directory: apps/app
+        run: composer install --prefer-dist --no-progress
+      - name: Bundled modules present in vendor
+        run: test -f apps/app/vendor/velmphp/modules/modules/base/__velm__.php
+      - name: App bootstrap
+        working-directory: apps/app
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          touch database/database.sqlite
+          php artisan migrate --force
+          php artisan velm:migrate
+
+  demo-setup:
+    name: velm demo app setup smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: intl, pdo_sqlite
+      - name: composer install
+        working-directory: apps/demo
+        run: composer install --prefer-dist --no-progress
+      - name: Demo addons on disk
+        run: test -f apps/demo/addons/demo_relations/__velm__.php
+      - name: Full demo setup
+        working-directory: apps/demo
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          composer run velm-setup

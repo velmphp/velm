@@ -1,5 +1,6 @@
 {
     "name": "velmphp/core",
+    "version": "1.0.0",
     "description": "Velm recordset ORM — Environment, Registry, fields, domain",
     "license": "LGPL-3.0-or-later",
     "type": "library",

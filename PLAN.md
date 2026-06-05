@@ -75,7 +75,7 @@ Monorepo status vs this plan — see [ROADMAP.md](./ROADMAP.md) for the checklis
 | Public docs | **Done** | `website/docs` — [Admin panel](website/docs/guides/admin-panel.md), [Views and forms](website/docs/guides/views-and-forms.md) |
 | Packagist split / `bin/velm` | **Open** | Dev uses path repos + `php artisan velm:*` only |
 
-**Demo:** skeleton addon `demo_relations` (Projects / Tasks / Tags) exercises relational fields in the shell.
+**Demo:** `apps/demo/addons/demo_relations` (Projects / Tasks / Tags) exercises relational fields in the shell.
 
 ```mermaid
 flowchart TB
@@ -554,7 +554,7 @@ Keeping these separate avoids Laravel running module DDL out of dependency order
 
 ## CLI (`php artisan velm:*` — primary entry point)
 
-**Implemented today:** all Velm commands register on **Laravel Artisan** from a bootstrapped app (e.g. `apps/skeleton`). There is no supported standalone `php velm` binary.
+**Implemented today:** all Velm commands register on **Laravel Artisan** from a bootstrapped app (e.g. `apps/app`, `apps/demo`). There is no supported standalone `php velm` binary.
 
 ```bash
 php artisan velm:migrate --module=partners
@@ -1467,7 +1467,7 @@ All first-party framework code lives under **[github.com/velmphp](https://github
 | GitHub repo | Composer package(s) | Role |
 |-------------|---------------------|------|
 | [**velmphp/velm**](https://github.com/velmphp/velm) | `velmphp/core`, `views`, `modules`, `console`, `web`, `ui`, `admin`, `framework` | **Main monorepo** — all split packages, bundled modules, integration tests |
-| [**velmphp/app**](https://github.com/velmphp/velm/tree/main/apps/skeleton) | *(none — application project)* | Greenfield Velm Laravel application (`composer create-project velmphp/app`) |
+| [**velmphp/app**](https://github.com/velmphp/velm/tree/main/apps/app) | *(none — application project)* | Greenfield Velm Laravel application (`composer create-project velmphp/app`); demos in `apps/demo/` |
 | [**velmphp/docs**](https://github.com/velmphp/docs) | *(none)* | Public documentation site (mirrors PyVelm docs structure) |
 | [**velmphp/composer-plugin**](https://github.com/velmphp/composer-plugin) | `velmphp/composer-plugin` | Phase 6+ — optional `type: velm-module` installer |
 

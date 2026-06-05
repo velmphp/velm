@@ -97,7 +97,7 @@ Environment overrides: `VELM_APP_NAME`, `VELM_LOGO_URL`, `VELM_LOGO_URL_DARK`, e
 composer build-ui
 
 # Skeleton app (build + publish to public/)
-cd apps/skeleton && composer velm-build-css
+cd apps/demo && composer velm-build-css
 ```
 
 ## File manager and attachments
@@ -181,7 +181,7 @@ ORM semantics: [Relational fields](../models/relational-fields). Authoring: [Vie
 
 ## Demo addon (`demo_relations`)
 
-Shipped with the skeleton under `apps/skeleton/addons/demo_relations`:
+Shipped with the monorepo demo app under `apps/demo/addons/demo_relations`:
 
 | Model | Relations |
 |-------|-----------|

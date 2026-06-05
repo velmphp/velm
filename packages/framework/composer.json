@@ -1,5 +1,6 @@
 {
     "name": "velmphp/framework",
+    "version": "1.0.0",
     "description": "Velm framework metapackage — Laravel integration and service provider",
     "license": "LGPL-3.0-or-later",
     "type": "library",
@@ -7,13 +8,13 @@
         "php": "^8.3",
         "laravel/framework": "^13.0",
         "livewire/livewire": "^4.0",
-        "velmphp/core": "@dev",
-        "velmphp/views": "@dev",
-        "velmphp/modules": "@dev",
-        "velmphp/console": "@dev",
-        "velmphp/web": "@dev",
-        "velmphp/ui": "@dev",
-        "velmphp/admin": "@dev"
+        "velmphp/core": "^1.0@dev",
+        "velmphp/views": "^1.0@dev",
+        "velmphp/modules": "^1.0@dev",
+        "velmphp/console": "^1.0@dev",
+        "velmphp/web": "^1.0@dev",
+        "velmphp/ui": "^1.0@dev",
+        "velmphp/admin": "^1.0@dev"
     },
     "autoload": { "psr-4": { "Velm\\Framework\\": "src/" } },
     "autoload-dev": {

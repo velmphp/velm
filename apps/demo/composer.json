@@ -1,15 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "velmphp/app",
+    "name": "velmphp/velm-demo",
     "type": "project",
-    "description": "Official Velm Laravel application — greenfield ERP host with addons, panel, and setup scripts",
-    "keywords": ["velm", "laravel", "erp", "admin"],
+    "description": "Velm reference application with demo addons — monorepo dev and E2E only (not published on Packagist)",
+    "keywords": ["velm", "laravel", "erp", "demo"],
     "license": "LGPL-3.0-or-later",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
-        "velmphp/framework": "@dev"
+        "velmphp/framework": "^1.0@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -46,9 +46,12 @@
             "@velm-setup"
         ],
         "velm-build-css": [
+            "@php artisan vendor:publish --tag=velm-ui-assets --force"
+        ],
+        "velm-rebuild-ui": [
             "npm --prefix ../../packages/ui ci",
             "npm --prefix ../../packages/ui run build",
-            "@php artisan vendor:publish --tag=velm-ui-assets --force"
+            "@velm-build-css"
         ],
         "velm-setup": [
             "@velm-build-css",
@@ -80,11 +83,6 @@
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
         ]
     },
     "extra": {
@@ -93,6 +91,9 @@
         }
     },
     "config": {
+        "platform": {
+            "php": "8.3.31"
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,

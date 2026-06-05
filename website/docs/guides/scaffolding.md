@@ -110,4 +110,4 @@ This is useful after `make:model` when you want migration + views in one step be
 | `velm:migrate --module=` | Install or upgrade a module |
 | `velm:module:sync --module=` | Reload DATA views/menus without version bump |
 
-See [Installation](./installation) for skeleton setup and [Defining models](../models/defining-a-model) for hand-written model APIs.
+See [Installation](./installation) for app setup and [Defining models](../models/defining-a-model) for hand-written model APIs.

@@ -1,0 +1,16 @@
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/*",
+            "options": { "symlink": true }
+        }
+    ],
+    "scripts": {
+        "velm-rebuild-ui": [
+            "npm --prefix ../../packages/ui ci",
+            "npm --prefix ../../packages/ui run build",
+            "@velm-build-css"
+        ]
+    }
+}

@@ -4,6 +4,8 @@ composer.phar
 /.phpunit.cache/
 /.phpunit.result.cache
 composer.lock
+!apps/app/composer.lock
+!apps/demo/composer.lock
 .phpactor.json
 .php-cs-fixer.cache
 .phpstan.cache

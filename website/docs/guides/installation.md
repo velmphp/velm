@@ -25,7 +25,7 @@ Velm module install state is stored in the database (`ir.module`), not in `compo
 |-------------|---------|--------|
 | PHP | 8.3+ | Extensions: `intl`, `pdo_sqlite` (or your DB driver) |
 | Composer | 2.x | |
-| Node.js | 20+ | **Only for first-time setup** — builds Velm shell CSS/JS (`composer run setup`) |
+| Node.js | 20+ | **Optional** — only needed if you rebuild Velm UI from source (monorepo contributors) |
 
 Default database is **SQLite** (`database/database.sqlite`). MySQL/Postgres are supported via `.env` (see [Database](#database) below).
 
@@ -52,14 +52,15 @@ This single command runs the following (in order):
 |------|------------------|--------|
 | 1 | Copy `.env.example` → `.env` if missing | App configuration file |
 | 2 | `php artisan key:generate` | `APP_KEY` set |
-| 3 | `composer velm-build-css` | Builds Tailwind + Flowbite and publishes assets to `public/css/velm/` and `public/js/velm/` |
+| 3 | `composer velm-build-css` | Publishes prebuilt Velm shell CSS/JS to `public/css/velm/` and `public/js/velm/` |
 | 4 | Create `database/database.sqlite` | Empty SQLite file (when `DB_CONNECTION=sqlite`) |
 | 5 | `php artisan migrate` | Laravel tables (`users`, `sessions`, `jobs`, …) |
 | 6 | `php artisan velm:migrate` | Velm bootstrap modules: **`base`**, **`admin`** |
-| 7 | `php artisan velm:module:install …` | Reference/demo modules shipped with the app template (e.g. `partners`, `demo_relations`) |
-| 8 | `php artisan db:seed` | Bootstrap admin user for the panel |
+| 7 | `php artisan db:seed` | Bootstrap admin user for the panel |
 
-You only need Node.js for step 3. After assets are built, day-to-day development does not require npm.
+Install bundled modules (e.g. `partners`) from `/velm/apps` or `php artisan velm:module:install <name>`. Reference demos live in the monorepo **`apps/demo/`** only.
+
+Step 3 uses prebuilt assets from `velmphp/ui`; npm is not required for a normal install.
 
 ### Default panel login
 
@@ -249,6 +250,26 @@ php artisan list velm
 ```
 
 Common commands: `velm:migrate`, `velm:module:install`, `velm:module:sync`, `velm:db:diff`, `velm:db:status`, `velm:migrate:fresh`, `velm:seed`, `velm:make:module`.
+
+## Monorepo contributors
+
+If you clone [velmphp/velm](https://github.com/velmphp/velm) instead of using `create-project`:
+
+| Goal | Path | Setup |
+|------|------|--------|
+| Minimal app (matches Packagist) | `apps/app/` | Copy `composer.local.json.example` → `composer.local.json`, then `composer install` |
+| Full reference + demo modules | `apps/demo/` | `composer install` (path repos committed) |
+
+```bash
+# Minimal — same as create-project
+cd apps/app
+cp composer.local.json.example composer.local.json
+composer install && composer run setup
+
+# Reference demos (partners, workflow, demo_relations, …)
+cd apps/demo
+composer install && composer run setup
+```
 
 ## What's next
 

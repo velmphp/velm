@@ -84,7 +84,7 @@ Configure env keys under `config/velm.php` → `branding` (e.g. `VELM_APP_NAME=M
 composer build-ui
 
 # Skeleton — build and publish assets to public/
-cd apps/skeleton && composer velm-build-css
+cd apps/demo && composer run velm-rebuild-ui
 ```
 
 Clicking the **brand mark** in the header goes to the apps catalog (`/velm/apps`).
@@ -124,12 +124,12 @@ If the panel looks unstyled or colors are wrong:
 # From monorepo root (packages/ui only)
 composer build-ui
 
-# From skeleton (build + vendor:publish velm-ui-assets)
-cd apps/skeleton
+# From demo app (build + vendor:publish velm-ui-assets)
+cd apps/demo
 composer velm-build-css
 ```
 
-This runs `npm run build` in `packages/ui` (Tailwind CSS and Flowbite JS) and, in the skeleton, copies assets to `public/css/velm/` and `public/js/velm/`.
+This runs `npm run build` in `packages/ui` (Tailwind CSS and Flowbite JS) and copies assets to `public/css/velm/` and `public/js/velm/`.
 
 ## HTTP surfaces
 
