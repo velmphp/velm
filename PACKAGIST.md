@@ -1,38 +1,90 @@
 # Packagist release checklist (v1.0-rc1)
 
-Packages to publish under the **velmphp** org:
+Public [Packagist.org](https://packagist.org) **cannot** install packages from monorepo subdirectories. It only reads `composer.json` at the **repository root** — which is why submitting `https://github.com/velmphp/velm` offers **`velmphp/velm-dev`** (the dev workspace). **Do not publish that package.**
 
-| Package | Path | Notes |
-|---------|------|--------|
-| `velmphp/core` | `packages/core` | |
-| `velmphp/views` | `packages/views` | |
-| `velmphp/modules` | `packages/modules` | Ships bundled `modules/` tree |
-| `velmphp/console` | `packages/console` | |
-| `velmphp/web` | `packages/web` | |
-| `velmphp/ui` | `packages/ui` | Prebuilt CSS/JS in `resources/css/` |
-| `velmphp/admin` | `packages/admin` | |
-| `velmphp/framework` | `packages/framework` | Metapackage |
-| `velmphp/app` | `apps/app` | `create-project` template (minimal) |
+Instead, this monorepo splits each publishable tree into **mirror repos** via GitHub Actions (`.github/workflows/split-packages.yml`). Packagist tracks the mirrors.
 
-**Not on Packagist:** `apps/demo` (`velmphp/velm-demo`) — monorepo reference app with demo addons.
+## Package map
 
-## Before tagging
+| Composer name | Monorepo path | Mirror GitHub repo |
+|---------------|---------------|-------------------|
+| `velmphp/core` | `packages/core` | [velmphp/core](https://github.com/velmphp/core) |
+| `velmphp/views` | `packages/views` | [velmphp/views](https://github.com/velmphp/views) |
+| `velmphp/modules` | `packages/modules` | [velmphp/modules](https://github.com/velmphp/modules) |
+| `velmphp/console` | `packages/console` | [velmphp/console](https://github.com/velmphp/console) |
+| `velmphp/web` | `packages/web` | [velmphp/web](https://github.com/velmphp/web) |
+| `velmphp/ui` | `packages/ui` | [velmphp/ui](https://github.com/velmphp/ui) |
+| `velmphp/admin` | `packages/admin` | [velmphp/admin](https://github.com/velmphp/admin) |
+| `velmphp/framework` | `packages/framework` | [velmphp/framework](https://github.com/velmphp/framework) |
+| `velmphp/app` | `apps/app` | [velmphp/app](https://github.com/velmphp/app) |
 
-1. **Constraints** — all inter-package deps use `^1.0@dev` with `"minimum-stability": "dev"` until RC tags land; then tighten to `^1.0` / `^1.0@RC`.
-2. **Version field** — each library has `"version": "1.0.0"` for path-repo dev; Packagist uses git tags (prefer `v1.0.0-rc1` on `main`).
-3. **App template** — `apps/app/composer.json` has no `repositories`; monorepo dev copies `composer.local.json.example` → `composer.local.json` (merged via `wikimedia/composer-merge-plugin`).
-4. **Smoke tests** — CI `app-install` (minimal bootstrap) and `demo-setup` (full reference modules).
+**Not published:** `velmphp/velm-dev` (monorepo root), `velmphp/velm-demo` (`apps/demo`).
 
-## Tagging (suggested)
+## One-time setup
 
-Tag all packages from the same commit on `main`:
+### 1. Create empty mirror repositories
+
+Under the **velmphp** GitHub org, create **nine empty public repos** (no README, no `.gitignore`):
+
+`core`, `views`, `modules`, `console`, `web`, `ui`, `admin`, `framework`, `app`
+
+### 2. Add split token secret
+
+Create a GitHub **fine-grained PAT** or classic PAT with **contents: write** on those mirror repos (or all `velmphp/*` repos).
+
+In **`velmphp/velm`** → Settings → Secrets and variables → Actions, add:
+
+| Secret | Value |
+|--------|--------|
+| `PACKAGIST_SPLIT_TOKEN` | The PAT |
+
+Until this secret exists, the split workflow is skipped (no failed CI).
+
+### 3. Bootstrap mirrors
+
+Actions → **Split packages to mirror repos** → **Run workflow** on `main`.
+
+This pushes each subdirectory to its mirror’s default branch (`main`).
+
+### 4. Register mirrors on Packagist
+
+Log in to Packagist (link the **velmphp** GitHub org). Submit **each mirror URL** separately — **not** the monorepo:
+
+```
+https://github.com/velmphp/core
+https://github.com/velmphp/views
+https://github.com/velmphp/modules
+https://github.com/velmphp/console
+https://github.com/velmphp/web
+https://github.com/velmphp/ui
+https://github.com/velmphp/admin
+https://github.com/velmphp/framework
+https://github.com/velmphp/app
+```
+
+Enable the Packagist GitHub hook for auto-updates on push.
+
+Claim the **`velmphp`** vendor on Packagist by becoming maintainer on one package.
+
+## Releasing
+
+Tag from `main` (all packages share one semver):
 
 ```bash
 git tag -a v1.0.0-rc1 -m "Velm 1.0 release candidate 1"
 git push origin v1.0.0-rc1
 ```
 
-Configure each Packagist package to track the tag (split repos or monorepo subtree per package — org preference).
+The split workflow runs on `v*` tags and pushes the tag to every mirror. Packagist picks up new versions via webhook.
+
+Pushes to **`main`** also re-sync mirrors (for `dev-main` / `1.x-dev` installs).
+
+## Before tagging
+
+1. **Constraints** — inter-package deps use `^1.0@dev` until RC tags land; then tighten to `^1.0` / `^1.0@RC`.
+2. **Version field** — each library has `"version": "1.0.0"` for path-repo dev; Packagist uses git tags on mirrors.
+3. **App template** — `apps/app/composer.json` has no path `repositories`; monorepo dev uses `composer.local.json`.
+4. **Smoke tests** — CI `app-install` and `demo-setup` in `velmphp/velm`.
 
 ## After Packagist is live
 
@@ -41,4 +93,11 @@ composer create-project velmphp/app /tmp/velm-smoke
 cd /tmp/velm-smoke && composer run setup
 ```
 
-Update `minimum-stability` / constraints in docs when moving from `@dev` to stable.
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Packagist shows `velmphp/velm-dev` | You submitted the monorepo URL — use mirror URLs instead |
+| Split workflow skipped | Add `PACKAGIST_SPLIT_TOKEN` secret |
+| Split push 403 | PAT needs write access to all mirror repos |
+| `create-project` fails on PHP 8.3 | App lock uses `config.platform.php` 8.3.31 (Symfony 7.4) |
