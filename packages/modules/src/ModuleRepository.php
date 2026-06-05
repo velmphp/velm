@@ -67,4 +67,11 @@ final class ModuleRepository
             ],
         );
     }
+
+    public function markUninstalled(string $name): void
+    {
+        $this->ensureTable();
+
+        DB::table(self::TABLE)->where('name', $name)->delete();
+    }
 }

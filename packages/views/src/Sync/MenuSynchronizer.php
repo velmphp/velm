@@ -20,6 +20,11 @@ final class MenuSynchronizer
         $this->syncMenus($spec->name, $menus, $env);
     }
 
+    public function purgeModule(string $module, Environment $env): void
+    {
+        $this->syncMenus($module, [], $env);
+    }
+
     /**
      * @param  list<array<string, mixed>>  $menus
      */

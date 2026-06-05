@@ -11,6 +11,8 @@
     $menu = $velmMenu ?? ['menu' => [], 'menu_layout' => 'apps'];
     $layoutMode = $menu['menu_layout'] ?? 'apps';
     $activeRoot = $menu['menu_active_root'] ?? null;
+    $panelPath = trim((string) config('velm.panel_path', 'velm'), '/');
+    $onDashboard = request()->is($panelPath.'/dashboard', $panelPath.'/dashboard/*');
 @endphp
 
 <!DOCTYPE html>
@@ -131,6 +133,10 @@
                         @if ($activeRoot)
                             <p class="min-w-0 flex-1 truncate px-0.5 text-sm font-semibold text-heading md:hidden">
                                 {{ $activeRoot['label'] }}
+                            </p>
+                        @elseif ($onDashboard)
+                            <p class="min-w-0 flex-1 truncate px-0.5 text-sm font-semibold text-heading md:hidden">
+                                {{ __('Dashboard') }}
                             </p>
                         @else
                             <div class="min-w-0 flex-1 md:hidden" aria-hidden="true"></div>

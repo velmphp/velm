@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Velm\Views\Arch;
 
 use Velm\Environment;
+use Velm\Views\Arch\Contracts\SortsViewExtensions;
 
 final class ArchResolver
 {
+    public function __construct(
+        private readonly ?SortsViewExtensions $extensionSorter = null,
+        private readonly bool $skipMissingTargets = true,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -75,21 +81,23 @@ final class ArchResolver
      */
     private function applyExtensionChain(Environment $env, array $viewRow, array &$arch): void
     {
-        $extensions = $env->model('ir.ui.view')->search(
-            [['inherit_id', '=', (int) $viewRow['id']]],
-            order: '"priority" ASC, "id" ASC',
-        );
+        $extensions = $env->model('ir.ui.view')->search([
+            ['inherit_id', '=', (int) $viewRow['id']],
+        ])->read();
 
-        foreach ($extensions->ids() as $extensionId) {
-            $extension = $env->browse('ir.ui.view', [$extensionId])->read()[0];
-
+        foreach ($this->sorter()->sort($extensions) as $extension) {
             if ($extension['operations'] !== null && $extension['operations'] !== '') {
                 /** @var list<array<string, mixed>> $ops */
                 $ops = json_decode((string) $extension['operations'], true, flags: JSON_THROW_ON_ERROR);
-                ArchOperations::apply($arch, $ops);
+                ArchOperations::apply($arch, $ops, $this->skipMissingTargets);
             }
 
             $this->applyExtensionChain($env, $extension, $arch);
         }
+    }
+
+    private function sorter(): SortsViewExtensions
+    {
+        return $this->extensionSorter ?? new PriorityViewExtensionSorter;
     }
 }

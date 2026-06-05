@@ -111,6 +111,18 @@ final class AppsPage extends VelmShellPage
         }
     }
 
+    public function uninstallModule(string $name): void
+    {
+        $this->guardSuperuser();
+
+        try {
+            app(VelmManager::class)->uninstall($name);
+            VelmNotify::flash('success', "Uninstalled {$name}");
+        } catch (\Throwable $e) {
+            VelmNotify::flash('error', $e->getMessage());
+        }
+    }
+
     public function render()
     {
         return view('velm-ui::pages.apps');

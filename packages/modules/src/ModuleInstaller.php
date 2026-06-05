@@ -7,6 +7,7 @@ namespace Velm\Modules;
 use Illuminate\Support\Facades\DB;
 use Velm\Database\Connection;
 use Velm\Environment;
+use Velm\Models\Model;
 use Velm\Modules\Database\LaravelConnection;
 use Velm\Modules\Migrations\ModuleMigrationRunner;
 use Velm\Modules\Schema\ModuleSchema;
@@ -168,6 +169,68 @@ final class ModuleInstaller
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  list<string>  $roots
+     * @param  list<string>  $protectedModules
+     */
+    public function uninstallPreview(
+        string $moduleName,
+        array $roots,
+        array $protectedModules = ['base', 'admin'],
+    ): ModuleUninstallPreview {
+        $specs = $this->discover($roots);
+
+        if (! isset($specs[$moduleName])) {
+            throw new \InvalidArgumentException("Module {$moduleName} was not discovered.");
+        }
+
+        if (! $this->repository->isInstalled($moduleName)) {
+            throw new \RuntimeException("Module {$moduleName} is not installed.");
+        }
+
+        $systemBlockers = [];
+
+        if (in_array($moduleName, $protectedModules, true)) {
+            $systemBlockers[] = "{$moduleName} is a protected system module";
+        }
+
+        $reverseDependencies = $this->reverseDependencies($moduleName, $specs);
+        $modelExtensions = $this->modelExtensionsBlockingUninstall($moduleName, $specs);
+
+        return new ModuleUninstallPreview(
+            module: $moduleName,
+            canUninstall: $systemBlockers === [] && $reverseDependencies === [] && $modelExtensions === [],
+            reverseDependencies: $reverseDependencies,
+            modelExtensions: $modelExtensions,
+            systemBlockers: $systemBlockers,
+        );
+    }
+
+    /**
+     * @param  list<string>  $roots
+     * @param  list<string>  $protectedModules
+     */
+    public function uninstall(
+        string $moduleName,
+        array $roots,
+        array $protectedModules = ['base', 'admin'],
+    ): void {
+        $preview = $this->uninstallPreview($moduleName, $roots, $protectedModules);
+
+        if (! $preview->canUninstall) {
+            throw new \RuntimeException(
+                "Cannot uninstall {$moduleName}: ".implode('; ', $preview->blockers()),
+            );
+        }
+
+        $env = $this->environment($roots);
+
+        $this->viewSynchronizer->purgeModule($moduleName, $env);
+        $this->menuSynchronizer->purgeModule($moduleName, $env);
+
+        $this->repository->markUninstalled($moduleName);
     }
 
     /**
@@ -377,6 +440,112 @@ final class ModuleInstaller
     private function velmConnection(): Connection
     {
         return $this->connection ?? new LaravelConnection(DB::connection());
+    }
+
+    /**
+     * @param  array<string, ModuleSpec>  $specs
+     * @return list<string>
+     */
+    private function reverseDependencies(string $moduleName, array $specs): array
+    {
+        $dependents = [];
+
+        foreach ($specs as $spec) {
+            if ($spec->name === $moduleName) {
+                continue;
+            }
+
+            if (! $this->repository->isInstalled($spec->name)) {
+                continue;
+            }
+
+            if (in_array($moduleName, $spec->depends, true)) {
+                $dependents[] = $spec->name;
+            }
+        }
+
+        sort($dependents, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $dependents;
+    }
+
+    /**
+     * @param  array<string, ModuleSpec>  $specs
+     * @return list<string>
+     */
+    private function modelExtensionsBlockingUninstall(string $moduleName, array $specs): array
+    {
+        $targetSpec = $specs[$moduleName] ?? null;
+
+        if ($targetSpec === null) {
+            return [];
+        }
+
+        $targetModels = $this->baseModelNames($targetSpec);
+        $blockers = [];
+
+        foreach ($specs as $spec) {
+            if ($spec->name === $moduleName) {
+                continue;
+            }
+
+            if (! $this->repository->isInstalled($spec->name)) {
+                continue;
+            }
+
+            foreach ($spec->models as $modelClass) {
+                ModuleModelLoader::ensureModelClassLoaded($modelClass, $spec->path);
+
+                if (! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+                    continue;
+                }
+
+                if (! $modelClass::isExtension()) {
+                    continue;
+                }
+
+                $inherit = $modelClass::inherit();
+
+                if ($inherit !== null && in_array($inherit, $targetModels, true)) {
+                    $blockers[] = $spec->name;
+
+                    break;
+                }
+            }
+        }
+
+        $blockers = array_values(array_unique($blockers));
+        sort($blockers, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $blockers;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function baseModelNames(ModuleSpec $spec): array
+    {
+        $names = [];
+
+        foreach ($spec->models as $modelClass) {
+            ModuleModelLoader::ensureModelClassLoaded($modelClass, $spec->path);
+
+            if (! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+                continue;
+            }
+
+            if ($modelClass::isExtension()) {
+                continue;
+            }
+
+            $name = $modelClass::name();
+
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     /**

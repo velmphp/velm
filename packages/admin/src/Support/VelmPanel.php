@@ -6,7 +6,7 @@ namespace Velm\Admin\Support;
 
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
-use Velm\Admin\Pages\AppsPage;
+use Velm\Admin\Pages\DashboardPage;
 
 final class VelmPanel
 {
@@ -27,7 +27,7 @@ final class VelmPanel
 
     public static function homeUrl(): string
     {
-        return AppsPage::getUrl();
+        return DashboardPage::getUrl();
     }
 
     public static function getLogoutUrl(): string

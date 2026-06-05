@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Ui\Forms;
 
 use Velm\Environment;
+use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\One2manyField;
@@ -152,7 +153,9 @@ final class FormRenderer
     ): FormCell {
         $name = (string) $fieldSpec['name'];
         $velmField = $model !== '' ? ($env->registry->modelClass($model)::fields()[$name] ?? null) : null;
-        $label = $velmField?->string ?? $name;
+        $label = is_string($fieldSpec['label'] ?? null) && $fieldSpec['label'] !== ''
+            ? (string) $fieldSpec['label']
+            : ($velmField?->displayLabel() ?? Field::humanizeFieldName($name));
         $required = $velmField?->required === true && $mode !== FormMode::Display;
         $wide = (bool) ($fieldSpec['wide'] ?? false);
         $colspan = $wide ? 1 : max(1, (int) ($fieldSpec['colspan'] ?? 1));
@@ -315,7 +318,7 @@ final class FormRenderer
                 $fname = (string) $spec['name'];
                 $columns[] = [
                     'name' => $fname,
-                    'label' => (string) ($spec['label'] ?? $fields[$fname]?->string ?? $fname),
+                    'label' => (string) ($spec['label'] ?? $fields[$fname]?->displayLabel() ?? Field::humanizeFieldName($fname)),
                 ];
             }
 

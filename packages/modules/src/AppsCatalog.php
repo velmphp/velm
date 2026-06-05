@@ -87,6 +87,16 @@ final class AppsCatalog
                 static fn (string $dep): bool => ! isset($specs[$dep]),
             ));
 
+            $uninstallPreview = null;
+
+            if ($inst !== null) {
+                try {
+                    $uninstallPreview = $this->installer->uninstallPreview($name, $roots);
+                } catch (\Throwable) {
+                    $uninstallPreview = null;
+                }
+            }
+
             $catalog[] = [
                 'name' => $name,
                 'display_name' => $spec->displayName(),
@@ -98,6 +108,8 @@ final class AppsCatalog
                 'available_version' => $spec->versionString(),
                 'installed_version' => $inst,
                 'state' => $state,
+                'can_uninstall' => $uninstallPreview?->canUninstall ?? false,
+                'uninstall_blockers' => $uninstallPreview?->blockers() ?? [],
                 'version_upgrade' => $versionUpgrade,
                 'pending_migrations' => $pendingMigrations,
                 'has_schema_diff' => $hasSchemaDiff,

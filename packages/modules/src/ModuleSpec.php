@@ -45,7 +45,6 @@ final readonly class ModuleSpec
         $depends = array_values(array_map('strval', $manifest['DEPENDS'] ?? []));
         $data = array_values(array_map('strval', $manifest['DATA'] ?? []));
         $models = array_values(array_map('strval', $manifest['MODELS'] ?? []));
-
         return new self(
             name: $manifest['NAME'],
             version: $version,

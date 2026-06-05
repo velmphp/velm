@@ -31,7 +31,7 @@ final class ListColumnHeaders
             $label = is_string($spec['label'] ?? null) ? $spec['label'] : null;
 
             if ($label === null && $field instanceof Field) {
-                $label = $field->string;
+                $label = $field->displayLabel();
             }
 
             $filterKind = 'none';

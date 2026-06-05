@@ -17,12 +17,16 @@
             "Velm\\Modules\\Partners\\Models\\": "modules/partners/models/",
             "Velm\\Modules\\FileManager\\Models\\": "modules/file_manager/models/",
             "Velm\\Modules\\Workflow\\Models\\": "modules/workflow/models/",
-            "Velm\\Modules\\ChangeManagement\\Models\\": "modules/change_management/models/",
             "Velm\\Modules\\Mail\\Models\\": "modules/mail/models/"
         }
     },
     "autoload-dev": {
-        "psr-4": { "Velm\\Modules\\Tests\\": "tests/" }
+        "psr-4": {
+            "Velm\\Modules\\Tests\\": "tests/",
+            "Addons\\ChangeManagement\\": "../../apps/skeleton/addons/change_management/",
+            "Addons\\ChangeManagement\\Dashboard\\": "../../apps/skeleton/addons/change_management/Dashboard/",
+            "Addons\\ChangeManagement\\Models\\": "../../apps/skeleton/addons/change_management/models/"
+        }
     },
     "extra": {
         "laravel": {

@@ -9,6 +9,11 @@ return [
     ],
     'bootstrap_modules' => ['base', 'admin'],
 
+    'views' => [
+        /** Skip inherit ops whose target node was removed by an earlier patch (third-party safe). */
+        'skip_missing_inherit_targets' => env('VELM_VIEWS_SKIP_MISSING_INHERIT_TARGETS', true),
+    ],
+
     /** Shell navigation: "apps" (rail + top bar) or "sidebar" (nested column). */
     'menu_layout' => env('VELM_MENU_LAYOUT', 'apps'),
 

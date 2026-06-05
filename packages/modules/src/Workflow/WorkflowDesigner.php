@@ -67,7 +67,7 @@ final class WorkflowDesigner
 
             $out[] = [
                 'name' => $fname,
-                'label' => $field->label ?? str_replace('_', ' ', ucfirst($fname)),
+                'label' => $field->displayLabel(),
                 'type' => $ftype,
                 'source' => 'record',
                 'comodel' => $comodel,

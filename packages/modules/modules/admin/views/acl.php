@@ -130,7 +130,7 @@ return ViewsData::make()
     )
     ->menus(
         $m->group('settings', 'Settings')
-            ->icon('heroicon-o-building-office')
+            ->icon('cog-6-tooth')
             ->sequence(80)
             ->children(
                 $m->group('settings.organization', 'Organization')

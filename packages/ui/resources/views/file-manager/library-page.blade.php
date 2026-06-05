@@ -1,5 +1,7 @@
 <div data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
     data-velm-nav-label="{{ $this->velmNavLabel() }}">
+    @include('velm-ui::partials.breadcrumbs')
+
     @push('before-livewire')
         @include('velm-ui::file-manager.scripts')
         <script src="{{ \Velm\Ui\UiAssets::fileLibraryScriptHref() }}"></script>

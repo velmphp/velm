@@ -3,12 +3,11 @@
 declare(strict_types=1);
 
 use Velm\Views\Authoring\InheritView;
-use Velm\Views\Authoring\ViewOp;
 use Velm\Views\Data\ViewsData;
 
 return ViewsData::make()
     ->inherits(
-        InheritView::make('partner.list.ext', 'partners.partner.list', [
-            ViewOp::update(['fields', 'name'], ['label' => 'Partner name']),
-        ], priority: 25),
+        InheritView::make('partner.list.ext')
+            ->extends('partners.partner.list')
+            ->updateColumn('name', label: 'Partner name'),
     );

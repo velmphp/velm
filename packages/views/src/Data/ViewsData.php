@@ -18,7 +18,9 @@ use Velm\Views\Authoring\Contracts\ViewDeclaration;
  *         FormView::make('partner.form')->…,
  *     )
  *     ->inherits(
- *         InheritView::make('partner.list.ext', 'partners.partner.list', […]),
+ *         InheritView::make('partner.list.ext')
+ *             ->extends('partners.partner.list')
+ *             ->updateColumn('name', label: 'Partner name'),
  *     )
  *     ->menus(
  *         $m->group('contacts', 'Contacts')->children(

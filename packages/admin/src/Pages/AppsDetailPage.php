@@ -58,6 +58,13 @@ final class AppsDetailPage extends VelmShellPage
         $this->redirect(AppsDetailPage::getUrl(['name' => $this->name]));
     }
 
+    public function uninstallModule(): void
+    {
+        $page = new AppsPage;
+        $page->uninstallModule($this->name);
+        $this->redirect(AppsDetailPage::getUrl(['name' => $this->name]));
+    }
+
     public function render()
     {
         return view('velm-ui::pages.apps-detail');

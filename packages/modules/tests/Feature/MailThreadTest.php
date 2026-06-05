@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Velm\Modules\Mail\MailThreadService;
 use Velm\Modules\ModuleInstaller;
+use Velm\Modules\Tests\Support\ModuleRoots;
 use Velm\Modules\Tests\TestCase;
 
 uses(TestCase::class);
@@ -15,7 +16,7 @@ beforeEach(function (): void {
 });
 
 test('mail thread model flag registers it.change and messages persist', function (): void {
-    $roots = [dirname(__DIR__, 2).'/modules'];
+    $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
     $installer->install('mail', $roots);

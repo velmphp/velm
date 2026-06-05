@@ -2,6 +2,25 @@
 
 App-specific Velm modules live here. The monorepo ships one demo:
 
+## `partners_ext`
+
+Extends **`res.partner`** from the bundled `partners` module without forking it:
+
+| Layer | What changes |
+|-------|----------------|
+| Model | Adds `website` (`CharField`) via `$inherit = 'res.partner'` |
+| Form / detail | View inheritance on `partners.partner.form` and `partner.detail` — two-column layout, **Contact** + **Location** sections, website field |
+
+Installed by `composer run setup` after `partners`. On an existing DB:
+
+```bash
+composer dump-autoload
+php artisan velm:module:install partners_ext
+# or: php artisan velm:module:upgrade partners_ext
+```
+
+Open **Contacts → Partners** and create or edit a partner to see the customized form.
+
 ## `demo_relations`
 
 Demonstrates **Many2one**, **One2many**, and **Many2many** (see [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md)):
