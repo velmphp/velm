@@ -56,14 +56,6 @@ final class MakeModelCommand extends Command
         $this->components->info("Created {$result['path']}");
         $this->line("  Model: {$result['technical']}");
         $this->line("  Class: {$result['namespace']}\\{$result['class']}");
-
-        if (! ModulePathResolver::isBundledModulePath($modulePath)) {
-            $studly = ModulePathResolver::studlyModuleName($moduleName);
-            $this->components->warn(
-                "Ensure composer.json maps \"Addons\\{$studly}\\Models\\\" to \"addons/{$moduleName}/models/\", then run composer dump-autoload.",
-            );
-        }
-
         $this->line("  php artisan velm:make:view {$result['technical']} --module={$moduleName}");
         $this->line("  php artisan velm:db:autogen {$moduleName} --with-views");
 

@@ -11,6 +11,7 @@ final readonly class ModuleSpec
      * @param  list<string>  $depends
      * @param  list<string>  $data
      * @param  list<class-string>  $models
+ * @param  list<class-string>  $seeders
      */
     public function __construct(
         public string $name,
@@ -19,6 +20,7 @@ final readonly class ModuleSpec
         public string $path,
         public array $data = [],
         public array $models = [],
+        public array $seeders = [],
         public string $summary = '',
         public string $description = '',
         public string $category = '',
@@ -44,7 +46,9 @@ final readonly class ModuleSpec
         $version = array_map(static fn (mixed $part): int => (int) $part, $manifest['VERSION']);
         $depends = array_values(array_map('strval', $manifest['DEPENDS'] ?? []));
         $data = array_values(array_map('strval', $manifest['DATA'] ?? []));
-        $models = array_values(array_map('strval', $manifest['MODELS'] ?? []));
+        $explicitModels = array_values(array_map('strval', $manifest['MODELS'] ?? []));
+        $models = ModuleModelDiscovery::resolve($path, $manifest['NAME'], $explicitModels);
+        $seeders = array_values(array_map('strval', $manifest['SEEDERS'] ?? []));
         return new self(
             name: $manifest['NAME'],
             version: $version,
@@ -52,6 +56,7 @@ final readonly class ModuleSpec
             path: $path,
             data: $data,
             models: $models,
+            seeders: $seeders,
             summary: (string) ($manifest['SUMMARY'] ?? ''),
             description: (string) ($manifest['DESCRIPTION'] ?? ''),
             category: (string) ($manifest['CATEGORY'] ?? ''),

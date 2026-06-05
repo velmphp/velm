@@ -4,16 +4,16 @@ sidebar_position: 3
 
 # Scaffolding modules
 
-Velm ships Artisan generators that mirror PyVelm's `make:*` workflow. Run them from a Laravel app (for example `apps/skeleton`) after `composer install`.
+Velm ships Artisan generators that mirror PyVelm's `make:*` workflow. Run them from your Velm application root after [Installation](./installation).
 
 All commands are listed with `php artisan list velm`.
 
 ## End-to-end workflow
 
-Scaffold a new module under `app/modules/` (see `velm.toml` and `config/velm.php`):
+Scaffold a new module under `addons/` (see `config/velm.php`):
 
 ```bash
-cd apps/skeleton
+cd my_app
 
 php artisan velm:make:module inventory
 php artisan velm:make:model product --module=inventory
@@ -24,17 +24,7 @@ php artisan velm:migrate --module=inventory
 php artisan velm:module:sync --module=inventory
 ```
 
-For app addons, add a PSR-4 mapping in `composer.json` before migrating:
-
-```json
-"autoload": {
-  "psr-4": {
-    "Addons\\Inventory\\Models\\": "app/modules/inventory/models/"
-  }
-}
-```
-
-Then run `composer dump-autoload`.
+Velm autoloads `Addons\…` classes from `addons/` at runtime — **no `composer.json` PSR-4 entry per module**. See [App addons](./addons).
 
 ## `velm:make:module`
 

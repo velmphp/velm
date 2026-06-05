@@ -1,6 +1,16 @@
 # Skeleton addons
 
-App-specific Velm modules live here. The monorepo ships one demo:
+App-specific Velm modules live here. Velm autoloads `Addons\{StudlyModule}\…` from this directory — you do **not** register namespaces in `composer.json`.
+
+Scaffold a new module:
+
+```bash
+php artisan velm:make:module my_module
+php artisan velm:make:model item --module=my_module
+php artisan velm:migrate --module=my_module
+```
+
+The monorepo ships these demos:
 
 ## `partners_ext`
 
@@ -14,7 +24,6 @@ Extends **`res.partner`** from the bundled `partners` module without forking it:
 Installed by `composer run setup` after `partners`. On an existing DB:
 
 ```bash
-composer dump-autoload
 php artisan velm:module:install partners_ext
 # or: php artisan velm:module:upgrade partners_ext
 ```

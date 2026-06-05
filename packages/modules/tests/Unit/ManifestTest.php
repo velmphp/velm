@@ -11,6 +11,7 @@ test('manifest builder produces canonical array keys', function (): void {
         ->depends('base', 'web')
         ->data('data/views.php')
         ->models('App\\Demo\\Model')
+        ->seeders('App\\Demo\\Seeder')
         ->summary('Demo module')
         ->description('Longer text')
         ->category('Tools')
@@ -24,6 +25,7 @@ test('manifest builder produces canonical array keys', function (): void {
         'DEPENDS' => ['base', 'web'],
         'DATA' => ['data/views.php'],
         'MODELS' => ['App\\Demo\\Model'],
+        'SEEDERS' => ['App\\Demo\\Seeder'],
         'SUMMARY' => 'Demo module',
         'DESCRIPTION' => 'Longer text',
         'CATEGORY' => 'Tools',
@@ -38,12 +40,13 @@ test('manifest accepts version as array', function (): void {
 
 test('module spec reads manifest builder via toArray', function (): void {
     $spec = ModuleSpec::fromManifest(
-        Manifest::make('partners')->version(0, 1, 0)->depends('base')->summary('Partners')->toArray(),
+        Manifest::make('partners')->version(0, 1, 0)->depends('base')->seeders('App\\Demo\\Seeder')->summary('Partners')->toArray(),
         '/tmp/partners',
     );
 
     expect($spec->name)->toBe('partners')
         ->and($spec->depends)->toBe(['base'])
+        ->and($spec->seeders)->toBe(['App\\Demo\\Seeder'])
         ->and($spec->summary)->toBe('Partners');
 });
 

@@ -15,8 +15,12 @@ if ($monorepoModules !== false && is_dir($monorepoModules)) {
 
 $addonPaths[] = base_path('addons');
 
+$addonAutoloadPaths = [base_path('addons')];
+
 return [
     'addon_paths' => $addonPaths,
+
+    'addon_autoload_paths' => $addonAutoloadPaths,
 
     'bootstrap_modules' => ['base', 'admin'],
 

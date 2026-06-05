@@ -55,20 +55,22 @@ For Laravel-owned columns on a Velm table (e.g. `users.password`), implement `sc
 
 ## Manifest
 
+Place the model under `addons/widgets/models/Widget.php` (or `models/widget.php` with class `Widget`). Velm **auto-discovers** every `Model` subclass in `models/` — you do not need `->models(...)` in the manifest for conventional layouts.
+
 ```php
 <?php
 
 use Velm\Modules\Manifest;
-use Velm\Modules\Widgets\Models\Widget;
 
 return Manifest::make('widgets')
     ->version(0, 1, 0)
     ->depends('base')
-    ->models(Widget::class)
     ->summary('Widgets.');
 ```
 
-Models are loaded in **dependency order**. `widgets` must depend on any module whose models you reference in `Many2oneField::comodel()`.
+Use `->models(ExtraModel::class)` only when a class lives **outside** `models/` (shared support namespaces, legacy paths).
+
+Models are loaded in **module dependency order**. `widgets` must depend on any module whose models you reference in `Many2oneField::comodel()`.
 
 ## Install
 
@@ -110,7 +112,7 @@ Use fluent setters: `CharField::make()->required()->maxLength(2)`.
 
 - [ ] `$name` is unique across all installed modules.
 - [ ] `$table` matches your SQL naming convention (usually underscores).
-- [ ] Model class is listed in `__velm__.php` `->models(...)`.
+- [ ] Model class lives in `models/` (auto-discovered) or is listed in `->models(...)` when outside that folder.
 - [ ] Module `depends(...)` includes every module you rely on.
 
 When your module adds to a model owned elsewhere, continue with [Extending models](./extending-a-model).

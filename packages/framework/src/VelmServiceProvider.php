@@ -44,6 +44,7 @@ final class VelmServiceProvider extends ServiceProvider
 
             $this->commands([
                 Console\MigrateCommand::class,
+                Console\MigrateFreshCommand::class,
                 Console\DbDiffCommand::class,
                 Console\DbStatusCommand::class,
                 Console\DbAutogenCommand::class,
@@ -57,6 +58,7 @@ final class VelmServiceProvider extends ServiceProvider
                 Console\MakeModelCommand::class,
                 Console\MakeViewCommand::class,
                 Console\MakeMenuCommand::class,
+                Console\SeedCommand::class,
             ]);
         }
     }

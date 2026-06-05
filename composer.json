@@ -23,9 +23,6 @@
     ],
     "autoload-dev": {
         "psr-4": {
-            "Addons\\ChangeManagement\\": "apps/skeleton/addons/change_management/",
-            "Addons\\ChangeManagement\\Dashboard\\": "apps/skeleton/addons/change_management/Dashboard/",
-            "Addons\\ChangeManagement\\Models\\": "apps/skeleton/addons/change_management/models/",
             "Velm\\Tests\\": "tests/",
             "Velm\\Modules\\Tests\\": "packages/modules/tests/",
             "Velm\\Core\\Tests\\": "packages/core/tests/",

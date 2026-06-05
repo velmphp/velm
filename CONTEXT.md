@@ -28,14 +28,14 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 ## Runnable app & docs
 
-- **App:** `apps/skeleton` — `composer run setup` then `composer run dev` → `/velm` (redirects to apps catalog).
+- **App:** `velmphp/app` (monorepo: `apps/skeleton`) — `composer run setup` then `composer run dev` → `/velm` (redirects to apps catalog).
 - **CLI:** `php artisan velm:*` only (no standalone `bin/velm` in production path).
-- **User docs:** `website/` (Docusaurus) — guides [admin-panel](website/docs/guides/admin-panel.md), [views-and-forms](website/docs/guides/views-and-forms.md); build with `cd website && npm run build`.
+- **User docs:** `website/` (Docusaurus) — guides [installation](website/docs/guides/installation.md), [addons](website/docs/guides/addons.md), [admin-panel](website/docs/guides/admin-panel.md); build with `cd website && npm run build`.
 - **Demo addon:** `apps/skeleton/addons/demo_relations` — M2O / O2M / M2M under **Demos** menu.
 
 ## Admin shell (current)
 
-- **Panel path:** `/velm` (`velm.panel_path`); home → `/velm/apps`.
+- **Panel path:** `/velm` (`velm.panel_path`); home → `/velm/dashboard`.
 - **Layouts:** `VELM_MENU_LAYOUT=apps` (default: module rail + secondary top bar) or `sidebar` (nested accordion); per-company override on `res.company.menu_layout`.
 - **Apps catalog:** `AppsCatalog` + Livewire `AppsPage` / `AppsDetailPage`; dedicated catalog sidebar (`AppsCatalogMenuContext`); module rail entry **Apps** (Level 2, no section).
 - **Stored views:** `/velm/views/{module}/{view}` (list), `…/{id}` (detail), `…/edit`, `…/create` — `ResolvesStoredView` + `StoredViewRoutes`; list pages must not override detail URLs if `clickToOpen()` is used.
@@ -48,6 +48,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Composer vendor: `velmphp/*`
 - PHP namespace: `Velm\`
 - Module manifests: `__velm__.php` — use `Velm\Modules\Manifest::make('name')->version(…)->…` (fluent builder; plain arrays still supported)
+- App addon PHP: `addons/{module}/` → `Addons\{StudlyModule}\…` — runtime autoload (no per-addon `composer.json` PSR-4); bundled modules use `Velm\Modules\{StudlyModule}\…`
 - Model fields: prefer fluent setters on `Velm\Fields\*` (e.g. `CharField::make()->required()->maxLength(2)`); constructor/`make()` args still work
 - Models: `$name` registers a table; base models get `id`, `display_name`, `created_at`, `updated_at` automatically (`$timestamps = false` to opt out); `$inherit` on a class that **extends `Model`** adds fields and joins the registry MRO — chain static hooks and instance methods with `static::super(...$args)` (recordset methods: `static::super($recordset, ...)`); `$recordset->action()` dispatches via `Recordset::__call`; `ALTER TABLE` on install (`partners_ext` fixture)
 - Views: module `views/*.php` return `ViewsData::make()->views(…)->inherits(…)->menus(…)`; synced to `ir.ui.view` / `ir.ui.menu`
@@ -62,8 +63,8 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 ## Still open (do not assume done)
 
-- `VIEW_INHERITS` authoring guides on the public site (ops work; resolver is implemented)
-- Kanban / graph / pivot / dashboard renderers
+- **Stable v1.0-rc1:** Packagist tags — see [ROADMAP.md — RC1 slice](./ROADMAP.md#rc1-slice--migratefresh--seed)
+- Kanban / graph / pivot **arch** renderers (home **dashboard** at `/velm/dashboard` is done)
 - Filament arch adapter (optional; not used by skeleton)
-- Domain OR-groups, computed fields
-- Packagist split releases and `velmphp/skeleton` as separate repo template
+- Domain OR-groups, computed fields, O2M inline widget
+- Packagist split releases for `velmphp/app` and `velmphp/framework`

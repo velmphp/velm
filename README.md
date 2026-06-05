@@ -74,9 +74,9 @@ CLI without a Laravel app:
 php packages/console/bin/velm module:list --discovered-only
 ```
 
-### Runnable skeleton app
+### Runnable Velm application (`velmphp/app`)
 
-Manual E2E (Filament panel, module install, API):
+Manual E2E (admin panel, module install, API). Monorepo path: `apps/skeleton/`:
 
 ```bash
 cd apps/skeleton

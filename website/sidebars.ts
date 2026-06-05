@@ -12,6 +12,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'intro',
         'guides/installation',
+        'guides/addons',
         'guides/migrations',
         'guides/scaffolding',
         'guides/features',

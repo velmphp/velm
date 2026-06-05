@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Velm\Framework;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\DB;
 use Velm\Environment;
 use Velm\Modules\ModuleInstaller;
+use Velm\Modules\Database\LaravelConnection;
+use Velm\Modules\Schema\VelmSchemaReset;
 
 final class VelmManager
 {
@@ -75,5 +78,31 @@ final class VelmManager
     public function uninstallPreview(string $moduleName): \Velm\Modules\ModuleUninstallPreview
     {
         return $this->installer->uninstallPreview($moduleName, $this->addonPaths(), $this->bootstrapModules());
+    }
+
+    public function seed(?string $module = null): void
+    {
+        $this->installer->seed($this->addonPaths(), $module);
+    }
+
+    /**
+     * Drop all Velm-owned tables, then reinstall bootstrap modules and optionally
+     * migrate additional modules.
+     *
+     * @param  list<string>  $bootstrapModules
+     * @param  list<string>  $modules
+     */
+    public function migrateFresh(array $bootstrapModules = [], array $modules = []): void
+    {
+        $roots = $this->addonPaths();
+        $bootstrapModules = $bootstrapModules === [] ? $this->bootstrapModules() : $bootstrapModules;
+
+        VelmSchemaReset::make(new LaravelConnection(DB::connection()), $roots)->reset();
+
+        $this->installer->installBootstrap($roots, $bootstrapModules);
+
+        foreach (array_values(array_unique($modules)) as $module) {
+            $this->installer->migrate($module, $roots);
+        }
     }
 }
