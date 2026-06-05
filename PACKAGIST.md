@@ -32,13 +32,15 @@ The split workflow uses **splitsh-lite** and pushes directly to `main` on each m
 
 ### 2. Add split token secret
 
-Create a GitHub **fine-grained PAT** or classic PAT with **contents: write** on those mirror repos (or all `velmphp/*` repos).
+Create a **classic PAT** (`repo` scope) or **fine-grained PAT** with **Contents: Read and write** on all nine mirror repos (and ideally `velmphp/velm`). Use a personal account or bot user that has **write access** to those repos in the org.
+
+Do **not** reuse the workflow’s default `GITHUB_TOKEN` — it cannot push to other repositories.
 
 In **`velmphp/velm`** → Settings → Secrets and variables → Actions, add:
 
 | Secret | Value |
 |--------|--------|
-| `PACKAGIST_SPLIT_TOKEN` | The PAT |
+| `PACKAGIST_SPLIT_TOKEN` | The PAT (not `GITHUB_TOKEN`) |
 
 Until this secret exists, the split workflow is skipped (no failed CI).
 
@@ -101,6 +103,7 @@ cd /tmp/velm-smoke && composer run setup
 |---------|-----|
 | Packagist shows `velmphp/velm-dev` | You submitted the monorepo URL — use mirror URLs instead |
 | Split workflow skipped | Add `PACKAGIST_SPLIT_TOKEN` secret |
-| Split push 403 | PAT needs write access to all mirror repos |
+| Split push 403 `denied to github-actions[bot]` | Checkout was using `GITHUB_TOKEN` — fixed with `persist-credentials: false`; ensure `PACKAGIST_SPLIT_TOKEN` is a PAT with write on mirrors |
+| Split push 403 (other) | PAT needs `repo` scope / Contents write on all mirror repos |
 | `src refspec main does not match` (danharrin action) | Use splitsh-lite workflow — empty mirrors need direct SHA push |
 | `create-project` fails on PHP 8.3 | App lock uses `config.platform.php` 8.3.31 (Symfony 7.4) |

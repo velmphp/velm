@@ -48,6 +48,8 @@ jobs:
         if: steps.gate.outputs.enabled == 'true'
         with:
           fetch-depth: 0
+          # Do not persist GITHUB_TOKEN — it only has access to velmphp/velm, not mirror repos.
+          persist-credentials: false
 
       - name: Install splitsh-lite
         if: steps.gate.outputs.enabled == 'true'
@@ -61,6 +63,7 @@ jobs:
           PACKAGIST_SPLIT_TOKEN: ${{ secrets.PACKAGIST_SPLIT_TOKEN }}
         run: |
           set -euo pipefail
+          git config --global --unset-all credential.helper || true
           PREFIX="${{ matrix.package.directory }}"
           REPO="${{ matrix.package.repository }}"
           REMOTE="https://x-access-token:${PACKAGIST_SPLIT_TOKEN}@github.com/velmphp/${REPO}.git"
