@@ -55,7 +55,9 @@
             return trail[0].url;
         }
 
-        return '/velm/apps';
+        const panel = document.querySelector('meta[name="velm-panel-path"]')?.content?.trim() || 'velm';
+
+        return `/${panel}/dashboard`;
     }
 
     function navigate(url) {

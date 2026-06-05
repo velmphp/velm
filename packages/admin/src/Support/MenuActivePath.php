@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Admin\Support;
 
 use Illuminate\Http\Request;
+use Velm\Admin\Pages\DashboardPage;
 use Velm\Admin\Pages\FileLibraryPage;
 use Velm\Admin\Pages\FilePropertiesPage;
 use Velm\Admin\Pages\WorkflowBuilderPage;
@@ -31,6 +32,12 @@ final class MenuActivePath
 
             if ($canonical !== null) {
                 return $canonical;
+            }
+
+            if ($pageClass === DashboardPage::class) {
+                $panel = trim((string) config('velm.panel_path', 'velm'), '/');
+
+                return '/'.$panel.'/dashboard';
             }
 
             if ($pageClass === FileLibraryPage::class) {
@@ -110,7 +117,8 @@ final class MenuActivePath
         }
 
         if (
-            $class === FileLibraryPage::class
+            $class === DashboardPage::class
+            || $class === FileLibraryPage::class
             || $class === FilePropertiesPage::class
             || $class === WorkflowInboxPage::class
             || $class === WorkflowBuilderPage::class

@@ -70,6 +70,34 @@ test('active root picks matching app by path', function (): void {
         ->and($index)->toBe(1);
 });
 
+test('active root is null when path does not match any app', function (): void {
+    $tree = [
+        [
+            'label' => 'Settings',
+            'href' => null,
+            'children' => [
+                ['label' => 'Users', 'href' => '/velm/views/admin/user.list', 'children' => []],
+            ],
+        ],
+    ];
+
+    [$root, $index] = MenuTreeBuilder::activeRoot($tree, '/velm/dashboard');
+
+    expect($root)->toBeNull()
+        ->and($index)->toBeNull();
+});
+
+test('active root is null when current path is unknown', function (): void {
+    $tree = [
+        ['label' => 'A', 'href' => '/velm/a', 'children' => []],
+    ];
+
+    [$root, $index] = MenuTreeBuilder::activeRoot($tree, null);
+
+    expect($root)->toBeNull()
+        ->and($index)->toBeNull();
+});
+
 test('entry href uses first descendant', function (): void {
     $node = [
         'label' => 'G',

@@ -52,6 +52,7 @@ final class VelmServiceProvider extends ServiceProvider
                 Console\ModuleSyncCommand::class,
                 Console\ModuleSyncAllCommand::class,
                 Console\ModuleListCommand::class,
+                Console\ModuleUninstallCommand::class,
                 Console\MakeModuleCommand::class,
                 Console\MakeModelCommand::class,
                 Console\MakeViewCommand::class,

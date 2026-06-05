@@ -60,4 +60,22 @@ final class ViewOp
     {
         return ['op' => 'before', 'target' => $target, 'value' => $value];
     }
+
+    /**
+     * @param  list<mixed>  $target
+     * @return array<string, mixed>
+     */
+    public static function append(array $target, mixed $value): array
+    {
+        return ['op' => 'append', 'target' => $target, 'value' => $value];
+    }
+
+    /**
+     * @param  list<mixed>  $target
+     * @return array<string, mixed>
+     */
+    public static function prepend(array $target, mixed $value): array
+    {
+        return ['op' => 'prepend', 'target' => $target, 'value' => $value];
+    }
 }

@@ -66,4 +66,14 @@ final class VelmManager
     {
         $this->installer->sync($moduleName, $this->addonPaths());
     }
+
+    public function uninstall(string $moduleName): void
+    {
+        $this->installer->uninstall($moduleName, $this->addonPaths(), $this->bootstrapModules());
+    }
+
+    public function uninstallPreview(string $moduleName): \Velm\Modules\ModuleUninstallPreview
+    {
+        return $this->installer->uninstallPreview($moduleName, $this->addonPaths(), $this->bootstrapModules());
+    }
 }

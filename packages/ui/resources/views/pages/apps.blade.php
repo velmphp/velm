@@ -9,6 +9,8 @@
     data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
     data-velm-nav-label="{{ $this->velmNavLabel() }}"
 >
+    @include('velm-ui::partials.breadcrumbs')
+
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-lg font-semibold text-heading">{{ $this->getTitle() }}</h1>

@@ -18,6 +18,7 @@ use Velm\Framework\Http\Middleware\BindVelmEnvironment;
 use Velm\Admin\Http\Middleware\ShareVelmMenuContext;
 use Velm\Admin\Pages\AppsDetailPage;
 use Velm\Admin\Pages\AppsPage;
+use Velm\Admin\Pages\DashboardPage;
 use Velm\Admin\Pages\CompanyListPage;
 use Velm\Admin\Pages\CreateCompanyPage;
 use Velm\Admin\Pages\CreatePartnerPage;
@@ -34,6 +35,7 @@ final class VelmRouteRegistrar
 {
     /** @var list<class-string<VelmShellPage>> */
     private const PAGES = [
+        DashboardPage::class,
         AppsPage::class,
         AppsDetailPage::class,
         CompanyListPage::class,
@@ -68,7 +70,7 @@ final class VelmRouteRegistrar
                 Route::post('logout', LogoutController::class)->name('velm.auth.logout');
 
                 Route::middleware('auth')->group(function (): void {
-                    Route::redirect('/', '/'.VelmPanel::path().'/apps')->name('velm.home');
+                    Route::redirect('/', '/'.VelmPanel::path().'/dashboard')->name('velm.home');
                     Route::post('switch-company', SwitchCompanyController::class)->name('velm.switch-company');
 
                     foreach (self::PAGES as $pageClass) {

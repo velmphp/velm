@@ -42,6 +42,28 @@ abstract class Field
         return $this;
     }
 
+    public function displayLabel(): string
+    {
+        if ($this->string !== null && $this->string !== '') {
+            return $this->string;
+        }
+
+        if ($this->name !== '') {
+            return self::humanizeFieldName($this->name);
+        }
+
+        return '';
+    }
+
+    public static function humanizeFieldName(string $name): string
+    {
+        $base = str_ends_with($name, '_id')
+            ? substr($name, 0, -3)
+            : $name;
+
+        return ucwords(str_replace('_', ' ', $base));
+    }
+
     public function default(mixed $default): static
     {
         $this->default = $default;

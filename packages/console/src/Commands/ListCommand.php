@@ -18,6 +18,7 @@ final class ListCommand extends Command
         $output->writeln('  php artisan list velm');
         $output->writeln('  php artisan velm:migrate');
         $output->writeln('  php artisan velm:module:list');
+        $output->writeln('  php artisan velm:module:uninstall partners_ext');
         $output->writeln('  php artisan velm:db:diff --module=partners');
         return Command::SUCCESS;
     }

@@ -13,6 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="velm-app-name" content="{{ $appName }}" />
+<meta name="velm-panel-path" content="{{ trim((string) config('velm.panel_path', 'velm'), '/') }}" />
 
 <title id="velm-document-title">
     @if (filled($title))

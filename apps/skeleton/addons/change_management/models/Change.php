@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Velm\Modules\ChangeManagement\Models;
+namespace Addons\ChangeManagement\Models;
 
 use Velm\Fields\CharField;
 use Velm\Fields\DatetimeField;
+use Velm\Fields\IntegerField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\TextField;
 use Velm\Models\Model;
@@ -33,6 +34,7 @@ class Change extends Model
             'implementer_id' => Many2oneField::make('res.users')->label('Implementer'),
             'planned_start' => DatetimeField::make()->label('Planned start'),
             'planned_end' => DatetimeField::make()->label('Planned end'),
+            'progress' => IntegerField::make()->default(0)->label('Progress'),
             'company_id' => Many2oneField::make('res.company')->label('Company'),
         ];
     }

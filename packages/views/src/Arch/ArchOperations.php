@@ -14,14 +14,32 @@ final class ArchOperations
      * @param  list<array<string, mixed>>  $operations
      * @return array<string, mixed>
      */
-    public static function apply(array &$arch, array $operations): array
+    public static function apply(array &$arch, array $operations, bool $skipMissingTargets = true): array
     {
         foreach ($operations as $op) {
-            $kind = (string) ($op['op'] ?? '');
-            /** @var list<mixed> $target */
-            $target = array_values($op['target'] ?? []);
+            try {
+                self::applyOne($arch, $op);
+            } catch (\RuntimeException|\OutOfRangeException $exception) {
+                if (! $skipMissingTargets) {
+                    throw $exception;
+                }
+            }
+        }
 
-            if ($target !== [] && $target[0] === '**') {
+        return $arch;
+    }
+
+    /**
+     * @param  array<string, mixed>  $arch
+     * @param  array<string, mixed>  $op
+     */
+    private static function applyOne(array &$arch, array $op): void
+    {
+        $kind = (string) ($op['op'] ?? '');
+        /** @var list<mixed> $target */
+        $target = array_values($op['target'] ?? []);
+
+        if ($target !== [] && $target[0] === '**') {
                 if (count($target) < 2) {
                     throw new \InvalidArgumentException(
                         "'**' must be followed by at least one selector (`name` string or predicate dict)",
@@ -65,7 +83,35 @@ final class ArchOperations
                     $node[$key] = $val;
                 }
 
-                continue;
+                return;
+            }
+
+            if ($kind === 'append' || $kind === 'prepend') {
+                if ($target === []) {
+                    throw new \InvalidArgumentException("Operation '{$kind}' has empty target");
+                }
+
+                $node = &$archRoot;
+
+                foreach ($target as $seg) {
+                    $node = &self::stepIntoRef($node, $seg);
+                }
+
+                if (! array_is_list($node)) {
+                    throw new \InvalidArgumentException(
+                        "'{$kind}' requires a list target, got ".gettype($node),
+                    );
+                }
+
+                $value = $op['value'] ?? null;
+
+                if ($kind === 'prepend') {
+                    array_unshift($node, $value);
+                } else {
+                    $node[] = $value;
+                }
+
+                return;
             }
 
             if ($target === []) {
@@ -87,9 +133,6 @@ final class ArchOperations
                 'after' => self::insertAt($parent, $last, $op['value'] ?? null, before: false),
                 default => throw new \InvalidArgumentException("Unknown view-arch op: {$kind}"),
             };
-        }
-
-        return $arch;
     }
 
     /**

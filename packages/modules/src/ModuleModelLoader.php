@@ -76,7 +76,7 @@ final class ModuleModelLoader
      * Require {module}/models/{Class}.php when Composer PSR-4 was not dumped
      * after adding a new bundled module (e.g. file_manager).
      */
-    private static function ensureModelClassLoaded(string $modelClass, string $modulePath): void
+    public static function ensureModelClassLoaded(string $modelClass, string $modulePath): void
     {
         if (class_exists($modelClass, false)) {
             return;

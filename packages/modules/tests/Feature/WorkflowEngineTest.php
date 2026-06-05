@@ -7,6 +7,7 @@ use Velm\Modules\Workflow\WorkflowEngine;
 use Velm\Modules\Workflow\WorkflowParser;
 use Velm\Modules\Workflow\WorkflowSchema;
 use Velm\Modules\Workflow\WorkflowService;
+use Velm\Modules\Tests\Support\ModuleRoots;
 use Velm\Modules\Tests\TestCase;
 
 uses(TestCase::class);
@@ -18,7 +19,7 @@ beforeEach(function (): void {
 });
 
 test('workflow schema validates ICT change definition', function (): void {
-    $roots = [dirname(__DIR__, 2).'/modules'];
+    $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
     $installer->install('workflow', $roots);
@@ -37,7 +38,7 @@ test('workflow schema validates ICT change definition', function (): void {
 });
 
 test('change request workflow runs submit and approval path', function (): void {
-    $roots = [dirname(__DIR__, 2).'/modules'];
+    $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
     $installer->install('workflow', $roots);
@@ -69,7 +70,7 @@ test('change request workflow runs submit and approval path', function (): void 
 });
 
 test('workflow install seeds partner demo definition', function (): void {
-    $roots = [dirname(__DIR__, 2).'/modules'];
+    $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
     $installer->install('partners', $roots);

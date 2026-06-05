@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Velm\Modules\ModuleInstaller;
 use Velm\Modules\Workflow\WorkflowDesigner;
+use Velm\Modules\Tests\Support\ModuleRoots;
 use Velm\Modules\Tests\TestCase;
 
 uses(TestCase::class);
@@ -13,7 +14,7 @@ test('workflow designer lists models and fields', function (): void {
         skip('The pdo_sqlite extension is required.');
     }
 
-    $roots = [dirname(__DIR__, 2).'/modules'];
+    $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
     $installer->install('workflow', $roots);

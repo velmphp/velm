@@ -7,6 +7,8 @@
     data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
     data-velm-nav-label="{{ $this->velmNavLabel() }}"
 >
+    @include('velm-ui::partials.breadcrumbs')
+
     @if ($app === null)
         <p class="text-sm text-body-subtle">{{ __('Module not found.') }}</p>
     @else
@@ -85,6 +87,17 @@
                     <section>
                         <h3 class="mb-2 text-xs font-semibold text-heading">{{ __('Schema drift') }}</h3>
                         <p class="text-sm text-body-subtle">{{ $app['schema_drift_summary'] }}</p>
+                    </section>
+                @endif
+
+                @if (($app['state'] ?? '') !== 'uninstalled' && ($app['uninstall_blockers'] ?? []) !== [])
+                    <section>
+                        <h3 class="mb-2 text-xs font-semibold text-heading">{{ __('Uninstall blockers') }}</h3>
+                        <ul class="list-inside list-disc space-y-1 text-sm text-body-subtle">
+                            @foreach ($app['uninstall_blockers'] as $blocker)
+                                <li>{{ $blocker }}</li>
+                            @endforeach
+                        </ul>
                     </section>
                 @endif
 

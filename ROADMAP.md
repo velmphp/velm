@@ -81,7 +81,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |------|--------|
 | `workflow` module (definition, instance, approval, task models) | Done |
 | Workflow engine port (schema v1, transitions, approvals, sequential/all/any) | Done |
-| `change_management` module (`it.change` + ICT lifecycle workflow) | Done |
+| `change_management` skeleton demo (`it.change` + ICT lifecycle workflow) | Done |
 | Record detail workflow panel + `/web/workflow/*` API | Done |
 | Approval inbox (`/web/workflow/inbox`) | Done |
 | Overdue approval cron (`workflow_escalate` server action) | Done |

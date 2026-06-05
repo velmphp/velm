@@ -31,7 +31,7 @@ Per-company override: set **Navigation layout** on **Settings → Companies** (`
 
 ### Apps catalog (`/velm/apps`)
 
-The catalog is the default home (`/velm` redirects here). It uses its **own sidebar**, separate from the module rail:
+The panel home is the **dashboard** (`/velm` → `/velm/dashboard`). The apps catalog lives at `/velm/apps` and uses the **standard module shell** (same sidebar as workspace pages):
 
 - **Catalog** — browse all discovered modules
 - **Status** — filter: All, Installed, Upgrade, Sync pending, Not installed
@@ -42,15 +42,16 @@ From any **module workspace** page (e.g. Partners list), the left rail includes 
 
 Module **detail** pages inside the catalog (`/velm/apps/{name}`) hide Status/Category filters and show module-specific actions.
 
-### Install, upgrade, and sync
+### Install, upgrade, sync, and uninstall
 
 | Action | When to use |
 |--------|-------------|
 | **Install** | Module is not in `ir.module` yet (first install + dependencies). |
 | **Upgrade** | Manifest **version** increased — runs versioned migration scripts, then schema and view/menu sync. |
 | **Sync** | Installed module with **schema changes pending** (e.g. new model fields, no version bump) or **views/menus on disk** that differ from the database (no version bump). |
+| **Uninstall** | Remove install state and module views/menus (tables/data remain). Blocked when other installed modules depend on or extend this module, or when the module is protected (`base`, `admin`). |
 
-After **Sync** or **Upgrade**, the catalog state returns to **Installed** (including when the only pending change was a removed or renamed view/menu on disk). CLI equivalents: `php artisan velm:module:install`, `velm:migrate` / reconcile, and `velm:module:sync`.
+After **Sync** or **Upgrade**, the catalog state returns to **Installed** (including when the only pending change was a removed or renamed view/menu on disk). CLI equivalents: `php artisan velm:module:install`, `velm:migrate` / reconcile, `velm:module:sync`, and `velm:module:uninstall`.
 
 **Schema drift** (e.g. unsupported SQLite alters) may be shown on a module card for information; it does not change the actionable **Sync pending** state. See [Platform features](./features#module-states-in-the-catalog).
 

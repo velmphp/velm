@@ -9,6 +9,10 @@
     $installClick = $detail ? 'installModule' : "installModule('{$name}')";
     $upgradeClick = $detail ? 'upgradeModule' : "upgradeModule('{$name}')";
     $syncClick = $detail ? 'syncModule' : "syncModule('{$name}')";
+    $uninstallClick = $detail ? 'uninstallModule' : "uninstallModule('{$name}')";
+    $canUninstall = (bool) ($app['can_uninstall'] ?? false);
+    $uninstallBlockers = $app['uninstall_blockers'] ?? [];
+    $isInstalled = $state !== 'uninstalled';
 @endphp
 
 <div class="flex flex-wrap items-center justify-end {{ $compact ? 'gap-1.5' : 'gap-2' }}">
@@ -76,6 +80,28 @@
         >
             {{ __('Sync') }}
         </button>
+    @endif
+
+    @if ($isInstalled)
+        @if ($canUninstall)
+            <button
+                type="button"
+                wire:click="{{ $uninstallClick }}"
+                wire:confirm="{{ __('Uninstall :name? This removes the module from the database and deletes its views and menus. Database tables and data are kept.', ['name' => $name]) }}"
+                class="{{ $btn }} rounded-md border border-danger bg-danger-soft font-medium text-danger-strong transition-colors hover:opacity-90"
+            >
+                {{ __('Uninstall') }}
+            </button>
+        @elseif ($uninstallBlockers !== [])
+            <button
+                type="button"
+                disabled
+                title="{{ implode(' · ', $uninstallBlockers) }}"
+                class="{{ $btn }} cursor-not-allowed rounded-md border border-default bg-neutral-secondary font-medium text-body-subtle"
+            >
+                {{ __('Uninstall') }}
+            </button>
+        @endif
     @endif
 
     @if ($compact)

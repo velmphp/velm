@@ -109,21 +109,23 @@ final class MenuTreeBuilder
             return [null, null];
         }
 
-        if ($currentPath !== null) {
-            foreach ($menuTree as $index => $root) {
-                if (self::nodeMatchesPath($root, $currentPath)) {
-                    return [$root, $index];
-                }
-            }
+        if ($currentPath === null) {
+            return [null, null];
+        }
 
-            foreach ($menuTree as $index => $root) {
-                if ($root['active'] ?? false) {
-                    return [$root, $index];
-                }
+        foreach ($menuTree as $index => $root) {
+            if (self::nodeMatchesPath($root, $currentPath)) {
+                return [$root, $index];
             }
         }
 
-        return [$menuTree[0], 0];
+        foreach ($menuTree as $index => $root) {
+            if ($root['active'] ?? false) {
+                return [$root, $index];
+            }
+        }
+
+        return [null, null];
     }
 
     /**

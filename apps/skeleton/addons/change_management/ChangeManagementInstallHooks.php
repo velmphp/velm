@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Velm\Modules\ChangeManagement;
+namespace Addons\ChangeManagement;
 
 use Velm\Environment;
 use Velm\Modules\Workflow\WorkflowDefinitions;

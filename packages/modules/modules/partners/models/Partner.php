@@ -19,11 +19,11 @@ class Partner extends Model
     public static function defineFields(): array
     {
         return [
-            'name' => CharField::make()->required(),
-            'active' => BooleanField::make()->default(true),
+            'name' => CharField::make()->required()->label('Name'),
+            'active' => BooleanField::make()->default(true)->label('Active'),
             'is_company' => BooleanField::make()->label('Is a company')->default(false),
-            'company_id' => Many2oneField::make()->comodel('res.company'),
-            'country_id' => Many2oneField::make()->comodel('res.country'),
+            'company_id' => Many2oneField::make()->comodel('res.company')->label('Company'),
+            'country_id' => Many2oneField::make()->comodel('res.country')->label('Country'),
         ];
     }
 

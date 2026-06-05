@@ -34,6 +34,15 @@ final class ViewSynchronizer
         $this->pruneStaleViews($spec->name, $syncedNames, $env);
     }
 
+    public function purgeModule(string $module, Environment $env): void
+    {
+        if (! $env->registry->has('ir.ui.view')) {
+            return;
+        }
+
+        $this->pruneStaleViews($module, [], $env);
+    }
+
     /**
      * @param  list<array<string, mixed>>  $views
      */

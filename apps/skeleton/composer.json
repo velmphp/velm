@@ -29,6 +29,11 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "Addons\\ChangeManagement\\": "addons/change_management/",
+            "Addons\\ChangeManagement\\Dashboard\\": "addons/change_management/Dashboard/",
+            "Addons\\ChangeManagement\\Models\\": "addons/change_management/models/",
+            "Addons\\PartnersExt\\": "addons/partners_ext/",
+            "Addons\\PartnersExt\\Models\\": "addons/partners_ext/models/",
             "Addons\\DemoRelations\\": "addons/demo_relations/",
             "Addons\\DemoRelations\\Models\\": "addons/demo_relations/models/",
             "Database\\Factories\\": "database/factories/",
@@ -58,6 +63,7 @@
             "@php artisan migrate --force",
             "@php artisan velm:migrate",
             "@php artisan velm:module:install partners",
+            "@php artisan velm:module:install partners_ext",
             "@php artisan velm:module:install workflow",
             "@php artisan velm:module:install change_management",
             "@php artisan velm:module:install demo_relations",

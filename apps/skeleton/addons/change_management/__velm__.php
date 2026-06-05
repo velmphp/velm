@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Velm\Modules\ChangeManagement\ChangeManagementInstallHooks;
-use Velm\Modules\ChangeManagement\ChangeManagementSyncHooks;
-use Velm\Modules\ChangeManagement\Models\Change;
+use Addons\ChangeManagement\ChangeManagementInstallHooks;
+use Addons\ChangeManagement\ChangeManagementSyncHooks;
+use Addons\ChangeManagement\Models\Change;
 use Velm\Modules\Manifest;
 
 return Manifest::make('change_management')
@@ -17,6 +17,6 @@ return Manifest::make('change_management')
         'views/change.php',
         'views/menu.php',
     )
-    ->summary('ICT change management — RFC, risk review, CAB approval, implementation, and PIR.')
-    ->category('Operations')
+    ->summary('Demo — ICT change requests with workflow, rich text, and activity.')
+    ->category('Demos')
     ->icon('heroicon-o-wrench-screwdriver');

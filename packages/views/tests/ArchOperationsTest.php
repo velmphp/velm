@@ -62,6 +62,41 @@ test('wildcard sets attribute on a nested field', function () {
     expect($arch['sections'][0]['fields'][0]['readonly'])->toBeTrue();
 });
 
+test('append and prepend mutate section field lists', function () {
+    $arch = sampleArch();
+
+    ArchOperations::apply($arch, [
+        ['op' => 'prepend', 'target' => ['sections', 'main', 'fields'], 'value' => ['name' => 'z']],
+        ['op' => 'append', 'target' => ['sections', 'main', 'fields'], 'value' => ['name' => 'c']],
+    ]);
+
+    expect(array_column($arch['sections'][0]['fields'], 'name'))->toBe(['z', 'a', 'b', 'c']);
+});
+
+test('skips missing targets when third-party patches conflict', function () {
+    $arch = [
+        'sections' => [
+            ['name' => 'organization', 'title' => 'Organization', 'fields' => [['name' => 'company_id']]],
+            ['name' => 'identity', 'title' => 'Identity', 'fields' => [['name' => 'name']]],
+        ],
+    ];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'remove', 'target' => ['sections', 'organization']],
+        ['op' => 'update', 'target' => ['sections', 'organization'], 'value' => ['title' => 'Org']],
+    ]);
+
+    expect(array_column($arch['sections'], 'name'))->toBe(['identity']);
+});
+
+test('strict mode throws when inherit target is missing', function () {
+    $arch = sampleArch();
+
+    ArchOperations::apply($arch, [
+        ['op' => 'update', 'target' => ['sections', 'missing'], 'value' => ['title' => 'X']],
+    ], skipMissingTargets: false);
+})->throws(RuntimeException::class);
+
 test('unknown op throws', function () {
     $arch = sampleArch();
 

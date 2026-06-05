@@ -7,6 +7,8 @@
 
 <nav class="pv-sidebar-nav pv-sidebar-nav--rail flex-1 overflow-y-auto px-2 py-3" aria-label="{{ __('Applications') }}">
     <div class="pv-sidebar-links space-y-0.5">
+        @include('velm-admin::partials.nav-dashboard-entry')
+
         @foreach ($roots as $nav)
             @php
                 $href = MenuLinkResolver::url($nav['nav_href'] ?? null);

@@ -103,11 +103,12 @@ composer test -- packages/core/tests/RegistryModelInheritTest.php
 
 ## Models vs views
 
-| | Model `$inherit` | View `VIEW_INHERITS` |
+| | Model `$inherit` | View inherits (`InheritView`) |
 |--|------------------|----------------------|
 | Changes | Table columns, PHP methods | JSON arch (list/form fields) |
-| Mechanism | Registry MRO + `super()` | Declarative ops (`op_after`, …) |
-| Docs | This section | (coming) |
+| Mechanism | Registry MRO + `super()` | Declarative ops (`updateSection`, `afterField`, …) |
+| Apply order | Manifest `depends` (topo sort) | Same — module dependency order, not author `priority` |
+| Docs | This section | [Views and forms — View inheritance](../guides/views-and-forms#view-inheritance) |
 
 You often use **both** on the same business object: model extension for `ref`, view inheritance to show `ref` on the partner form.
 
