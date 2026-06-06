@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm;
 
+use Velm\Computed\ComputedFieldGraph;
 use Velm\Fields\Field;
 use Velm\Fields\One2manyField;
 use Velm\Models\Model;
@@ -24,6 +25,11 @@ final class Registry
      * @var array<string, list<class-string<Model>>>
      */
     private array $extensionChain = [];
+
+    private ?ComputedFieldGraph $computedGraph = null;
+
+    /** @var array<string, class-string<Model>> */
+    private array $mixins = [];
 
     public static function active(): self
     {
@@ -72,6 +78,10 @@ final class Registry
             throw new \RuntimeException("{$modelClass} is a model extension; use registerExtension().");
         }
 
+        if ($modelClass::isAbstract()) {
+            throw new \RuntimeException("{$modelClass} is abstract; use registerMixin().");
+        }
+
         $modelClass::initialize();
         $name = $modelClass::name();
 
@@ -88,6 +98,8 @@ final class Registry
                 $field->validateInverse($modelClass, $this);
             }
         }
+
+        $this->rebuildComputedGraph();
     }
 
     /**
@@ -116,6 +128,8 @@ final class Registry
         $this->fieldSets[$inheritName] = $this->mergeFields($current, $extensionClass::extensionFields());
         $this->extensionChain[$inheritName][] = $extensionClass;
         $this->models[$inheritName] = $extensionClass;
+
+        $this->rebuildComputedGraph();
     }
 
     /**
@@ -233,5 +247,69 @@ final class Registry
     public function models(): array
     {
         return $this->models;
+    }
+
+    public function computedGraph(): ComputedFieldGraph
+    {
+        return $this->computedGraph ?? ComputedFieldGraph::empty();
+    }
+
+    /**
+     * @param  class-string<Model>  $mixinClass
+     */
+    public function registerMixin(string $mixinClass): void
+    {
+        if (! $mixinClass::isAbstract()) {
+            throw new \RuntimeException("{$mixinClass} must set \$abstract = true for mixin registration.");
+        }
+
+        $mixinClass::initialize();
+        $name = $mixinClass::name();
+
+        if (isset($this->mixins[$name])) {
+            throw new \RuntimeException("Mixin {$name} is already registered.");
+        }
+
+        $this->mixins[$name] = $mixinClass;
+    }
+
+    public function hasMixin(string $modelName, string $mixinName): bool
+    {
+        foreach ($this->extensionChainFor($modelName) as $class) {
+            if (in_array($mixinName, $class::mixins(), true)) {
+                return true;
+            }
+
+            if ($mixinName === 'mail.thread' && self::classDeclaresMailThread($class)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  class-string<Model>  $class
+     */
+    private static function classDeclaresMailThread(string $class): bool
+    {
+        $reflection = new \ReflectionClass($class);
+
+        if (! $reflection->hasProperty('mailThread')) {
+            return false;
+        }
+
+        $property = $reflection->getProperty('mailThread');
+
+        if ($property->getDeclaringClass()->getName() !== $class) {
+            return false;
+        }
+
+        return (bool) $property->getValue();
+    }
+
+    private function rebuildComputedGraph(): void
+    {
+        $this->computedGraph = ComputedFieldGraph::build($this);
     }
 }

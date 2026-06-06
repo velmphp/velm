@@ -183,7 +183,7 @@ final class SchemaDiffer
         $columns = [];
 
         foreach ($fields as $field) {
-            if ($field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
+            if ($field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField || ! $field->persistsInDatabase()) {
                 continue;
             }
 

@@ -11,6 +11,7 @@ use Velm\Models\Model;
 use Velm\Modules\Database\LaravelConnection;
 use Velm\Modules\Migrations\ModuleMigrationRunner;
 use Velm\Modules\Schema\ModuleSchema;
+use Velm\Modules\Schema\ModuleSchemaDrop;
 use Velm\Modules\ModuleVersion;
 use Velm\Modules\Seeding\ModuleSeederRunner;
 use Velm\Registry;
@@ -233,6 +234,7 @@ final class ModuleInstaller
         string $moduleName,
         array $roots,
         array $protectedModules = ['base', 'admin'],
+        bool $dropSchema = false,
     ): void {
         $preview = $this->uninstallPreview($moduleName, $roots, $protectedModules);
 
@@ -240,6 +242,19 @@ final class ModuleInstaller
             throw new \RuntimeException(
                 "Cannot uninstall {$moduleName}: ".implode('; ', $preview->blockers()),
             );
+        }
+
+        $specs = $this->discover($roots);
+        $spec = $specs[$moduleName];
+
+        if ($dropSchema) {
+            $remaining = array_values(array_filter(
+                $this->repository->installedNames(),
+                static fn (string $name): bool => $name !== $moduleName,
+            ));
+
+            (new ModuleSchemaDrop($this->velmConnection()))
+                ->dropModule($spec, $roots, $remaining);
         }
 
         $env = $this->environment($roots);

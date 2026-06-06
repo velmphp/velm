@@ -62,10 +62,20 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Module install state: `ir.module` (not Composer)
 - Cron: Laravel Scheduler + `php artisan velm:cron:run`
 
+## Release path (pre-stable)
+
+Ship **rc3** then **v1.0.0** — see [ROADMAP.md](./ROADMAP.md) *Stable v1.0 target*.
+
+| RC | Focus |
+|----|-------|
+| **rc1–rc2** | migrate:fresh/seed, Packagist/MIT/install — **done** |
+| **rc3** | Full 1.0 feature set: ORM parity, widgets, mixins, kanban/graph/pivot, ops, DB CI |
+| **1.0.0** | Stable tag; plain `create-project velmphp/app` |
+
+Tag flow: [RELEASE.md](./RELEASE.md) + `npm run docs:version` per RC.
+
 ## Still open (do not assume done)
 
-- **Stable v1.0-rc1:** Packagist mirrors live — tag with [RELEASE.md](./RELEASE.md)
-- Kanban / graph / pivot **arch** renderers (home **dashboard** at `/velm/dashboard` is done)
+- **rc3** tier items above (all pre-stable work)
+- **Post-1.0** (Tier 3): `header_actions`, list inline edit, per-model arch `dashboard`
 - Filament arch adapter (optional; not used by app/demo)
-- Domain OR-groups, computed fields, O2M inline widget
-- Packagist mirror releases (`velmphp/*`) — see [PACKAGIST.md](./PACKAGIST.md) and [RELEASE.md](./RELEASE.md)

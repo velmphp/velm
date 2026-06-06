@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Recordset;
 
 use Velm\Domain\Domain;
+use Velm\Domain\DomainCompiler;
 use Velm\Environment;
 use Velm\Exception\AccessDeniedException;
 use Velm\Fields\DatetimeField;
@@ -154,6 +155,8 @@ final class Recordset
             $created->writeO2m($o2mValues);
         }
 
+        $this->env->computeRunner()->computeStoredOnCreate($created);
+
         return $created;
     }
 
@@ -201,10 +204,13 @@ final class Recordset
             if ($name === 'id' || $name === 'display_name') {
                 continue;
             }
-            if (! isset($fields[$name]) || $fields[$name] instanceof Many2manyField || $fields[$name] instanceof One2manyField) {
+            $field = $fields[$name] ?? null;
+
+            if ($field === null || $field instanceof Many2manyField || $field instanceof One2manyField || ! $field->persistsInDatabase()) {
                 continue;
             }
-            $sql .= ', "'.$fields[$name]->column.'"';
+
+            $sql .= ', "'.$field->column.'"';
         }
         $sql .= ' FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
 
@@ -233,6 +239,10 @@ final class Recordset
                     continue;
                 }
 
+                if ($field->isComputed() && ! $field->isStored()) {
+                    continue;
+                }
+
                 $record[$name] = $this->datetimeFromStorage($row[$field->column] ?? null, $field);
             }
             $record['display_name'] = Registry::with(
@@ -253,6 +263,21 @@ final class Recordset
                 $this->env->cache->set($modelClass::name(), $record['id'], $fname, $fvalue);
             }
         }
+
+        $this->env->computeRunner()->fillUnstoredForRead($this, $fieldNames);
+
+        foreach ($result as &$record) {
+            foreach ($fieldNames as $name) {
+                $field = $fields[$name] ?? null;
+
+                if ($field === null || ! $field->isComputed() || $field->isStored()) {
+                    continue;
+                }
+
+                $record[$name] = $this->env->cache->get($modelClass::name(), $record['id'], $name);
+            }
+        }
+        unset($record);
 
         return $result;
     }
@@ -306,6 +331,8 @@ final class Recordset
                 $this->env->cache->forget($modelClass::name(), $id);
             }
         }
+
+        $this->env->computeRunner()->recomputeAfterWrite($this, array_keys($columnValues));
     }
 
     public function unlink(): void
@@ -383,6 +410,35 @@ final class Recordset
     }
 
     /**
+     * @param  list<mixed>|list<list<mixed>>  $domain
+     * @param  list<string>  $fields  Aggregate specs, e.g. {@code amount:sum}
+     * @param  list<string>  $groupby  e.g. {@code state}, {@code created_at:month}
+     * @return list<array<string, mixed>>
+     */
+    public function readGroup(
+        array $domain = [],
+        array $fields = [],
+        array $groupby = [],
+        int $offset = 0,
+        int $limit = 0,
+        ?string $orderby = null,
+    ): array {
+        $this->env->checkAccess($this->modelName(), 'read');
+
+        $scopedDomain = $this->collectSearchDomain($domain, 'read');
+
+        return (new ReadGroupQuery($this->env, $this->modelClass))->run(
+            $scopedDomain,
+            $fields,
+            $groupby,
+            fn (array $whereDomain, array &$whereParams): string => $this->buildWhere($whereDomain, $whereParams),
+            $offset,
+            $limit,
+            $orderby,
+        );
+    }
+
+    /**
      * @param  list<mixed>|list<list<mixed>>  $userDomain
      * @return list<mixed>|list<list<mixed>>
      */
@@ -422,50 +478,13 @@ final class Recordset
      */
     private function buildWhere(array $domain, array &$params): string
     {
-        $parts = [];
-
-        foreach ($this->expandDomain($domain) as $leaf) {
-            if ($leaf[0] === '__or__') {
-                $subParts = [];
-                $subs = is_array($leaf[2]) ? $leaf[2] : [];
-
-                foreach ($subs as $sub) {
-                    if (! is_array($sub) || count($sub) !== 3) {
-                        continue;
-                    }
-
-                    $subParts[] = $this->buildLeafClause(Domain::fromArray($sub), $params);
-                }
-
-                if ($subParts !== []) {
-                    $parts[] = '('.implode(' OR ', $subParts).')';
-                }
-
-                continue;
-            }
-
-            $parts[] = $this->buildLeafClause(Domain::fromArray($leaf), $params);
-        }
-
-        return implode(' AND ', $parts);
-    }
-
-    /**
-     * @param  list<mixed>|list<list<mixed>>  $domain
-     * @return list<list<mixed>>
-     */
-    private function expandDomain(array $domain): array
-    {
-        if ($domain === []) {
-            return [];
-        }
-
-        if (! is_array($domain[0])) {
-            return [$domain];
-        }
-
-        /** @var list<list<mixed>> $domain */
-        return $domain;
+        return (new DomainCompiler)->compileWhere(
+            $domain,
+            function (Domain $leaf) use (&$params): string {
+                return $this->buildLeafClause($leaf, $params);
+            },
+            $params,
+        );
     }
 
     /**
@@ -550,6 +569,12 @@ final class Recordset
             }
 
             $field = $fields[$name];
+
+            if ($field->isComputed()) {
+                throw new \InvalidArgumentException(
+                    "Cannot write computed field {$name} on {$this->modelName()}; update its dependencies instead.",
+                );
+            }
 
             if ($field instanceof Many2manyField) {
                 $m2mValues[$name] = $this->normalizeRelationIds($value);

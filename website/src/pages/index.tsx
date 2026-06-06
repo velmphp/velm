@@ -1,3 +1,4 @@
+import {projectBadges} from '@site/src/data/badges';
 import Link from '@docusaurus/Link';
 import {useLatestVersion} from '@docusaurus/plugin-content-docs/client';
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -87,6 +88,17 @@ function HomepageHeader() {
             <p className={styles.heroSubtitle}>
               Odoo semantics on Laravel — extensibility without inheritance chains.
             </p>
+            <div className={styles.badges} aria-label="Project status">
+              {projectBadges.map((badge) => (
+                <a
+                  key={badge.alt}
+                  href={badge.href}
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <img src={badge.src} alt={badge.alt} loading="lazy" />
+                </a>
+              ))}
+            </div>
             <div className={styles.buttons}>
               <Link className="button button--primary button--lg" to={installationPath}>
                 Get started

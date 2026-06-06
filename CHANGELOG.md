@@ -4,7 +4,7 @@ All notable changes to the Velm monorepo are documented here. Packagist packages
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-rc2] - Unreleased
+## [1.0.0-rc2] - 2026-06-05
 
 Packagist-installable RC2 — fixes RC1 publishing issues, MIT license, and documented install flags.
 

@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
         'intro',
         'guides/installation',
         'guides/addons',
+        'guides/production',
         'guides/migrations',
         'guides/scaffolding',
         'guides/features',

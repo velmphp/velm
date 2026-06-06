@@ -18,6 +18,71 @@ abstract class Field
 
     public bool $readonly = false;
 
+    private ?string $computeMethod = null;
+
+    /** @var list<string> */
+    private array $dependsOn = [];
+
+    private bool $stored = false;
+
+    public function compute(string $method): static
+    {
+        $this->computeMethod = $method;
+        $this->readonly = true;
+
+        return $this;
+    }
+
+    /**
+     * @param  string  ...$paths  Same-model field names (dotted M2O paths deferred).
+     */
+    public function depends(string ...$paths): static
+    {
+        $this->dependsOn = array_values($paths);
+
+        return $this;
+    }
+
+    public function stored(bool $stored = true): static
+    {
+        $this->stored = $stored;
+
+        return $this;
+    }
+
+    public function isComputed(): bool
+    {
+        return $this->computeMethod !== null && $this->computeMethod !== '';
+    }
+
+    public function computeMethod(): ?string
+    {
+        return $this->computeMethod;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function dependsOn(): array
+    {
+        return $this->dependsOn;
+    }
+
+    public function isStored(): bool
+    {
+        return $this->stored;
+    }
+
+    /** Whether the field maps to a physical SQL column on the model table. */
+    public function persistsInDatabase(): bool
+    {
+        if ($this->name === 'id' || $this->name === 'display_name') {
+            return false;
+        }
+
+        return ! $this->isComputed() || $this->stored;
+    }
+
     public function __construct(
         ?string $string = null,
         mixed $default = null,

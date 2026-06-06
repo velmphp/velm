@@ -27,11 +27,20 @@ abstract class Model
 
     /**
      * When true, the model supports the mail.thread chatter (messages and followers).
-     * Set on the model class (or on an extension class that targets the model).
-     *
-     * Temporary until abstract mixins exist (Odoo-style {@code _inherit = ['mail.thread']}).
+     * Prefer declaring {@see self::$mixins} with {@code mail.thread}; this flag remains
+     * as a shorthand for backward compatibility.
      */
     protected static bool $mailThread = false;
+
+    /**
+     * Abstract mixin model names composed onto this model (Odoo-style).
+     *
+     * @var list<string>
+     */
+    protected static array $mixins = [];
+
+    /** Mixin / abstract models register with {@see Registry::registerMixin()} — no table. */
+    protected static bool $abstract = false;
 
     /** @var array<class-string<static>, static> */
     private static array $behaviorInstances = [];
@@ -54,6 +63,12 @@ abstract class Model
         }
 
         if (static::isExtension()) {
+            self::$fieldsByClass[$class] = $fields;
+
+            return;
+        }
+
+        if (static::isAbstract()) {
             self::$fieldsByClass[$class] = $fields;
 
             return;
@@ -88,7 +103,24 @@ abstract class Model
 
     public static function usesMailThread(): bool
     {
-        return static::$mailThread;
+        if (static::$mailThread) {
+            return true;
+        }
+
+        return in_array('mail.thread', static::mixins(), true);
+    }
+
+    public static function isAbstract(): bool
+    {
+        return static::$abstract;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function mixins(): array
+    {
+        return static::$mixins;
     }
 
     /**

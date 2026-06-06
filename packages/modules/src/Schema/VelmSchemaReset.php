@@ -71,11 +71,7 @@ final class VelmSchemaReset
 
                 $models[$modelClass] = true;
 
-                if ($modelClass::isExtension()) {
-                    $registry->registerExtension($modelClass);
-                } else {
-                    $registry->register($modelClass);
-                }
+                ModuleModelLoader::registerModelClass($modelClass, $registry);
             }
         }
 

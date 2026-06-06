@@ -3,6 +3,7 @@
 composer.phar
 /.phpunit.cache/
 /.phpunit.result.cache
+/coverage.xml
 !apps/app/composer.lock
 !apps/demo/composer.lock
 .phpactor.json

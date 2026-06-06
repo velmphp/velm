@@ -583,3 +583,36 @@ test('write still requires model access when rules exist', function (): void {
     expect(fn () => $env->browse('res.partner', [$partnerId])->write(['name' => 'Nope']))
         ->toThrow(AccessDeniedException::class, 'write');
 });
+
+test('record rule domain supports OR prefix groups', function (): void {
+    $super = recordRulesSuperEnv();
+    $super->withAclBypass(function () use ($super): void {
+        $super->model('res.partner')->create(['name' => 'Public']);
+        $super->model('res.partner')->create(['name' => 'Secret']);
+        $super->model('res.partner')->create(['name' => 'Shared']);
+        $super->model('ir.model.access')->create([
+            'name' => 'All/partner read',
+            'model' => 'res.partner',
+            'group_id' => null,
+            'perm_read' => true,
+        ]);
+        $super->model('ir.rule')->create([
+            'name' => 'Public or shared',
+            'model' => 'res.partner',
+            'group_id' => null,
+            'perm_read' => true,
+            'domain' => json_encode([
+                '|',
+                ['name', '=', 'Public'],
+                ['name', '=', 'Shared'],
+            ]),
+        ]);
+    });
+
+    $env = new Environment($super->connection, $super->registry, 2);
+
+    $names = array_column($env->model('res.partner')->search()->read(['name']), 'name');
+    sort($names);
+
+    expect($names)->toBe(['Public', 'Shared']);
+});

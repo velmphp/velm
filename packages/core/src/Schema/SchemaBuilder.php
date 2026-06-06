@@ -71,7 +71,7 @@ final class SchemaBuilder
         $columns = ['"id" INTEGER PRIMARY KEY AUTOINCREMENT'];
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
+            if ($field->name === 'id' || ! $field->persistsInDatabase()) {
                 continue;
             }
 
@@ -100,7 +100,7 @@ final class SchemaBuilder
         }
 
         foreach ($modelClass::fields() as $field) {
-            if ($field->name === 'id' || $field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
+            if ($field->name === 'id' || ! $field->persistsInDatabase()) {
                 continue;
             }
 

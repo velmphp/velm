@@ -115,15 +115,24 @@ test('searches with ilike and or groups', function (): void {
     $env = ormEnvironment();
     $env->model('res.partner')->create(['name' => 'Acme Corp', 'active' => true]);
     $env->model('res.partner')->create(['name' => 'Other LLC', 'active' => true]);
+    $env->model('res.partner')->create(['name' => 'Beta Inc', 'active' => true]);
 
-    $matches = $env->model('res.partner')->search([
+    $legacy = $env->model('res.partner')->search([
         ['__or__', 'ilike', [
             ['name', 'ilike', '%acme%'],
         ]],
     ]);
 
-    expect($matches->count())->toBe(1)
-        ->and($matches->read()[0]['name'])->toBe('Acme Corp');
+    expect($legacy->count())->toBe(1)
+        ->and($legacy->read()[0]['name'])->toBe('Acme Corp');
+
+    $prefix = $env->model('res.partner')->search([
+        '|',
+        ['name', 'ilike', '%acme%'],
+        ['name', 'ilike', '%beta%'],
+    ]);
+
+    expect($prefix->count())->toBe(2);
 });
 
 test('unlink removes records from the table', function (): void {

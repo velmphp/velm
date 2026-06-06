@@ -46,6 +46,11 @@ final class Many2manyField extends Field
         throw new \LogicException('Many2manyField is not stored as a table column.');
     }
 
+    public function persistsInDatabase(): bool
+    {
+        return false;
+    }
+
     public function toSql(mixed $value): mixed
     {
         throw new \LogicException('Many2manyField values are written via create/write as id lists.');
