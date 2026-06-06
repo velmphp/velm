@@ -36,7 +36,13 @@ composer create-project velmphp/app my_app
 cd my_app
 ```
 
-Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework`, and transitive `velmphp/*` packages.
+Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework`, and transitive `velmphp/*` packages at **`^1.0@RC`** (requires `v1.0.0-rc1` or later on Packagist).
+
+To pin the RC explicitly:
+
+```bash
+composer create-project velmphp/app my_app v1.0.0-rc1
+```
 
 ## 2. Run setup
 

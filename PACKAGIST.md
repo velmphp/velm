@@ -72,6 +72,8 @@ Claim the **`velmphp`** vendor on Packagist by becoming maintainer on one packag
 
 ## Releasing
 
+See **[RELEASE.md](./RELEASE.md)** for the full RC1 runbook.
+
 Tag from `main` (all packages share one semver):
 
 ```bash
@@ -79,18 +81,17 @@ git tag -a v1.0.0-rc1 -m "Velm 1.0 release candidate 1"
 git push origin v1.0.0-rc1
 ```
 
-The split workflow runs on `v*` tags and pushes the tag to every mirror. Packagist picks up new versions via webhook.
+The split workflow runs on `v*` tags and pushes the tag to every mirror. Packagist lists version **`1.0.0-RC1`**.
 
 Pushes to **`main`** also re-sync mirrors (for `dev-main` / `1.x-dev` installs).
 
-## Before tagging
+## Constraints
 
-1. **Constraints** — inter-package deps use `^1.0@dev` until RC tags land; then tighten to `^1.0` / `^1.0@RC`.
-2. **Version field** — each library has `"version": "1.0.0"` for path-repo dev; Packagist uses git tags on mirrors.
-3. **App template** — `apps/app/composer.json` has no path `repositories`; monorepo dev uses `composer.local.json`.
-4. **Smoke tests** — CI `app-install` and `demo-setup` in `velmphp/velm`.
+- **Published installs:** `^1.0@RC` with `"minimum-stability": "dev"` and `"prefer-stable": true`.
+- **After stable 1.0.0:** tighten to `^1.0` across packages and `apps/app`.
+- **Monorepo dev:** path repos; `apps/app` uses optional `composer.local.json`.
 
-## After Packagist is live
+## Smoke test after tag
 
 ```bash
 composer create-project velmphp/app /tmp/velm-smoke
