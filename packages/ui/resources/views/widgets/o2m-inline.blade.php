@@ -5,14 +5,15 @@
         'inverseName' => $inverseName,
         'searchUrl' => $searchUrl,
         'formViewUrl' => $formViewUrl ?? null,
+        'recordsApiUrl' => $recordsApiUrl ?? url('/api/records'),
         'rows' => $rows ?? [],
         'parentRecordId' => $parentRecordId ?? null,
         'readonly' => $readonly ?? false,
-        'columns' => $columns ?? [['name' => 'name', 'label' => 'Name']],
+        'columns' => $columns ?? [['name' => 'name', 'label' => 'Name', 'kind' => 'char']],
     ];
 @endphp
 
-<div wire:ignore class="pv-o2m-dialog space-y-2" x-data="pvO2mDialog(@js($cfg))">
+<div wire:ignore class="pv-o2m-inline space-y-2" x-data="pvO2mInline(@js($cfg))">
     @if (! ($parentRecordId ?? null) && ! ($readonly ?? false))
         <p class="text-xs text-body-subtle">
             {{ __('Save the parent record first to link new lines.') }}
@@ -29,7 +30,7 @@
                         </th>
                     @endforeach
                     @if (! ($readonly ?? false))
-                        <th class="w-8 px-3 py-2"></th>
+                        <th class="w-24 px-3 py-2"></th>
                     @endif
                 </tr>
             </thead>
@@ -37,7 +38,33 @@
                 <template x-for="row in rows" :key="row.id">
                     <tr class="transition-colors hover:bg-neutral-secondary">
                         <template x-for="col in columns" :key="col.name">
-                            <td class="px-3 py-2 text-body" x-text="row[col.name] ?? row.label"></td>
+                            <td class="px-3 py-2 text-body">
+                                <input
+                                    x-show="!readonly && col.kind === 'char'"
+                                    type="text"
+                                    class="pv-input w-full min-w-[8rem]"
+                                    x-model="row[col.name]"
+                                    @change="patchCell(row, col.name, row[col.name])"
+                                />
+                                <input
+                                    x-show="!readonly && col.kind === 'integer'"
+                                    type="number"
+                                    class="pv-input w-full min-w-[5rem]"
+                                    x-model.number="row[col.name]"
+                                    @change="patchCell(row, col.name, row[col.name])"
+                                />
+                                <input
+                                    x-show="!readonly && col.kind === 'boolean'"
+                                    type="checkbox"
+                                    class="rounded border-default text-fg-brand focus:ring-brand"
+                                    :checked="!!row[col.name]"
+                                    @change="patchCell(row, col.name, $event.target.checked)"
+                                />
+                                <span
+                                    x-show="readonly || col.kind === 'readonly' || !['char', 'integer', 'boolean'].includes(col.kind)"
+                                    x-text="formatCell(row, col)"
+                                ></span>
+                            </td>
                         </template>
                         <td x-show="!readonly" class="px-3 py-2 text-end">
                             <div class="flex items-center justify-end gap-1">
@@ -69,6 +96,8 @@
             </tbody>
         </table>
     </div>
+
+    <p x-show="patchError" x-cloak class="text-xs text-fg-danger" x-text="patchError"></p>
 
     <div x-show="!readonly && parentRecordId" class="flex flex-wrap items-center gap-2">
         <button

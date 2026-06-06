@@ -611,6 +611,172 @@
             },
         }));
 
+        Alpine.data('pvO2mInline', (cfg) => ({
+            wireKey: cfg.wireKey,
+            comodel: cfg.comodel,
+            inverseName: cfg.inverseName,
+            searchUrl: cfg.searchUrl,
+            formViewUrl: cfg.formViewUrl || null,
+            recordsApiUrl: cfg.recordsApiUrl || '/api/records',
+            columns: cfg.columns || [],
+            rows: Array.isArray(cfg.rows) ? cfg.rows.map((r) => ({ ...r })) : [],
+            parentRecordId: cfg.parentRecordId,
+            readonly: !!cfg.readonly,
+            query: '',
+            results: [],
+            cursor: 0,
+            open: false,
+            linkOpen: false,
+            loading: false,
+            patching: false,
+            patchError: '',
+            _abort: null,
+
+            init() {
+                this.syncWire();
+            },
+
+            syncWire() {
+                if (!this.wireKey || this.readonly) return;
+                this.$wire.set(this.wireKey, this.rows.map((r) => r.id));
+            },
+
+            formatCell(row, col) {
+                const value = row[col.name];
+                if (col.kind === 'boolean') {
+                    return value ? '{{ __('Yes') }}' : '{{ __('No') }}';
+                }
+                if (value === null || value === undefined || value === false) {
+                    return '—';
+                }
+                return String(value);
+            },
+
+            recordUrl(id, edit = false) {
+                if (!this.formViewUrl || id == null) return null;
+                const base = this.formViewUrl.replace(/\/$/, '') + '/' + id;
+                return edit ? base + '/edit' : base;
+            },
+
+            openRecord(id, label) {
+                const url = this.recordUrl(id);
+                if (!url) return;
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, label || '');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            createNew() {
+                if (!this.formViewUrl || !this.parentRecordId) return;
+                const url = this.formViewUrl.replace(/\/$/, '') + '/create?' + encodeURIComponent(this.inverseName) + '=' + this.parentRecordId;
+                if (window.pvOpenRecord) {
+                    window.pvOpenRecord(url, '{{ __('New line') }}');
+                } else {
+                    window.location.href = url;
+                }
+            },
+
+            async patchCell(row, field, value) {
+                if (this.readonly || this.patching) return;
+                this.patchError = '';
+                this.patching = true;
+                const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const url = this.recordsApiUrl.replace(/\/$/, '') + '/' + row.id + '?model=' + encodeURIComponent(this.comodel);
+                try {
+                    const r = await fetch(url, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ [field]: value }),
+                    });
+                    if (!r.ok) {
+                        const data = await r.json().catch(() => ({}));
+                        throw new Error(data.message || '{{ __('Could not save line.') }}');
+                    }
+                    const data = await r.json();
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach((key) => {
+                            if (key !== 'id' && Object.prototype.hasOwnProperty.call(row, key)) {
+                                row[key] = data[key];
+                            }
+                        });
+                    }
+                } catch (e) {
+                    this.patchError = e.message || '{{ __('Could not save line.') }}';
+                } finally {
+                    this.patching = false;
+                }
+            },
+
+            async searchNow() {
+                if (this._abort) this._abort.abort();
+                const ctl = new AbortController();
+                this._abort = ctl;
+                this.loading = true;
+                try {
+                    const r = await fetch(this.searchUrl + '&q=' + encodeURIComponent(this.query), {
+                        signal: ctl.signal,
+                        credentials: 'same-origin',
+                    });
+                    if (!r.ok) throw new Error('fetch failed');
+                    const data = await r.json();
+                    this.results = data.results || [];
+                    this.cursor = 0;
+                    this.open = true;
+                } catch (e) {
+                    if (e.name !== 'AbortError') this.results = [];
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            filteredResults() {
+                const taken = new Set(this.rows.map((r) => r.id));
+                return this.results.filter((r) => !taken.has(r.id));
+            },
+
+            moveCursor(delta) {
+                const opts = this.filteredResults();
+                const max = opts.length - 1;
+                if (max < 0) return;
+                this.cursor = Math.max(0, Math.min(max, this.cursor + delta));
+            },
+
+            onEnter() {
+                const opts = this.filteredResults();
+                if (this.cursor < opts.length) {
+                    this.add(opts[this.cursor]);
+                }
+            },
+
+            add(item) {
+                if (this.readonly) return;
+                const row = { id: item.id, label: item.label };
+                this.columns.forEach((col) => {
+                    if (col.name !== 'id' && row[col.name] === undefined) {
+                        row[col.name] = item[col.name] ?? item.label;
+                    }
+                });
+                this.rows.push(row);
+                this.query = '';
+                this.open = false;
+                this.linkOpen = false;
+                this.syncWire();
+            },
+
+            remove(id) {
+                if (this.readonly) return;
+                this.rows = this.rows.filter((r) => r.id !== id);
+                this.syncWire();
+            },
+        }));
+
         Alpine.data('pvFormNotebook', (storageKey, defaultTab, pageNames) => ({
             tab: defaultTab,
             init() {

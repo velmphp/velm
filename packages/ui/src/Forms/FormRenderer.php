@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Velm\Ui\Forms;
 
 use Velm\Environment;
+use Velm\Fields\BooleanField;
+use Velm\Fields\CharField;
 use Velm\Fields\Field;
+use Velm\Fields\IntegerField;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\One2manyField;
+use Velm\Fields\TextField;
 use Velm\Ui\Support\RelationalInitials;
 use Velm\Ui\Support\ViewUrlResolver;
 use Velm\Ui\Widgets\WidgetContext;
@@ -292,6 +296,7 @@ final class FormRenderer
             'inverseName' => $field->inverseName,
             'searchUrl' => route('velm.api.m2o.search', ['model' => $field->comodel]),
             'formViewUrl' => ViewUrlResolver::recordViewUrlForModel($ctx->env, $field->comodel, $ctx->mode),
+            'recordsApiUrl' => url('/api/records'),
             'rows' => RelationalInitials::one2manyRows($ctx->env, $field, $ctx->value(), $columns),
             'parentRecordId' => $parentRecordId,
             'inline' => $inline,
@@ -316,16 +321,35 @@ final class FormRenderer
                     continue;
                 }
                 $fname = (string) $spec['name'];
+                $colField = $fields[$fname] ?? null;
                 $columns[] = [
                     'name' => $fname,
-                    'label' => (string) ($spec['label'] ?? $fields[$fname]?->displayLabel() ?? Field::humanizeFieldName($fname)),
+                    'label' => (string) ($spec['label'] ?? $colField?->displayLabel() ?? Field::humanizeFieldName($fname)),
+                    'kind' => $colField !== null ? $this->o2mColumnKind($colField) : 'readonly',
                 ];
             }
 
             return $columns;
         }
 
-        return [['name' => 'name', 'label' => 'Name']];
+        $comodelClass = $ctx->env->registry->modelClass($field->comodel);
+        $nameField = $comodelClass::fields()['name'] ?? null;
+
+        return [[
+            'name' => 'name',
+            'label' => $nameField?->displayLabel() ?? 'Name',
+            'kind' => $nameField !== null ? $this->o2mColumnKind($nameField) : 'char',
+        ]];
+    }
+
+    private function o2mColumnKind(Field $field): string
+    {
+        return match (true) {
+            $field instanceof BooleanField => 'boolean',
+            $field instanceof IntegerField => 'integer',
+            $field instanceof CharField, $field instanceof TextField => 'char',
+            default => 'readonly',
+        };
     }
 
     private function canQuickCreate(Environment $env, string $comodel): bool

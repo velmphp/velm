@@ -48,7 +48,7 @@ Ship in **rc3** — last RC before stable.
 | 2.1 | Computed fields (`@depends`, stored / unstored) | **rc3** | **Done** | ORM + list/form columns; fluent `depends()`; stored recompute on write |
 | 2.2 | Domain OR-groups | **rc3** | **Done** | `\|` / `&` / `!` prefix notation; legacy `__or__`; search + record rules |
 | 2.3 | `mail.thread` mixins (`$mixins`) | **rc3** | **Done** | `$mixins = ['mail.thread']`; abstract `MailThread` mixin registration |
-| 2.4 | O2M inline / table widget | **rc3** | Pending | Dialog mode done; embedded sub-grid on forms |
+| 2.4 | O2M inline / table widget | **rc3** | **Done** | Opt-in `widget: inline` / `table`; default `dialog` opens detail/edit in embed |
 | 2.5 | `file` / `files` field widgets | **rc3** | Pending | Attachments API done; form widgets + list column |
 | 2.6 | Uninstall optional schema cleanup (`--drop-schema`) | **rc3** | **Done** | `velm:module:uninstall --drop-schema` (local/testing only) |
 | 2.7 | Kanban view renderer | **rc3** | Pending | Arch type exists; Livewire board + card drag |
@@ -117,7 +117,7 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 | Step | Work |
 |------|------|
 | R3.6 | `$mixins` / abstract model registration — migrate `$mailThread` to `mail.thread` mixin | **Done** |
-| R3.7 | O2M inline/table Livewire widget on form arch |
+| R3.7 | O2M inline/table Livewire widget on form arch | **Done** |
 | R3.8 | `file` + `files` form widgets wired to attachment API |
 | R3.9 | Docs: models, views-and-forms, addons; demo addon coverage |
 
