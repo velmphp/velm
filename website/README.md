@@ -23,6 +23,19 @@ npm run serve
 
 Built output is in `website/build/`.
 
+## Versioned and multilingual docs
+
+- **Versions:** Docusaurus snapshots per release (`website/versioned_docs/`). Default: latest tag; **Next** = `main`.
+- **Locales:** `en` (default), `fr` (scaffold). UI strings in `website/i18n/`.
+
+Maintainer runbook: [DOCS_MAINTAINERS.md](./DOCS_MAINTAINERS.md)
+
+```bash
+npm run docs:version -- 1.0.0-rc3   # after each release tag
+npm run write-translations -- --locale fr
+npm start -- --locale fr
+```
+
 ## Deployment (GitHub Pages)
 
 Pushes to `main` that touch `website/` trigger [.github/workflows/deploy-docs.yml](../.github/workflows/deploy-docs.yml).

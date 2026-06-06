@@ -2,9 +2,11 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-/** GitHub Pages project site: https://velmphp.github.io/velm/ */
 const siteUrl = process.env.DOCUSAURUS_URL ?? 'http://localhost:3000';
 const baseUrl = process.env.DOCUSAURUS_BASE_URL ?? '/velm/';
+/** Update when cutting a new docs version (`npm run docs:version`). */
+const latestDocsVersion = '1.0.0-rc2';
+const latestDocsBase = `/docs/${latestDocsVersion}`;
 
 const config: Config = {
   title: 'Velm',
@@ -21,7 +23,19 @@ const config: Config = {
   },
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'fr'],
+    localeConfigs: {
+      en: {
+        label: 'English',
+        direction: 'ltr',
+        htmlLang: 'en-US',
+      },
+      fr: {
+        label: 'Français',
+        direction: 'ltr',
+        htmlLang: 'fr-FR',
+      },
+    },
   },
   presets: [
     [
@@ -31,6 +45,19 @@ const config: Config = {
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/velmphp/velm/tree/main/website/',
+          lastVersion: '1.0.0-rc2',
+          versions: {
+            current: {
+              label: 'Next',
+              path: 'next',
+              banner: 'unreleased',
+            },
+            '1.0.0-rc2': {
+              label: '1.0.0-rc2',
+              path: '1.0.0-rc2',
+              banner: 'none',
+            },
+          },
         },
         blog: false,
         theme: {
@@ -68,13 +95,17 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/velmphp/velm',
-          label: 'GitHub',
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownActiveClassDisabled: true,
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
         {
-          href: 'https://github.com/velmphp/docs',
-          label: 'Docs repo',
+          href: 'https://github.com/velmphp/velm',
+          label: 'GitHub',
           position: 'right',
         },
       ],
@@ -85,9 +116,9 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            { label: 'Introduction', to: '/docs/intro' },
-            { label: 'Installation', to: '/docs/guides/installation' },
-            { label: 'Extending models', to: '/docs/models/extending-a-model' },
+            { label: 'Introduction', to: `${latestDocsBase}/intro` },
+            { label: 'Installation', to: `${latestDocsBase}/guides/installation` },
+            { label: 'Extending models', to: `${latestDocsBase}/models/extending-a-model` },
           ],
         },
         {

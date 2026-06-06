@@ -1,0 +1,43 @@
+{
+  "docs": [
+    {
+      "type": "category",
+      "label": "Prologue",
+      "collapsed": false,
+      "items": [
+        "intro",
+        "guides/installation",
+        "guides/addons",
+        "guides/migrations",
+        "guides/scaffolding",
+        "guides/features",
+        "guides/admin-panel",
+        "guides/views-and-forms"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Models",
+      "link": {
+        "type": "doc",
+        "id": "models/index"
+      },
+      "collapsed": false,
+      "items": [
+        "models/defining-a-model",
+        "models/relational-fields",
+        "models/extending-a-model",
+        "models/method-overrides-and-super",
+        "models/security",
+        {
+          "type": "category",
+          "label": "Digging Deeper",
+          "collapsed": false,
+          "items": [
+            "models/stacking-extensions"
+          ]
+        }
+      ]
+    }
+  ]
+}
