@@ -19,7 +19,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 |---|------|--------|-------|
 | 1.1 | `velm:migrate:fresh` | **Done** | Dev reset: drop Velm schema + reinstall bootstrap — see [RC1 slice](#rc1-slice--migratefresh--seed) |
 | 1.2 | `velm:seed` + manifest `SEEDERS` | **Done** | Module-scoped seeders in topo order — see [RC1 slice](#rc1-slice--migratefresh--seed) |
-| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **In progress** | Split workflow → mirror repos; submit mirrors on Packagist; tag `v1.0.0-rc1` |
+| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **Ready to tag** | Mirrors + Packagist linked; merge RC prep then tag `v1.0.0-rc1` — see [RELEASE.md](./RELEASE.md) |
 | 1.4 | Production ops guide (cron, attachments disk, DB choice) | Pending | `website/docs/guides/` |
 | 1.5 | CI matrix (PHP 8.3+, SQLite + MySQL/Postgres smoke) | Pending | Extend root `composer test` |
 | 1.6 | Docs / ROADMAP sync | Ongoing | `intro.md`, `CONTEXT.md`, guides |

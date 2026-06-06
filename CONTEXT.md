@@ -64,8 +64,8 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 ## Still open (do not assume done)
 
-- **Stable v1.0-rc1:** Packagist tags — see [ROADMAP.md — RC1 slice](./ROADMAP.md#rc1-slice--migratefresh--seed)
+- **Stable v1.0-rc1:** Packagist mirrors live — tag with [RELEASE.md](./RELEASE.md)
 - Kanban / graph / pivot **arch** renderers (home **dashboard** at `/velm/dashboard` is done)
 - Filament arch adapter (optional; not used by app/demo)
 - Domain OR-groups, computed fields, O2M inline widget
-- Packagist split releases for `velmphp/app` and `velmphp/framework`
+- Packagist mirror releases (`velmphp/*`) — see [PACKAGIST.md](./PACKAGIST.md) and [RELEASE.md](./RELEASE.md)

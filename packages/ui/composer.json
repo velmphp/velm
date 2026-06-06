@@ -7,9 +7,9 @@
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.0",
-        "velmphp/core": "^1.0@dev",
-        "velmphp/views": "^1.0@dev",
-        "velmphp/web": "^1.0@dev",
+        "velmphp/core": "^1.0@RC",
+        "velmphp/views": "^1.0@RC",
+        "velmphp/web": "^1.0@RC",
         "livewire/livewire": "^4.0"
     },
     "autoload": { "psr-4": { "Velm\\Ui\\": "src/" } },
