@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Velm\Database;
 
+use Illuminate\Database\Connection as IlluminateConnection;
+use Illuminate\Database\SQLiteConnection;
 use PDO;
 use PDOStatement;
 
 final class PdoConnection implements Connection
 {
+    private ?IlluminateConnection $illuminateConnection = null;
+
     public function __construct(
         private readonly PDO $pdo,
     ) {}
@@ -60,6 +64,22 @@ final class PdoConnection implements Connection
             'pgsql' => 'pgsql',
             default => 'sqlite',
         };
+    }
+
+    public function illuminateConnection(): IlluminateConnection
+    {
+        if ($this->illuminateConnection !== null) {
+            return $this->illuminateConnection;
+        }
+
+        $this->illuminateConnection = match ($this->driver()) {
+            'sqlite' => new SQLiteConnection($this->pdo, 'default', '', ['driver' => 'sqlite']),
+            default => throw new \RuntimeException(
+                'PdoConnection schema operations are only supported for sqlite in tests.',
+            ),
+        };
+
+        return $this->illuminateConnection;
     }
 
     /**

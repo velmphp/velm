@@ -10,4 +10,17 @@
             <directory>packages/*/tests</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">packages/admin/src</directory>
+            <directory suffix=".php">packages/console/src</directory>
+            <directory suffix=".php">packages/core/src</directory>
+            <directory suffix=".php">packages/framework/src</directory>
+            <directory suffix=".php">packages/modules/src</directory>
+            <directory suffix=".php">packages/modules/modules</directory>
+            <directory suffix=".php">packages/ui/src</directory>
+            <directory suffix=".php">packages/views/src</directory>
+            <directory suffix=".php">packages/web/src</directory>
+        </include>
+    </source>
 </phpunit>

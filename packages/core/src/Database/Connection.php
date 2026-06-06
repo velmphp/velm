@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Velm\Database;
 
+use Illuminate\Database\Connection as IlluminateConnection;
+
 interface Connection
 {
     /**
@@ -24,6 +26,8 @@ interface Connection
     public function fetchOne(string $sql, array $params = []): ?array;
 
     public function lastInsertId(): int;
+
+    public function illuminateConnection(): IlluminateConnection;
 
     /** @return 'sqlite'|'mysql'|'pgsql'|string */
     public function driver(): string;

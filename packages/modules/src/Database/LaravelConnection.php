@@ -42,4 +42,9 @@ final class LaravelConnection implements Connection
     {
         return $this->connection->getDriverName();
     }
+
+    public function illuminateConnection(): IlluminateConnection
+    {
+        return $this->connection;
+    }
 }
