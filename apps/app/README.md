@@ -7,7 +7,7 @@ Published on Packagist as **`velmphp/app`**. Monorepo path: `apps/app/`.
 ## Packagist install
 
 ```bash
-composer create-project velmphp/app my_app
+composer create-project velmphp/app my_app -s rc
 cd my_app
 composer run setup
 composer run dev
@@ -24,13 +24,14 @@ From the repository root:
 ```bash
 composer install
 cd apps/app
+composer update
 cp composer.local.json.example composer.local.json
-composer install
+composer update
 composer run setup
 composer run dev
 ```
 
-`composer.local.json` adds path repositories to `../../packages/*` (gitignored).
+`composer.local.json` adds path repositories to `../../packages/*` (gitignored). Run `composer update` again after copying it so the merge plugin (already in `vendor/`) symlinks monorepo packages.
 
 For the full reference app with demo addons, use **`apps/demo/`** instead.
 

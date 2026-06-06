@@ -4,12 +4,12 @@
     "type": "project",
     "description": "Official Velm Laravel application — greenfield ERP host with addons, panel, and setup scripts",
     "keywords": ["velm", "laravel", "erp", "admin"],
-    "license": "LGPL-3.0-or-later",
+    "license": "MIT",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
-        "velmphp/framework": "^1.0@RC",
+        "velmphp/framework": "^1.0@dev",
         "wikimedia/composer-merge-plugin": "^2.1"
     },
     "require-dev": {

@@ -6027,11 +6027,11 @@
         },
         {
             "name": "velmphp/admin",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/admin",
-                "reference": "74c63c9a6eb564fa697b440032efe154567efb6c"
+                "reference": "8cdce71182cd00c662580c4844a7f6b5e70a64cf"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -6065,7 +6065,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm admin — Livewire shell, arch-driven list and form pages",
             "transport-options": {
@@ -6075,11 +6075,11 @@
         },
         {
             "name": "velmphp/console",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/console",
-                "reference": "dd7a34e3246403f1509bd74d1e8f75dc013636af"
+                "reference": "d2963cac5d8a7277252f82a4ebd64560a45a1451"
             },
             "require": {
                 "php": "^8.3",
@@ -6098,7 +6098,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm CLI — bin/velm, make:* generators, module commands",
             "transport-options": {
@@ -6108,11 +6108,11 @@
         },
         {
             "name": "velmphp/core",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/core",
-                "reference": "dbe50685e2a5fbc4d035f53c52d73c9800588161"
+                "reference": "725275840e3fd509458408f6d0fbde073b059c4c"
             },
             "require": {
                 "php": "^8.3"
@@ -6134,7 +6134,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm recordset ORM — Environment, Registry, fields, domain",
             "transport-options": {
@@ -6144,11 +6144,11 @@
         },
         {
             "name": "velmphp/framework",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/framework",
-                "reference": "e22697e6ca37bd6d790fae2aa9f734abd7757d27"
+                "reference": "720f0600c34f377330129ce4965050f371f0af5a"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -6187,7 +6187,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm framework metapackage — Laravel integration and service provider",
             "transport-options": {
@@ -6197,11 +6197,11 @@
         },
         {
             "name": "velmphp/modules",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/modules",
-                "reference": "d9f45d9741e519a22ddde4e07a30bb0409e7abcc"
+                "reference": "92b0ce6643c9e93d4a44f75301ed82a2d512bf57"
             },
             "require": {
                 "illuminate/database": "^13.0",
@@ -6235,7 +6235,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm module loader — discovery, ir.module, install/sync, bundled modules (modules/)",
             "transport-options": {
@@ -6245,11 +6245,11 @@
         },
         {
             "name": "velmphp/ui",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/ui",
-                "reference": "f6e273bd1afdda3375342f8564c3e698e60d0fb3"
+                "reference": "d7184b1f709e7eff465670f6c176f11f632f7db1"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -6281,7 +6281,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm UI — widget registry, Livewire components, Tailwind + Flowbite bundle",
             "transport-options": {
@@ -6291,11 +6291,11 @@
         },
         {
             "name": "velmphp/views",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/views",
-                "reference": "3b713fa61249c1330408747a8deed346cf3fdec8"
+                "reference": "61e47c2dd859e48533acedbdca9cd545938c20a4"
             },
             "require": {
                 "php": "^8.3",
@@ -6323,7 +6323,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm declarative views — ir.ui.view, arch resolve, fluent Authoring builders",
             "transport-options": {
@@ -6333,11 +6333,11 @@
         },
         {
             "name": "velmphp/web",
-            "version": "1.0.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/web",
-                "reference": "af76928338205b1c5e61c5e7bb54c48060ebfe22"
+                "reference": "781d2d89a7346349fc109325ec875ab5a81a3a2a"
             },
             "require": {
                 "illuminate/routing": "^13.0",
@@ -6375,7 +6375,7 @@
                 }
             },
             "license": [
-                "LGPL-3.0-or-later"
+                "MIT"
             ],
             "description": "Velm HTTP layer — routes, middleware, JSON API",
             "transport-options": {

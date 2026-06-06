@@ -4,12 +4,12 @@
     "type": "project",
     "description": "Velm reference application with demo addons — monorepo dev and E2E only (not published on Packagist)",
     "keywords": ["velm", "laravel", "erp", "demo"],
-    "license": "LGPL-3.0-or-later",
+    "license": "MIT",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
-        "velmphp/framework": "^1.0@RC"
+        "velmphp/framework": "^1.0@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
