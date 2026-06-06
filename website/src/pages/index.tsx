@@ -1,4 +1,5 @@
 import Link from '@docusaurus/Link';
+import {useLatestVersion} from '@docusaurus/plugin-content-docs/client';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
@@ -6,6 +7,17 @@ import Heading from '@theme/Heading';
 import clsx from 'clsx';
 
 import styles from './index.module.css';
+
+function useLatestDocPath(slug: string): string {
+  const version = useLatestVersion('default');
+  if (version?.name === 'current') {
+    return `/docs/next/${slug}`;
+  }
+  if (version) {
+    return `/docs/${version.name}/${slug}`;
+  }
+  return `/docs/${slug}`;
+}
 
 type FeatureItem = {
   title: string;
@@ -55,6 +67,8 @@ const features: FeatureItem[] = [
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   const logoSrc = useBaseUrl('/img/logo-concept.svg');
+  const installationPath = useLatestDocPath('guides/installation');
+  const introPath = useLatestDocPath('intro');
 
   return (
     <header className={clsx('hero', styles.heroBanner)}>
@@ -74,10 +88,10 @@ function HomepageHeader() {
               Odoo semantics on Laravel — extensibility without inheritance chains.
             </p>
             <div className={styles.buttons}>
-              <Link className="button button--primary button--lg" to="/docs/guides/installation">
+              <Link className="button button--primary button--lg" to={installationPath}>
                 Get started
               </Link>
-              <Link className="button button--secondary button--lg" to="/docs/intro">
+              <Link className="button button--secondary button--lg" to={introPath}>
                 Read the docs
               </Link>
             </div>

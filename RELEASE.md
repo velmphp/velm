@@ -48,6 +48,16 @@ git push origin main
 
 Split on `main` updates the app mirror; users on `dev-main` get the pinned lock. Tagged `v1.0.0-rc2` dist stays without lock unless you tag `v1.0.0-rc2.1` or accept lock on `main` only.
 
+## Snapshot documentation
+
+```bash
+cd website && npm ci
+npm run docs:version -- 1.0.0-rc2
+npm run write-translations -- --locale fr
+```
+
+Commit `versioned_docs/`, `versions.json`, and config updates; push `main` (see [website/DOCS_MAINTAINERS.md](./website/DOCS_MAINTAINERS.md)).
+
 ## Smoke test
 
 ```bash

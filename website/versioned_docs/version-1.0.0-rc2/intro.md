@@ -6,7 +6,7 @@ sidebar_position: 1
 
 **Velm** is a Laravel-based ERP framework with PyVelm-style semantics: Odoo-like modules, recordsets, and view inheritance, rendered through the Velm admin shell (Livewire + Tailwind).
 
-**Install from Packagist:** `composer create-project velmphp/app my_app -s rc` — see [Installation](./guides/installation). Use the **version dropdown** above for docs tied to a release tag (e.g. **1.0.0-rc2**); **Next** tracks `main`.
+**Install from Packagist:** `composer create-project velmphp/app` — see [Installation](./guides/installation). Release tagging: [RELEASE.md](https://github.com/velmphp/velm/blob/main/RELEASE.md).
 
 This site documents how to **author modules** and use the ORM. For repository architecture and contributor context, see the monorepo [PLAN.md](https://github.com/velmphp/velm/blob/main/PLAN.md) and [CONTEXT.md](https://github.com/velmphp/velm/blob/main/CONTEXT.md).
 
