@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Recordset;
 
+use Velm\Database\SqlQuote;
 use Velm\Environment;
 use Velm\Fields\BooleanField;
 use Velm\Fields\DatetimeField;
@@ -58,22 +59,22 @@ final class ReadGroupQuery
             $field = $this->requireField($name);
             $expression = $this->groupExpression($field, $granularity);
             $alias = $this->groupAlias($name, $granularity);
-            $select[] = $expression.' AS "'.$alias.'"';
+            $select[] = $expression.' AS '.$this->q($alias);
             $groupExpressions[] = $expression;
             $groupAliases[] = $alias;
         }
 
-        $select[] = 'COUNT(*) AS "__count"';
+        $select[] = 'COUNT(*) AS '.$this->q('__count');
 
         foreach ($fields as $spec) {
             [$name, $aggregate] = $this->parseAggregate($spec);
             $field = $this->requireField($name);
             $alias = $name.'_'.$aggregate;
-            $select[] = $this->aggregateExpression($field, $aggregate).' AS "'.$alias.'"';
+            $select[] = $this->aggregateExpression($field, $aggregate).' AS '.$this->q($alias);
         }
 
         $sql = 'SELECT '.implode(', ', $select)
-            .' FROM "'.$this->modelClass::table().'"';
+            .' FROM '.$this->q($this->modelClass::table());
 
         $where = $whereBuilder($domain, $params);
 
@@ -86,7 +87,7 @@ final class ReadGroupQuery
         if ($orderby !== null && $orderby !== '') {
             $sql .= ' ORDER BY '.$this->orderExpression($orderby);
         } else {
-            $sql .= ' ORDER BY "'.$groupAliases[0].'"';
+            $sql .= ' ORDER BY '.$this->q($groupAliases[0]);
         }
 
         if ($limit > 0) {
@@ -180,7 +181,7 @@ final class ReadGroupQuery
     private function groupExpression(Field $field, ?string $granularity): string
     {
         if ($granularity === null) {
-            return '"'.$field->column.'"';
+            return $this->q($field->column);
         }
 
         if (! $field instanceof DatetimeField) {
@@ -188,9 +189,9 @@ final class ReadGroupQuery
         }
 
         return match ($granularity) {
-            'day' => "strftime('%Y-%m-%d', \"{$field->column}\")",
-            'month' => "strftime('%Y-%m', \"{$field->column}\")",
-            'year' => "strftime('%Y', \"{$field->column}\")",
+            'day' => "strftime('%Y-%m-%d', {$this->q($field->column)})",
+            'month' => "strftime('%Y-%m', {$this->q($field->column)})",
+            'year' => "strftime('%Y', {$this->q($field->column)})",
             default => throw new \InvalidArgumentException("Unsupported groupby granularity :{$granularity}."),
         };
     }
@@ -202,7 +203,7 @@ final class ReadGroupQuery
 
     private function aggregateExpression(Field $field, string $aggregate): string
     {
-        $column = '"'.$field->column.'"';
+        $column = $this->q($field->column);
 
         return match ($aggregate) {
             'count' => "COUNT({$column})",
@@ -284,10 +285,15 @@ final class ReadGroupQuery
     private function orderExpression(string $orderby): string
     {
         if (str_starts_with($orderby, '-')) {
-            return '"'.substr($orderby, 1).'" DESC';
+            return $this->q(substr($orderby, 1)).' DESC';
         }
 
-        return '"'.$orderby.'"';
+        return $this->q($orderby);
+    }
+
+    private function q(string $identifier): string
+    {
+        return SqlQuote::identifier($this->env->connection, $identifier);
     }
 
     /**

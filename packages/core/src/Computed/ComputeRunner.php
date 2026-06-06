@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Computed;
 
+use Velm\Database\SqlQuote;
 use Velm\Environment;
 use Velm\Fields\Field;
 use Velm\Recordset\Recordset;
@@ -138,7 +139,9 @@ final class ComputeRunner
         $sqlValue = $field->toSql($value);
 
         $this->env->connection->execute(
-            'UPDATE "'.$modelClass::table().'" SET "'.$field->column.'" = ? WHERE "id" = ?',
+            'UPDATE '.SqlQuote::identifier($this->env->connection, $modelClass::table())
+            .' SET '.SqlQuote::identifier($this->env->connection, $field->column).' = ? WHERE '
+            .SqlQuote::identifier($this->env->connection, 'id').' = ?',
             [$sqlValue, $id],
         );
     }

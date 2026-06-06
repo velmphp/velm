@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Schema;
 
+use Velm\Database\SqlQuote;
 use Velm\Database\Connection;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
@@ -161,7 +162,8 @@ final class SchemaDiffer
     public function countNullRows(string $table, string $column): int
     {
         $row = $this->connection->fetchOne(
-            'SELECT COUNT(*) as c FROM "'.$table.'" WHERE "'.$column.'" IS NULL',
+            'SELECT COUNT(*) as c FROM '.SqlQuote::identifier($this->connection, $table)
+            .' WHERE '.SqlQuote::identifier($this->connection, $column).' IS NULL',
         );
 
         return (int) ($row['c'] ?? $row['C'] ?? 0);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Recordset;
 
+use Velm\Database\SqlQuote;
 use Velm\Domain\Domain;
 use Velm\Domain\DomainCompiler;
 use Velm\Environment;
@@ -94,6 +95,11 @@ final class Recordset
         return null;
     }
 
+    private function q(string $identifier): string
+    {
+        return SqlQuote::identifier($this->env->connection, $identifier);
+    }
+
     /**
      * @param  array<string, mixed>  $values
      */
@@ -114,7 +120,7 @@ final class Recordset
 
         foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
-            $columns[] = '"'.$field->column.'"';
+            $columns[] = $this->q($field->column);
             $placeholders[] = '?';
             $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
@@ -128,17 +134,17 @@ final class Recordset
                 continue;
             }
 
-            $columns[] = '"'.$field->column.'"';
+            $columns[] = $this->q($field->column);
             $placeholders[] = '?';
             $params[] = $field->toSql($this->datetimeToStorage($field->default, $field));
         }
 
         if ($columns === []) {
             $this->env->connection->execute(
-                'INSERT INTO "'.$modelClass::table().'" DEFAULT VALUES',
+                'INSERT INTO '.$this->q($modelClass::table()).' DEFAULT VALUES',
             );
         } else {
-            $sql = 'INSERT INTO "'.$modelClass::table().'" ('.implode(', ', $columns).') VALUES ('.implode(', ', $placeholders).')';
+            $sql = 'INSERT INTO '.$this->q($modelClass::table()).' ('.implode(', ', $columns).') VALUES ('.implode(', ', $placeholders).')';
             $this->env->connection->execute($sql, $params);
         }
 
@@ -199,7 +205,7 @@ final class Recordset
         }
 
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-        $sql = 'SELECT "id"';
+        $sql = 'SELECT '.$this->q('id');
         foreach ($fieldNames as $name) {
             if ($name === 'id' || $name === 'display_name') {
                 continue;
@@ -210,9 +216,9 @@ final class Recordset
                 continue;
             }
 
-            $sql .= ', "'.$field->column.'"';
+            $sql .= ', '.$this->q($field->column);
         }
-        $sql .= ' FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+        $sql .= ' FROM '.$this->q($modelClass::table()).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
 
         $rows = $this->env->connection->fetchAll($sql, $this->ids);
         $m2mByRecord = $m2mNames !== [] ? $this->loadM2mMaps($m2mNames) : [];
@@ -307,13 +313,13 @@ final class Recordset
 
         foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
-            $sets[] = '"'.$field->column.'" = ?';
+            $sets[] = $this->q($field->column).' = ?';
             $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
 
         if ($sets !== []) {
             $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-            $sql = 'UPDATE "'.$modelClass::table().'" SET '.implode(', ', $sets).' WHERE "id" IN ('.$placeholders.')';
+            $sql = 'UPDATE '.$this->q($modelClass::table()).' SET '.implode(', ', $sets).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
             $params = [...$params, ...$this->ids];
             $this->env->connection->execute($sql, $params);
         }
@@ -367,7 +373,7 @@ final class Recordset
 
         $modelClass = $this->modelClass;
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-        $sql = 'DELETE FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+        $sql = 'DELETE FROM '.$this->q($modelClass::table()).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
         $this->env->connection->execute($sql, $this->ids);
 
         foreach ($this->ids as $id) {
@@ -385,7 +391,7 @@ final class Recordset
         $domain = $this->collectSearchDomain($domain, 'read');
 
         $modelClass = $this->modelClass;
-        $sql = 'SELECT "id" FROM "'.$modelClass::table().'"';
+        $sql = 'SELECT '.$this->q('id').' FROM '.$this->q($modelClass::table());
         $params = [];
         $clauses = $this->buildWhere($domain, $params);
 
@@ -393,7 +399,7 @@ final class Recordset
             $sql .= ' WHERE '.$clauses;
         }
 
-        $sql .= ' ORDER BY '.($order ?? '"id"');
+        $sql .= ' ORDER BY '.($order ?? $this->q('id'));
 
         if ($limit > 0) {
             $sql .= ' LIMIT '.$limit;
@@ -511,8 +517,8 @@ final class Recordset
 
         if ($leaf->value === null || $leaf->value === false) {
             return match ($leaf->operator) {
-                '=' => '"'.$field->column.'" IS NULL',
-                '!=' => '"'.$field->column.'" IS NOT NULL',
+                '=' => $this->q($field->column).' IS NULL',
+                '!=' => $this->q($field->column).' IS NOT NULL',
                 default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator} for null."),
             };
         }
@@ -530,22 +536,32 @@ final class Recordset
                 $params[] = $field->toSql($value);
             }
 
-            return '"'.$field->column.'" IN ('.$holders.')';
+            return $this->q($field->column).' IN ('.$holders.')';
         }
 
+        $column = $this->q($field->column);
         $sql = match ($leaf->operator) {
-            '=' => '"'.$field->column.'" = ?',
-            '!=' => '"'.$field->column.'" <> ?',
-            '>' => '"'.$field->column.'" > ?',
-            '<' => '"'.$field->column.'" < ?',
-            '>=' => '"'.$field->column.'" >= ?',
-            '<=' => '"'.$field->column.'" <= ?',
-            'like', 'ilike' => 'LOWER(CAST("'.$field->column.'" AS TEXT)) LIKE LOWER(?)',
+            '=' => $column.' = ?',
+            '!=' => $column.' <> ?',
+            '>' => $column.' > ?',
+            '<' => $column.' < ?',
+            '>=' => $column.' >= ?',
+            '<=' => $column.' <= ?',
+            'like', 'ilike' => $this->likeClause($column),
             default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
         };
         $params[] = $field->toSql($leaf->value);
 
         return $sql;
+    }
+
+    private function likeClause(string $column): string
+    {
+        return match ($this->env->connection->driver()) {
+            'pgsql' => $column.' ILIKE ?',
+            'mysql' => 'LOWER(CAST('.$column.' AS CHAR)) LIKE LOWER(?)',
+            default => 'LOWER(CAST('.$column.' AS TEXT)) LIKE LOWER(?)',
+        };
     }
 
     /**
@@ -627,14 +643,14 @@ final class Recordset
             [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $this->env->connection->execute(
-                'DELETE FROM "'.$relation.'" WHERE "'.$col1.'" IN ('.$ownerPlaceholders.')',
+                'DELETE FROM '.$this->q($relation).' WHERE '.$this->q($col1).' IN ('.$ownerPlaceholders.')',
                 $this->ids,
             );
 
             foreach ($this->ids as $ownerId) {
                 foreach ($peerIds as $peerId) {
                     $this->env->connection->execute(
-                        'INSERT INTO "'.$relation.'" ("'.$col1.'", "'.$col2.'") VALUES (?, ?)',
+                        'INSERT INTO '.$this->q($relation).' ('.$this->q($col1).', '.$this->q($col2).') VALUES (?, ?)',
                         [$ownerId, $peerId],
                     );
                 }
@@ -661,8 +677,8 @@ final class Recordset
             [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $rows = $this->env->connection->fetchAll(
-                'SELECT "'.$col1.'" AS owner_id, "'.$col2.'" AS peer_id FROM "'.$relation.'" '
-                .'WHERE "'.$col1.'" IN ('.$ownerPlaceholders.') ORDER BY "'.$col2.'"',
+                'SELECT '.$this->q($col1).' AS owner_id, '.$this->q($col2).' AS peer_id FROM '.$this->q($relation).' '
+                .'WHERE '.$this->q($col1).' IN ('.$ownerPlaceholders.') ORDER BY '.$this->q($col2),
                 $this->ids,
             );
             $map = [];
@@ -708,8 +724,8 @@ final class Recordset
             $placeholders = implode(', ', array_fill(0, count($childIds), '?'));
 
             $this->env->connection->execute(
-                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = NULL WHERE "'.$inverseColumn.'" = ?'
-                .($childIds !== [] ? ' AND "id" NOT IN ('.$placeholders.')' : ''),
+                'UPDATE '.$this->q($table).' SET '.$this->q($inverseColumn).' = NULL WHERE '.$this->q($inverseColumn).' = ?'
+                .($childIds !== [] ? ' AND '.$this->q('id').' NOT IN ('.$placeholders.')' : ''),
                 $childIds !== [] ? [$parentId, ...$childIds] : [$parentId],
             );
 
@@ -719,7 +735,7 @@ final class Recordset
 
             $linkPlaceholders = implode(', ', array_fill(0, count($childIds), '?'));
             $this->env->connection->execute(
-                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = ? WHERE "id" IN ('.$linkPlaceholders.')',
+                'UPDATE '.$this->q($table).' SET '.$this->q($inverseColumn).' = ? WHERE '.$this->q('id').' IN ('.$linkPlaceholders.')',
                 [$parentId, ...$childIds],
             );
         }
@@ -747,8 +763,8 @@ final class Recordset
             $table = $comodelClass::table();
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $rows = $this->env->connection->fetchAll(
-                'SELECT "id", "'.$inverseColumn.'" AS owner_id FROM "'.$table.'" '
-                .'WHERE "'.$inverseColumn.'" IN ('.$ownerPlaceholders.') ORDER BY "id"',
+                'SELECT '.$this->q('id').', '.$this->q($inverseColumn).' AS owner_id FROM '.$this->q($table).' '
+                .'WHERE '.$this->q($inverseColumn).' IN ('.$ownerPlaceholders.') ORDER BY '.$this->q('id'),
                 $this->ids,
             );
             $map = [];
