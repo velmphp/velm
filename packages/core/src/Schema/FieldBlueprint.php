@@ -16,6 +16,8 @@ use Velm\Fields\TextField;
 
 final class FieldBlueprint
 {
+    private const int DEFAULT_VARCHAR_LENGTH = 255;
+
     public static function addColumn(Blueprint $blueprint, Field $field): void
     {
         $column = self::defineColumn($blueprint, $field);
@@ -34,9 +36,15 @@ final class FieldBlueprint
         $name = $field->column;
 
         if ($field instanceof CharField) {
-            return $field->maxLength !== null
-                ? $blueprint->string($name, $field->maxLength)
-                : $blueprint->text($name);
+            if ($field->maxLength !== null) {
+                return $blueprint->string($name, $field->maxLength);
+            }
+
+            if ($field->default !== null) {
+                return $blueprint->string($name, self::DEFAULT_VARCHAR_LENGTH);
+            }
+
+            return $blueprint->text($name);
         }
 
         if ($field instanceof TextField) {
