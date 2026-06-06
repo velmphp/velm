@@ -13,9 +13,13 @@ use Velm\Registry;
 
 final class SchemaBuilder
 {
+    private readonly SqlDialect $dialect;
+
     public function __construct(
         private readonly Connection $connection,
-    ) {}
+    ) {
+        $this->dialect = SqlDialect::for($connection);
+    }
 
     public function syncRegistry(Registry $registry): void
     {
@@ -68,7 +72,7 @@ final class SchemaBuilder
      */
     public function createTable(string $modelClass): void
     {
-        $columns = ['"id" INTEGER PRIMARY KEY AUTOINCREMENT'];
+        $columns = [$this->dialect->idColumnSql()];
 
         foreach ($modelClass::fields() as $field) {
             if ($field->name === 'id' || ! $field->persistsInDatabase()) {
@@ -123,31 +127,7 @@ final class SchemaBuilder
      */
     private function existingColumns(string $table): array
     {
-        $rows = $this->connection->fetchAll('PRAGMA table_info("'.$table.'")');
-
-        if ($rows !== []) {
-            return array_values(array_map(
-                static fn (array $row): string => (string) $row['name'],
-                $rows,
-            ));
-        }
-
-        $driverRows = $this->connection->fetchAll('SELECT DATABASE() as db');
-        $database = $driverRows[0]['db'] ?? null;
-
-        if ($database === null) {
-            return [];
-        }
-
-        $rows = $this->connection->fetchAll(
-            'SELECT column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ?',
-            [$database, $table],
-        );
-
-        return array_values(array_map(
-            static fn (array $row): string => (string) ($row['column_name'] ?? $row['COLUMN_NAME'] ?? ''),
-            $rows,
-        ));
+        return $this->dialect->tableColumns($this->connection, $table);
     }
 
     private function defaultSql(Field $field): string

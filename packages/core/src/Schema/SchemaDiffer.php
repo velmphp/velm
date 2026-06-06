@@ -14,12 +14,14 @@ use Velm\Registry;
 final class SchemaDiffer
 {
     private readonly SchemaBuilder $builder;
+    private readonly SqlDialect $dialect;
 
     public function __construct(
         private readonly Connection $connection,
         ?SchemaBuilder $builder = null,
     ) {
         $this->builder = $builder ?? new SchemaBuilder($connection);
+        $this->dialect = SqlDialect::for($connection);
     }
 
     /**
@@ -198,58 +200,35 @@ final class SchemaDiffer
      */
     private function existingColumns(string $table): array
     {
-        $rows = $this->pragmaTableInfo($table);
-
-        if ($rows !== []) {
-            return array_values(array_map(
-                static fn (array $row): string => (string) ($row['name'] ?? ''),
-                $rows,
-            ));
-        }
-
-        if (! $this->supportsInformationSchema()) {
-            return [];
-        }
-
-        $database = $this->currentDatabase();
-
-        if ($database === null) {
-            return [];
-        }
-
-        $rows = $this->connection->fetchAll(
-            'SELECT column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ?',
-            [$database, $table],
-        );
-
-        return array_values(array_map(
-            static fn (array $row): string => (string) ($row['column_name'] ?? $row['COLUMN_NAME'] ?? ''),
-            $rows,
-        ));
+        return $this->dialect->tableColumns($this->connection, $table);
     }
 
     private function columnIsNullable(string $table, string $column): bool
     {
-        foreach ($this->pragmaTableInfo($table) as $row) {
-            if ((string) ($row['name'] ?? '') === $column) {
-                return (int) ($row['notnull'] ?? 1) === 0;
+        if ($this->dialect->driver() === 'sqlite') {
+            foreach ($this->pragmaTableInfo($table) as $row) {
+                if ((string) ($row['name'] ?? '') === $column) {
+                    return (int) ($row['notnull'] ?? 1) === 0;
+                }
             }
         }
 
-        if (! $this->supportsInformationSchema()) {
+        if (! $this->dialect->supportsInformationSchema()) {
             return true;
         }
 
-        $database = $this->currentDatabase();
+        $schema = $this->dialect->driver() === 'pgsql'
+            ? 'public'
+            : $this->dialect->currentDatabase($this->connection);
 
-        if ($database === null) {
+        if ($schema === null) {
             return true;
         }
 
         $rows = $this->connection->fetchAll(
             'SELECT is_nullable FROM information_schema.columns '
             .'WHERE table_schema = ? AND table_name = ? AND column_name = ?',
-            [$database, $table, $column],
+            [$schema, $table, $column],
         );
 
         if ($rows === []) {
@@ -263,12 +242,12 @@ final class SchemaDiffer
 
     public function supportsAlterColumnNullability(): bool
     {
-        return $this->supportsInformationSchema();
+        return $this->dialect->supportsPostgresAlterColumn();
     }
 
     private function supportsPostgresAlterColumn(): bool
     {
-        return $this->supportsAlterColumnNullability();
+        return $this->dialect->supportsPostgresAlterColumn();
     }
 
     /**
@@ -281,36 +260,6 @@ final class SchemaDiffer
         } catch (\Throwable) {
             return [];
         }
-    }
-
-    private function supportsInformationSchema(): bool
-    {
-        static $supported = null;
-
-        if ($supported !== null) {
-            return $supported;
-        }
-
-        try {
-            $this->connection->fetchAll('SELECT DATABASE() as db');
-            $supported = true;
-        } catch (\Throwable) {
-            $supported = false;
-        }
-
-        return $supported;
-    }
-
-    private function currentDatabase(): ?string
-    {
-        if (! $this->supportsInformationSchema()) {
-            return null;
-        }
-
-        $driverRows = $this->connection->fetchAll('SELECT DATABASE() as db');
-        $database = $driverRows[0]['db'] ?? null;
-
-        return is_string($database) ? $database : null;
     }
 
     private function defaultSql(Field $field): string

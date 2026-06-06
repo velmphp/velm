@@ -24,4 +24,7 @@ interface Connection
     public function fetchOne(string $sql, array $params = []): ?array;
 
     public function lastInsertId(): int;
+
+    /** @return 'sqlite'|'mysql'|'pgsql'|string */
+    public function driver(): string;
 }

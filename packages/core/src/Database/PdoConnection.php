@@ -51,6 +51,17 @@ final class PdoConnection implements Connection
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function driver(): string
+    {
+        $name = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        return match ($name) {
+            'mysql' => 'mysql',
+            'pgsql' => 'pgsql',
+            default => 'sqlite',
+        };
+    }
+
     /**
      * @param  array<int|string, mixed>  $params
      */
