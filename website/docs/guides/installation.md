@@ -31,18 +31,26 @@ Default database is **SQLite** (`database/database.sqlite`). MySQL/Postgres are 
 
 ## 1. Create the project
 
+Velm **1.0.0-rc1** is a release candidate — there is no stable `1.0.0` yet. Plain `create-project` defaults to **stable** only and will fail with *Could not find package velmphp/app with stability stable*.
+
+Use either form:
+
 ```bash
-composer create-project velmphp/app my_app
+# Recommended — allow RC resolution
+composer create-project velmphp/app my_app -s rc
 cd my_app
 ```
 
-Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework`, and transitive `velmphp/*` packages at **`^1.0@RC`** (requires `v1.0.0-rc1` or later on Packagist).
-
-To pin the RC explicitly:
+Or pin an exact RC tag:
 
 ```bash
-composer create-project velmphp/app my_app v1.0.0-rc1
+composer create-project velmphp/app my_app v1.0.0-rc2 -s rc
+cd my_app
 ```
+
+Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework` at **`^1.0@RC`**, and transitive `velmphp/*` libraries (published at **`^1.0@dev`**, preferring RC tags when available).
+
+Marking the GitHub release as **pre-release** is correct for an RC; that flag is for humans on GitHub and does not affect Composer. Packagist reads **git tags** on the mirror repos (`velmphp/app`, `velmphp/framework`, …).
 
 ## 2. Run setup
 

@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/velmphp/velm/actions/workflows/ci.yml"><img src="https://github.com/velmphp/velm/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.php.net/releases/8.3.php"><img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.3+"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-LGPL--3.0--or--later-FCA326?style=flat-square&logo=gnu&logoColor=white" alt="License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
 </p>
 
 <p align="center">
@@ -93,4 +93,4 @@ Early development — module runtime, recordset ORM, partners addon, and Filamen
 
 ## License
 
-LGPL-3.0-or-later. See [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).

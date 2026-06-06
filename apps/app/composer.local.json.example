@@ -6,6 +6,9 @@
             "options": { "symlink": true }
         }
     ],
+    "require": {
+        "velmphp/framework": "^1.0@dev"
+    },
     "scripts": {
         "velm-rebuild-ui": [
             "npm --prefix ../../packages/ui ci",

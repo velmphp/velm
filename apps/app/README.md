@@ -7,7 +7,7 @@ Published on Packagist as **`velmphp/app`**. Monorepo path: `apps/app/`.
 ## Packagist install
 
 ```bash
-composer create-project velmphp/app my_app
+composer create-project velmphp/app my_app -s rc
 cd my_app
 composer run setup
 composer run dev
@@ -30,7 +30,9 @@ composer run setup
 composer run dev
 ```
 
-`composer.local.json` adds path repositories to `../../packages/*` (gitignored).
+`composer.local.json` adds path repositories to `../../packages/*` and overrides `velmphp/framework` to `^1.0@dev` for monorepo symlinks (gitignored).
+
+Published **`velmphp/app`** ships without a committed `composer.lock` until RC tags are indexed on Packagist; run [`scripts/regenerate-app-lock.sh`](../../scripts/regenerate-app-lock.sh) after tagging.
 
 For the full reference app with demo addons, use **`apps/demo/`** instead.
 
