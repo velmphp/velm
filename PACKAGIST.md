@@ -87,7 +87,7 @@ Pushes to **`main`** also re-sync mirrors (for `dev-main` / `1.x-dev` installs).
 
 ## Constraints
 
-- **Published installs:** `velmphp/app` requires `velmphp/framework` at `^1.0@RC` (use `create-project … -s rc`). Library packages use `^1.0@dev`; with `"prefer-stable": true`, tagged RC releases are preferred over `dev-main`.
+- **Published installs:** `velmphp/app` requires `velmphp/framework` at `^1.0@dev` with `"prefer-stable": true` (RC tags win over `dev-main`). Use `create-project … -s rc` until stable `1.0.0`. Library packages also use `^1.0@dev`.
 - **After stable 1.0.0:** tighten to `^1.0` across packages and `apps/app`.
 - **Monorepo dev:** path repos + `^1.0@dev`; `apps/app` optional `composer.local.json` overrides framework to `@dev` for path installs.
 

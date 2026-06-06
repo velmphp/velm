@@ -48,7 +48,7 @@ composer create-project velmphp/app my_app v1.0.0-rc2 -s rc
 cd my_app
 ```
 
-Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework` at **`^1.0@RC`**, and transitive `velmphp/*` libraries (published at **`^1.0@dev`**, preferring RC tags when available).
+Replace `my_app` with your project directory name. Composer installs Laravel, `velmphp/framework`, and transitive `velmphp/*` libraries at **`^1.0@dev`** — with `"prefer-stable": true`, tagged RC releases are preferred over `dev-main`.
 
 Marking the GitHub release as **pre-release** is correct for an RC; that flag is for humans on GitHub and does not affect Composer. Packagist reads **git tags** on the mirror repos (`velmphp/app`, `velmphp/framework`, …).
 

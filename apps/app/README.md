@@ -24,15 +24,14 @@ From the repository root:
 ```bash
 composer install
 cd apps/app
+composer update
 cp composer.local.json.example composer.local.json
-composer install
+composer update
 composer run setup
 composer run dev
 ```
 
-`composer.local.json` adds path repositories to `../../packages/*` and overrides `velmphp/framework` to `^1.0@dev` for monorepo symlinks (gitignored).
-
-Published **`velmphp/app`** ships without a committed `composer.lock` until RC tags are indexed on Packagist; run [`scripts/regenerate-app-lock.sh`](../../scripts/regenerate-app-lock.sh) after tagging.
+`composer.local.json` adds path repositories to `../../packages/*` (gitignored). Run `composer update` again after copying it so the merge plugin (already in `vendor/`) symlinks monorepo packages.
 
 For the full reference app with demo addons, use **`apps/demo/`** instead.
 

@@ -17,8 +17,7 @@ Packagist-installable RC2 — fixes RC1 publishing issues, MIT license, and docu
 ### Changed
 
 - **License:** LGPL-3.0-or-later → **MIT** (all `velmphp/*` packages and `velmphp/app`)
-- Library inter-package constraints: `^1.0@dev` (path-repo monorepo dev; Packagist prefers RC tags via `prefer-stable`)
-- **`velmphp/app`** keeps `velmphp/framework: ^1.0@RC` for published installs
+- Library inter-package constraints: `^1.0@dev` (`prefer-stable` picks RC tags on Packagist; path-repo monorepo dev uses `dev-main`)
 
 ### Install
 

@@ -5,7 +5,7 @@ Runbook for maintainers after [PACKAGIST.md](./PACKAGIST.md) one-time setup is c
 ## Pre-flight
 
 - [ ] `main` CI green (tests + `app-install` + `demo-setup`)
-- [ ] RC2 prep merged: MIT license, no `"version"` in library `composer.json`, library `^1.0@dev` + app `^1.0@RC`, [CHANGELOG](./CHANGELOG.md) `[1.0.0-rc2]`
+- [ ] RC2 prep merged: MIT license, no `"version"` in library `composer.json`, `^1.0@dev` constraints, [CHANGELOG](./CHANGELOG.md) `[1.0.0-rc2]`
 - [ ] All nine mirror repos populated on `main`
 - [ ] All nine packages visible on Packagist under `velmphp/*`
 

@@ -41,9 +41,12 @@ jobs:
           php-version: '8.3'
           coverage: none
           extensions: intl, pdo_sqlite
+      - name: Bootstrap Composer deps (merge plugin loads after vendor exists)
+        working-directory: apps/app
+        run: composer update --no-interaction --prefer-dist --no-progress
       - name: Link monorepo packages (pre-Packagist)
         run: cp apps/app/composer.local.json.example apps/app/composer.local.json
-      - name: composer install
+      - name: Switch to path repositories
         working-directory: apps/app
         run: composer update --no-interaction --prefer-dist --no-progress
       - name: Bundled modules present in vendor
