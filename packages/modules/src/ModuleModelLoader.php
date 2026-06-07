@@ -24,30 +24,44 @@ final class ModuleModelLoader
                 throw new \RuntimeException("{$modelClass} must extend ".Model::class.'.');
             }
 
-            if ($modelClass::isExtension()) {
-                $registry->registerExtension($modelClass);
-            } else {
-                $registry->register($modelClass);
-            }
-
-            self::registerMailThreadIfEnabled($modelClass);
+            self::registerModelClass($modelClass, $registry);
         }
     }
 
     /**
      * @param  class-string<Model>  $modelClass
      */
-    private static function registerMailThreadIfEnabled(string $modelClass): void
+    public static function registerModelClass(string $modelClass, Registry $registry): void
     {
-        if (! $modelClass::usesMailThread()) {
+        if ($modelClass::isAbstract()) {
+            $registry->registerMixin($modelClass);
+
             return;
         }
 
+        if ($modelClass::isExtension()) {
+            $registry->registerExtension($modelClass);
+        } else {
+            $registry->register($modelClass);
+        }
+
+        self::syncMailThread($registry, $modelClass);
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    private static function syncMailThread(Registry $registry, string $modelClass): void
+    {
         $modelName = $modelClass::isExtension()
             ? (string) $modelClass::inherit()
             : (string) $modelClass::name();
 
-        if ($modelName !== '') {
+        if ($modelName === '') {
+            return;
+        }
+
+        if ($registry->hasMixin($modelName, 'mail.thread')) {
             MailThreadService::registerModel($modelName);
         }
     }

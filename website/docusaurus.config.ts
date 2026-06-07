@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const siteUrl = process.env.DOCUSAURUS_URL ?? 'http://localhost:3000';
 const baseUrl = process.env.DOCUSAURUS_BASE_URL ?? '/velm/';
 /** Update when cutting a new docs version (`npm run docs:version`). */
-const latestDocsVersion = '1.0.0-rc2';
+const latestDocsVersion = '1.0.0-rc3';
 const latestDocsBase = `/docs/${latestDocsVersion}`;
 
 const config: Config = {
@@ -45,12 +45,17 @@ const config: Config = {
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/velmphp/velm/tree/main/website/',
-          lastVersion: '1.0.0-rc2',
+          lastVersion: '1.0.0-rc3',
           versions: {
             current: {
               label: 'Next',
               path: 'next',
               banner: 'unreleased',
+            },
+            '1.0.0-rc3': {
+              label: '1.0.0-rc3',
+              path: '1.0.0-rc3',
+              banner: 'none',
             },
             '1.0.0-rc2': {
               label: '1.0.0-rc2',

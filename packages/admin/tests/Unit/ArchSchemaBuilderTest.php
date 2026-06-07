@@ -7,6 +7,7 @@ use Velm\Admin\Arch\ArchSchemaBuilder;
 use Velm\Admin\Arch\ListColumn;
 use Velm\Admin\Tests\Support\PartnerArch;
 use Velm\Modules\ModuleInstaller;
+use Velm\Modules\Tests\Support\PartnerExtension;
 use Velm\Modules\Tests\TestCase;
 
 uses(TestCase::class);
@@ -60,4 +61,28 @@ test('formats many2one list cells as display name', function (): void {
     expect($column)->not->toBeNull()
         ->and($column->kind)->toBe('m2o')
         ->and($builder->formatListCell($column, $partner->read()[0]['country_id'], $env))->toBe('Belgium');
+});
+
+test('many2one list columns resolve through merged field set when partner is extended', function (): void {
+    $roots = [
+        dirname(__DIR__, 3).'/modules/modules',
+        dirname(__DIR__, 3).'/modules/tests/fixtures',
+    ];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('partners', $roots);
+    $installer->install('partners_ext', $roots);
+
+    $env = $installer->environment($roots);
+
+    expect($env->registry->modelClass('res.partner'))->toBe(PartnerExtension::class);
+
+    $columns = (new ArchSchemaBuilder)->buildListColumns(PartnerArch::list($env), $env);
+    $country = collect($columns)->firstWhere('name', 'country_id');
+    $company = collect($columns)->firstWhere('name', 'company_id');
+
+    expect($country)->not->toBeNull()
+        ->and($country->kind)->toBe('m2o')
+        ->and($company)->not->toBeNull()
+        ->and($company->kind)->toBe('m2o');
 });

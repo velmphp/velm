@@ -53,6 +53,14 @@ final class Field implements ViewDeclaration
         return $this;
     }
 
+    /** MIME accept filter for `file` / `files` picker widgets (e.g. `image/*`). */
+    public function accept(string $accept): self
+    {
+        $this->options['accept'] = $accept;
+
+        return $this;
+    }
+
     /**
      * Column span inside the section grid. Use {@see wide()} or the string `full` for a full-width row.
      */

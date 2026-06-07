@@ -6,8 +6,8 @@ use Addons\DemoRelations\DemoRelationsInstallHooks;
 use Velm\Modules\Manifest;
 
 return Manifest::make('demo_relations')
-    ->version(0, 1, 0)
-    ->depends('base')
+    ->version(0, 2, 0)
+    ->depends('base', 'file_manager')
     ->data(
         'views/project.php',
         'views/task.php',

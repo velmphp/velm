@@ -22,6 +22,15 @@ test('stored view routes parse canonical menu hrefs', function (): void {
         ->toBe('/velm/views/demo_relations/project.list');
 });
 
+test('stored view routes expose analytics href helpers', function (): void {
+    expect(StoredViewRoutes::viewHref('workflow', 'task.kanban'))
+        ->toBe('/velm/views/workflow/task.kanban')
+        ->and(StoredViewRoutes::parseViewHref('/velm/views/workflow/task.graph'))
+        ->toBe(['module' => 'workflow', 'view' => 'task.graph'])
+        ->and(StoredViewRoutes::siblingListView('workflow', 'task.kanban'))
+        ->toBe('task.list');
+});
+
 test('menu link resolver maps unknown view hrefs to stored view list page', function (): void {
     $url = MenuLinkResolver::url('/velm/views/demo_relations/project.list');
 

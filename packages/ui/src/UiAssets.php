@@ -108,6 +108,32 @@ final class UiAssets
         return self::publishedOrVendor('js/velm/pv-code-editor.js', 'resources/js/pv-code-editor.js');
     }
 
+    public static function graphScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-graph.js',
+            'Missing packages/ui/resources/js/pv-graph.js. Run: cd packages/ui && npm install && npm run build',
+        );
+    }
+
+    public static function pivotScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-pivot.js',
+            'Missing packages/ui/resources/js/pv-pivot.js. Run: cd packages/ui && npm install && npm run build',
+        );
+    }
+
+    public static function graphScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-graph.js', 'resources/js/pv-graph.js');
+    }
+
+    public static function pivotScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-pivot.js', 'resources/js/pv-pivot.js');
+    }
+
     private static function publishedOrVendor(string $publicRelative, string $packageRelative): string
     {
         $published = public_path($publicRelative);

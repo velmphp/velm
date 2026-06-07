@@ -6,41 +6,62 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 
 **Stable** means a third-party developer can install `velmphp/app`, author modules, run the panel in production, and reset dev databases without monorepo-only hacks.
 
-| Milestone | Goal |
-|-----------|------|
-| **v1.0-rc1** | Installable, documented, resettable dev DB |
-| **v1.0-rc2** | Addon-author ORM parity (compute, domain, O2M inline) |
-| **v1.0** | Tag `velmphp/*@1.0.0` + production ops guide |
-| **v1.1** | Kanban + reporting views |
+We ship **feature release candidates** before `v1.0.0` — each RC is tagged on `main`, split to Packagist mirrors, and snapshotted in docs (`npm run docs:version`). See [RELEASE.md](./RELEASE.md) and [website/DOCS_MAINTAINERS.md](./website/DOCS_MAINTAINERS.md).
 
-### Tier 1 — Release blockers (v1.0-rc1)
+| Milestone | Goal | Status |
+|-----------|------|--------|
+| **v1.0-rc1** | Installable, documented, resettable dev DB | **Done** |
+| **v1.0-rc2** | Packagist publishing, MIT, install/CI fixes | **Done** |
+| **v1.0-rc3** | Full 1.0 feature set — ORM, widgets, ops, kanban/graph/pivot | **Done** |
+| **v1.0.0** | Stable tag, `^1.0` constraints, no `-s rc` for `create-project` | Target |
+
+### Release candidate plan (pre-1.0)
+
+Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0.0-rcN` → Packagist verify → `docs:version` → GitHub pre-release.
+
+| RC | Tier items | Outcome for addon authors |
+|----|------------|---------------------------|
+| **rc3** | [2.1–2.9](#tier-2--core-parity-pre-10), [1.4](#tier-1--release-blockers-pre-10), [1.5](#tier-1--release-blockers-pre-10) | Computed fields; OR-groups; `$mixins`; O2M inline + file widgets; `--drop-schema`; production runbook; DB CI; kanban/graph/pivot + `read_group` |
+| **1.0.0** | Tier 1.6, constraint tighten, final smoke | Stable Packagist; plain `create-project velmphp/app` |
+
+**Branch naming:** `feature/rc3-v1-features` — thematic PRs on one branch where practical.
+
+**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): `header_actions`, list inline edit, per-model arch `dashboard` boards.
+
+### Tier 1 — Release blockers (pre-1.0)
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 1.1 | `velm:migrate:fresh` | **Done** | Dev reset: drop Velm schema + reinstall bootstrap — see [RC1 slice](#rc1-slice--migratefresh--seed) |
 | 1.2 | `velm:seed` + manifest `SEEDERS` | **Done** | Module-scoped seeders in topo order — see [RC1 slice](#rc1-slice--migratefresh--seed) |
-| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **Ready for rc2** | MIT license, Packagist lock fix — tag `v1.0.0-rc2` — see [RELEASE.md](./RELEASE.md) |
-| 1.4 | Production ops guide (cron, attachments disk, DB choice) | Pending | `website/docs/guides/` |
-| 1.5 | CI matrix (PHP 8.3+, SQLite + MySQL/Postgres smoke) | Pending | Extend root `composer test` |
-| 1.6 | Docs / ROADMAP sync | Ongoing | `intro.md`, `CONTEXT.md`, guides |
+| 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **Done** | rc1–rc2 shipped; see [RELEASE.md](./RELEASE.md) |
+| 1.4 | Production ops guide (cron, attachments disk, DB choice) | **rc3** | Done — `website/docs/guides/production.md` |
+| 1.5 | CI matrix (PHP 8.3+, SQLite + MySQL/Postgres smoke) | **rc3** | Done — MySQL/Postgres dialect smoke jobs in CI |
+| 1.6 | Docs / ROADMAP sync | Ongoing | Per RC: `docs:version`, install guides, feature docs |
 
-### Tier 2 — Core parity (v1.0-rc2 → v1.0)
+### Tier 2 — Core parity (pre-1.0)
 
-| # | Item | Status | Notes |
-|---|------|--------|-------|
-| 2.1 | Computed fields (`@depends`, stored / unstored) | Pending | ORM parity; list/form columns |
-| 2.2 | Domain OR-groups | Pending | Search + record rules |
-| 2.3 | `mail.thread` mixins (`$mixins`) | Pending | Replace interim `$mailThread` |
-| 2.4 | O2M inline / table widget | Pending | Dialog mode shipped |
-| 2.5 | `file` / `files` field widgets | Pending | Attachments on arbitrary models |
-| 2.6 | Uninstall optional schema cleanup (`--drop-schema`) | Pending | Dev-only; tables kept by default |
+Ship in **rc3** — last RC before stable.
 
-### Tier 3 — Shell polish (v1.0 or v1.0.1)
+| # | Item | RC | Status | Notes |
+|---|------|-----|--------|-------|
+| 2.1 | Computed fields (`@depends`, stored / unstored) | **rc3** | **Done** | ORM + list/form columns; fluent `depends()`; stored recompute on write |
+| 2.2 | Domain OR-groups | **rc3** | **Done** | `\|` / `&` / `!` prefix notation; legacy `__or__`; search + record rules |
+| 2.3 | `mail.thread` mixins (`$mixins`) | **rc3** | **Done** | `$mixins = ['mail.thread']`; abstract `MailThread` mixin registration |
+| 2.4 | O2M inline / table widget | **rc3** | **Done** | Opt-in `widget: inline` / `table`; default `dialog` opens detail/edit in embed |
+| 2.5 | `file` / `files` field widgets | **rc3** | **Done** | M2O/M2M `ir.attachment` pickers via file library; `file_url` for Char URLs |
+| 2.6 | Uninstall optional schema cleanup (`--drop-schema`) | **rc3** | **Done** | `velm:module:uninstall --drop-schema` (local/testing only) |
+| 2.7 | Kanban view renderer | **rc3** | **Done** | `KanbanView` arch + Livewire board; column groupby, card template |
+| 2.8 | Graph view renderer | **rc3** | **Done** | `GraphView` + `read_group` API + ApexCharts page |
+| 2.9 | Pivot view renderer | **rc3** | **Done** | `PivotView` + row/col groupby grid + measures |
+
+### Tier 3 — Shell polish (1.0.1 or 1.1)
+
+Deferred past **v1.0.0**.
 
 | Item | Status | Notes |
 |------|--------|-------|
 | `header_actions` / `page_actions` from arch | Pending | Export, duplicate, custom toolbar |
-| Kanban view renderer | Pending | Arch type exists; no Livewire renderer |
 | Arch `dashboard` view type (per-model boards) | Pending | Distinct from **home dashboard** (`/velm/dashboard`) |
 | List inline row edit | Pending | PLAN Phase 4+ |
 
@@ -48,17 +69,82 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 
 | Item | Notes |
 |------|-------|
-| Graph / pivot views | Reporting |
 | `velmphp/composer-plugin` (`type: velm-module`) | Marketplace-style addons |
-| Publish `velmphp/app` on Packagist | Monorepo copy at `apps/app/`; demos in `apps/demo/` |
 | Filament arch adapter | Superseded by `velm-ui` |
 
 ---
 
-## RC1 slice — `migrate:fresh` + `seed`
+## RC1 slice — migrate:fresh + seed
 
-**Branch:** `feature/velm-migrate-fresh-seed` (suggested)  
+**Status:** done · **Tag:** `v1.0.0-rc1`
+
 **Goal:** Reliable dev/CI reset without hand-dropping tables.
+
+---
+
+## RC2 slice — Packagist + install (done)
+
+**Tag:** `v1.0.0-rc2`
+
+| Step | Work |
+|------|------|
+| R2.1 | MIT license; remove `"version"` from library `composer.json` (Packagist ↔ git tags) |
+| R2.2 | `^1.0@dev` constraints; `composer.local.json.example` for monorepo path repos |
+| R2.3 | Tracked root `composer.lock` + `config.platform.php: 8.3.31`; CI `fetch-depth: 0` |
+| R2.4 | Docs versioning (`npm run docs:version`); install guides; `create-project … -s rc` |
+
+Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
+
+---
+
+## RC3 slice — v1.0 feature set (done)
+
+**Branch:** `feature/rc3-v1-features`  
+**Tag:** `v1.0.0-rc3` — last RC before stable (consolidated rc3–rc5 + analytics views)
+
+### ORM + domain
+
+| Step | Work |
+|------|------|
+| R3.1 | `ComputedField` / `@depends` — stored vs unstored compute paths | **Done** |
+| R3.2 | Registry + schema: optional stored columns; recompute on dependency write | **Done** |
+| R3.3 | List/form read path includes computed values | **Done** |
+| R3.4 | Domain compiler: OR (`\|`) and AND groups for search domains + `ir.rule` | **Done** |
+| R3.5 | Tests: compute invalidation, OR-group search, record rules with `\|` | **Done** |
+
+### Author UX + mixins
+
+| Step | Work |
+|------|------|
+| R3.6 | `$mixins` / abstract model registration — migrate `$mailThread` to `mail.thread` mixin | **Done** |
+| R3.7 | O2M inline/table Livewire widget on form arch | **Done** |
+| R3.8 | `file` + `files` form widgets wired to attachment API | **Done** |
+| R3.9 | Docs: models, views-and-forms, addons; demo addon coverage | **Done** |
+
+### Analytics views
+
+| Step | Work |
+|------|------|
+| R3.10 | `read_group` on recordsets (groupby, aggregates, date trunc helpers) | **Done** — `Recordset::readGroup()` with sum/avg/min/max/count |
+| R3.11 | Kanban Livewire renderer — card template, columns, drag reorder | **Done** |
+| R3.12 | Graph Livewire renderer — measures, chart library integration | **Done** |
+| R3.13 | Pivot Livewire renderer — row/col groupby grid | **Done** |
+| R3.14 | Stored routes for `view_type` kanban/graph/pivot; demo views + tests | **Done** |
+
+### Ops + stable prep
+
+| Step | Work |
+|------|------|
+| R3.15 | `velm:module:uninstall --drop-schema` (dev-only flag) | **Done** |
+| R3.16 | Production ops guide: cron, queues, attachment disk, MySQL/Postgres notes | **Done** |
+| R3.17 | CI: MySQL + Postgres service containers; app-install + migrate smoke | **Done** |
+| R3.18 | Regenerate `apps/app/composer.lock` from Packagist where needed |
+
+**PyVelm parity:** `@depends`, domain prefix notation, `$mixins`, kanban/graph/pivot arch.
+
+**Out of rc3:** per-model arch `dashboard` boards (Tier 3), `header_actions` (Tier 3).
+
+---
 
 ### A. `velm:migrate:fresh`
 
@@ -92,7 +178,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 - [x] `velm:migrate:fresh` command + app/demo docs
 - [x] `SEEDERS` manifest key + `ModuleSeederRunner`
 - [x] `velm:seed` command + one bundled seeder
-- [ ] `ROADMAP.md` / `CONTEXT.md` status bumps
+- [x] `ROADMAP.md` / `CONTEXT.md` status bumps
 
 ---
 
@@ -128,7 +214,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `res.company` on base module + default company on install | Done |
 | Field `displayLabel()` / form list label humanization | Done |
 
-## Phase 3b — Attachments & file manager (in progress)
+## Phase 3b — Attachments & file manager
 
 | Item | Status |
 |------|--------|
@@ -136,7 +222,7 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `POST/GET/DELETE /api/attachment/*` | Done |
 | `file_manager` module (`res.attachment.folder`, ACL install hook, list views) | Done |
 | Drive-style library shell (`/web/files/library`) | Done |
-| File picker widgets (`file`, `files`) | Pending |
+| File picker widgets (`file`, `files`) | **Done** |
 | `file_url` widget (company logos / favicon via library picker) | Done |
 | Bulk actions, properties page, Alpine `pvFileLibrary` | Done |
 | View/menu sync prunes stale views removed from disk | Done |
@@ -224,19 +310,17 @@ Implementation follows [PLAN.md](./PLAN.md). Work lands via **feature branch →
 | `mail.thread` opt-in via model `$mailThread = true` | Done (interim; see mixins below) |
 | Chatter sidebar on record display (messages, follow, post) | Done |
 | `it.change` wired with chatter | Done |
-| Abstract model mixins (`mail.thread` via `$mixins` / registry) | Deferred → Tier 2 |
+| Abstract model mixins (`mail.thread` via `$mixins` / registry) | Done — Tier 2 `$mixins` |
 
 ## Backlog (was “Next up”)
 
-See [Stable v1.0 target](#stable-v10-target) tiers above. Remaining items not in rc1/rc2:
+See [Stable v1.0 target](#stable-v10-target) tiers above. Remaining items before **v1.0.0**:
 
-| Item | Tier |
-|------|------|
-| Kanban / graph / pivot arch renderers | 3 / 4 |
-| O2M inline widget | 2 |
-| `header_actions` / `page_actions` | 3 |
-| Computed fields + domain OR-groups | 2 |
-| Packagist split + `velmphp/app` | 1 / 4 |
+| Item | RC |
+|------|-----|
+| Tier 1.6 docs / ROADMAP sync per RC | **1.0.0** |
+| Constraint tighten; plain `create-project velmphp/app` | **1.0.0** |
+| `header_actions` / list inline edit | post-1.0 (Tier 3) |
 | Optional Filament arch adapter | — (won't do) |
 
 See [PLAN.md](./PLAN.md) for the long-range design; user-facing behavior is in `website/docs/guides/`.

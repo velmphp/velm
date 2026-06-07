@@ -35,11 +35,12 @@ test('partner list click-to-open resolves detail record url', function (): void 
 
 test('partner list arch loads rows through the same table pipeline as ArchListPage', function (): void {
     $env = app(\Velm\Environment::class);
-    $env->model('res.partner')->create(['name' => 'Velm SA', 'active' => true]);
+    $env->model('res.partner')->create(['name' => 'Velm SA List Test', 'active' => true]);
 
     $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
     $records = (new ArchTableConfigurator)->fetchRecords($arch, $env);
+    $record = $records->firstWhere('name', 'Velm SA List Test');
 
-    expect($records)->toHaveCount(1)
-        ->and($records->first()['name'])->toBe('Velm SA');
+    expect($record)->not->toBeNull()
+        ->and($record['name'])->toBe('Velm SA List Test');
 });

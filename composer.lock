@@ -5906,9 +5906,10 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "725275840e3fd509458408f6d0fbde073b059c4c"
+                "reference": "0289d08ec3908b0aa772b3bed7876f6cf2b10930"
             },
             "require": {
+                "illuminate/database": "^13.0",
                 "php": "^8.3"
             },
             "type": "library",

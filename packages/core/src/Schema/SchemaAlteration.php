@@ -11,6 +11,7 @@ final readonly class SchemaAlteration
         public string $column,
         public string $kind,
         public string $detail,
+        public ?\Velm\Fields\Field $field = null,
     ) {}
 
     public function cliLine(): string

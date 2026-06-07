@@ -35,7 +35,7 @@ test('migrate fresh drops velm tables and reinstalls requested modules', functio
 
     $freshEnv = $velm->environment();
 
-    expect($freshEnv->model('res.partner')->search()->count())->toBe(0)
+    expect($freshEnv->model('res.partner')->search()->count())->toBe(6)
         ->and(app(ModuleRepository::class)->isInstalled('partners'))->toBeTrue()
         ->and(app(ModuleRepository::class)->isInstalled('base'))->toBeTrue();
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm;
 
+use Velm\Computed\ComputeRunner;
 use Velm\Database\Connection;
 use Velm\Exception\AccessDeniedException;
 use Velm\Fields\Many2oneField;
@@ -24,6 +25,8 @@ final class Environment
 
     /** @var array<string, list<list<mixed>>> */
     private array $recordRulesCache = [];
+
+    private ?ComputeRunner $computeRunner = null;
 
     public function __construct(
         public readonly Connection $connection,
@@ -504,6 +507,12 @@ final class Environment
         $resolved = [];
 
         foreach ($rawDomain as $leaf) {
+            if (is_string($leaf) && in_array($leaf, ['&', '|', '!'], true)) {
+                $resolved[] = $leaf;
+
+                continue;
+            }
+
             if (! is_array($leaf) || count($leaf) !== 3) {
                 continue;
             }
@@ -526,5 +535,10 @@ final class Environment
         }
 
         return $resolved;
+    }
+
+    public function computeRunner(): ComputeRunner
+    {
+        return $this->computeRunner ??= new ComputeRunner($this);
     }
 }

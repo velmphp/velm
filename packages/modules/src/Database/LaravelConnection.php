@@ -37,4 +37,14 @@ final class LaravelConnection implements Connection
     {
         return (int) $this->connection->getPdo()->lastInsertId();
     }
+
+    public function driver(): string
+    {
+        return $this->connection->getDriverName();
+    }
+
+    public function illuminateConnection(): IlluminateConnection
+    {
+        return $this->connection;
+    }
 }

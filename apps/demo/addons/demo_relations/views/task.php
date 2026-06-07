@@ -21,6 +21,7 @@ return ViewsData::make()
             ->columns([
                 'name',
                 'project_id',
+                Field::make('cover_id')->widget('file'),
                 Field::make('category'),
                 Field::make('created_at'),
                 Field::make('updated_at'),
@@ -31,6 +32,7 @@ return ViewsData::make()
             ->section('main', 'Task', [
                 'name',
                 'project_id',
+                Field::make('cover_id')->widget('file')->accept('image/*'),
                 'category',
             ])->cols(3),
         FormView::make('task.form')
@@ -38,6 +40,7 @@ return ViewsData::make()
             ->section('main', 'Task', [
                 'name',
                 'project_id',
+                Field::make('cover_id')->widget('file')->accept('image/*'),
                 'category',
             ])->cols(3),
     );

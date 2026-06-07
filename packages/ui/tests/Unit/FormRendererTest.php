@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Velm\Environment;
-use Velm\Fields\CharField;
-use Velm\Fields\Many2oneField;
 use Velm\Ui\Forms\FormMode;
 use Velm\Ui\Forms\FormRenderer;
 use Velm\Ui\Tests\TestCase;

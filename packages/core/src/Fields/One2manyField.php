@@ -59,6 +59,11 @@ final class One2manyField extends Field
         throw new \LogicException('One2manyField is not stored as a table column.');
     }
 
+    public function persistsInDatabase(): bool
+    {
+        return false;
+    }
+
     public function toSql(mixed $value): mixed
     {
         throw new \LogicException(

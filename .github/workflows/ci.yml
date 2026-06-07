@@ -27,6 +27,27 @@ jobs:
       - run: composer test
       - run: composer analyse || true
 
+  coverage:
+    name: Test coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git checkout -B main
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: pcov
+          extensions: intl, pcov, pdo_sqlite
+      - run: composer install --prefer-dist --no-progress
+      - run: composer test:coverage
+      - uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+
   app-install:
     name: velmphp/app install smoke
     runs-on: ubuntu-latest
@@ -85,3 +106,75 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
           composer run velm-setup
+
+  test-mysql:
+    name: PHPUnit (MySQL)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: velm_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: velm_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git checkout -B main
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: intl, pdo_mysql
+      - run: composer install --prefer-dist --no-progress
+      - run: composer test -- packages/modules/tests/Feature/DatabaseDialectSmokeTest.php
+
+  test-postgres:
+    name: PHPUnit (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: velm_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: velm_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git checkout -B main
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: intl, pdo_pgsql
+      - run: composer install --prefer-dist --no-progress
+      - run: composer test -- packages/modules/tests/Feature/DatabaseDialectSmokeTest.php

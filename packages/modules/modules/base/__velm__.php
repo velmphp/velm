@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Velm\Modules\Base\BaseInstallHooks;
 use Velm\Modules\Base\Models\Attachment;
 use Velm\Modules\Base\Models\Company;
+use Velm\Modules\Base\Models\Country;
 use Velm\Modules\Base\Models\Cron;
 use Velm\Modules\Base\Models\Group;
 use Velm\Modules\Base\Models\ModelAccess;
@@ -24,6 +25,7 @@ return Manifest::make('base')
     ->models(
         Attachment::class,
         Company::class,
+        Country::class,
         Group::class,
         User::class,
         ModelAccess::class,

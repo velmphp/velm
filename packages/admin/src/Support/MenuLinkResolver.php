@@ -17,7 +17,7 @@ final class MenuLinkResolver
         $parsed = StoredViewRoutes::parseListHref($href);
 
         if ($parsed !== null) {
-            return StoredViewRoutes::listPageUrl($parsed['module'], $parsed['view']);
+            return StoredViewRoutes::viewPageUrl($parsed['module'], $parsed['view']);
         }
 
         return $href;

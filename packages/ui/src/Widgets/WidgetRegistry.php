@@ -32,12 +32,14 @@ final class WidgetRegistry
         $this->register(BooleanField::class, null, FormMode::Edit, 'velm-ui::widgets.boolean');
         $this->register(BooleanField::class, 'toggle', FormMode::Edit, 'velm-ui::widgets.boolean-toggle');
         $this->register(Many2oneField::class, null, FormMode::Edit, 'velm-ui::widgets.m2o-input');
+        $this->register(Many2oneField::class, 'file', FormMode::Edit, 'velm-ui::widgets.file-input');
         $this->register(Many2manyField::class, null, FormMode::Edit, 'velm-ui::widgets.m2m-input');
+        $this->register(Many2manyField::class, 'files', FormMode::Edit, 'velm-ui::widgets.files-input');
         $this->register(Many2manyField::class, 'dialog', FormMode::Edit, 'velm-ui::widgets.m2m-input');
         $this->register(One2manyField::class, null, FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
         $this->register(One2manyField::class, 'dialog', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
-        $this->register(One2manyField::class, 'inline', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
-        $this->register(One2manyField::class, 'table', FormMode::Edit, 'velm-ui::widgets.o2m-dialog');
+        $this->register(One2manyField::class, 'inline', FormMode::Edit, 'velm-ui::widgets.o2m-inline');
+        $this->register(One2manyField::class, 'table', FormMode::Edit, 'velm-ui::widgets.o2m-inline');
         $this->register(CharField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
         $this->register(TextField::class, 'file_url', FormMode::Edit, 'velm-ui::widgets.file-url');
         $this->register(TextField::class, 'rich_text', FormMode::Edit, 'velm-ui::widgets.rich-text');
@@ -50,7 +52,9 @@ final class WidgetRegistry
         $this->register(BooleanField::class, null, FormMode::Display, 'velm-ui::widgets.display.boolean');
         $this->register(BooleanField::class, 'toggle', FormMode::Display, 'velm-ui::widgets.display.boolean');
         $this->register(Many2oneField::class, null, FormMode::Display, 'velm-ui::widgets.display.m2o');
+        $this->register(Many2oneField::class, 'file', FormMode::Display, 'velm-ui::widgets.display.file');
         $this->register(Many2manyField::class, null, FormMode::Display, 'velm-ui::widgets.display.m2m');
+        $this->register(Many2manyField::class, 'files', FormMode::Display, 'velm-ui::widgets.display.files');
         $this->register(Many2manyField::class, 'dialog', FormMode::Display, 'velm-ui::widgets.display.m2m');
         $this->register(One2manyField::class, null, FormMode::Display, 'velm-ui::widgets.display.o2m');
         $this->register(One2manyField::class, 'dialog', FormMode::Display, 'velm-ui::widgets.display.o2m');

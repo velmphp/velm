@@ -26,14 +26,14 @@ test('installing partners creates ORM tables and records', function (): void {
         ->and(Schema::hasTable('res_partner'))->toBeTrue();
 
     $env = $installer->environment($roots);
-    $country = $env->model('res.country')->create(['name' => 'Belgium', 'code' => 'BE']);
+    $country = $env->model('res.country')->create(['name' => 'Module Test Country', 'code' => 'MT']);
     $partner = $env->model('res.partner')->create([
-        'name' => 'Velm SA',
+        'name' => 'Module Test Partner',
         'country_id' => $country->ids()[0],
     ]);
 
-    expect($partner->read()[0]['name'])->toBe('Velm SA')
-        ->and($partner->read()[0]['country_id'])->toBe(1);
+    expect($partner->read()[0]['name'])->toBe('Module Test Partner')
+        ->and($partner->read()[0]['country_id'])->toBe($country->ids()[0]);
 });
 
 test('partners manifest is discovered with model classes', function (): void {

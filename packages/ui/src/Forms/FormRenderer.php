@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Velm\Ui\Forms;
 
 use Velm\Environment;
+use Velm\Fields\BooleanField;
+use Velm\Fields\CharField;
 use Velm\Fields\Field;
+use Velm\Fields\IntegerField;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\One2manyField;
+use Velm\Fields\TextField;
 use Velm\Ui\Support\RelationalInitials;
 use Velm\Ui\Support\ViewUrlResolver;
 use Velm\Ui\Widgets\WidgetContext;
@@ -152,7 +156,7 @@ final class FormRenderer
         ?int $parentRecordId,
     ): FormCell {
         $name = (string) $fieldSpec['name'];
-        $velmField = $model !== '' ? ($env->registry->modelClass($model)::fields()[$name] ?? null) : null;
+        $velmField = $model !== '' ? $env->registry->field($model, $name) : null;
         $label = is_string($fieldSpec['label'] ?? null) && $fieldSpec['label'] !== ''
             ? (string) $fieldSpec['label']
             : ($velmField?->displayLabel() ?? Field::humanizeFieldName($name));
@@ -191,11 +195,19 @@ final class FormRenderer
             'mode' => $ctx->mode->value,
         ];
 
-        if ($velmField instanceof Many2oneField) {
+        $widgetHint = isset($ctx->spec['widget']) && is_string($ctx->spec['widget'])
+            ? $ctx->spec['widget']
+            : null;
+
+        if ($velmField instanceof Many2oneField && $widgetHint === 'file') {
+            $props = array_merge($props, $this->attachmentPickerProps($ctx, false));
+        } elseif ($velmField instanceof Many2oneField) {
             $props = array_merge($props, $this->many2oneProps($ctx, $velmField));
         }
 
-        if ($velmField instanceof Many2manyField) {
+        if ($velmField instanceof Many2manyField && $widgetHint === 'files') {
+            $props = array_merge($props, $this->attachmentPickerProps($ctx, true));
+        } elseif ($velmField instanceof Many2manyField) {
             $props = array_merge($props, $this->many2manyProps($ctx, $velmField));
         }
 
@@ -219,6 +231,21 @@ final class FormRenderer
         }
 
         return $props;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function attachmentPickerProps(WidgetContext $ctx, bool $multi): array
+    {
+        $accept = is_string($ctx->spec['accept'] ?? null) ? (string) $ctx->spec['accept'] : '';
+
+        return [
+            'multi' => $multi,
+            'accept' => $accept,
+            'initial' => RelationalInitials::attachmentChips($ctx->env, $ctx->value(), $multi),
+            'pickerTitle' => $multi ? __('Pick files') : __('Pick a file'),
+        ];
     }
 
     /**
@@ -292,6 +319,7 @@ final class FormRenderer
             'inverseName' => $field->inverseName,
             'searchUrl' => route('velm.api.m2o.search', ['model' => $field->comodel]),
             'formViewUrl' => ViewUrlResolver::recordViewUrlForModel($ctx->env, $field->comodel, $ctx->mode),
+            'recordsApiUrl' => url('/api/records'),
             'rows' => RelationalInitials::one2manyRows($ctx->env, $field, $ctx->value(), $columns),
             'parentRecordId' => $parentRecordId,
             'inline' => $inline,
@@ -316,16 +344,35 @@ final class FormRenderer
                     continue;
                 }
                 $fname = (string) $spec['name'];
+                $colField = $fields[$fname] ?? null;
                 $columns[] = [
                     'name' => $fname,
-                    'label' => (string) ($spec['label'] ?? $fields[$fname]?->displayLabel() ?? Field::humanizeFieldName($fname)),
+                    'label' => (string) ($spec['label'] ?? $colField?->displayLabel() ?? Field::humanizeFieldName($fname)),
+                    'kind' => $colField !== null ? $this->o2mColumnKind($colField) : 'readonly',
                 ];
             }
 
             return $columns;
         }
 
-        return [['name' => 'name', 'label' => 'Name']];
+        $comodelClass = $ctx->env->registry->modelClass($field->comodel);
+        $nameField = $comodelClass::fields()['name'] ?? null;
+
+        return [[
+            'name' => 'name',
+            'label' => $nameField?->displayLabel() ?? 'Name',
+            'kind' => $nameField !== null ? $this->o2mColumnKind($nameField) : 'char',
+        ]];
+    }
+
+    private function o2mColumnKind(Field $field): string
+    {
+        return match (true) {
+            $field instanceof BooleanField => 'boolean',
+            $field instanceof IntegerField => 'integer',
+            $field instanceof CharField, $field instanceof TextField => 'char',
+            default => 'readonly',
+        };
     }
 
     private function canQuickCreate(Environment $env, string $comodel): bool

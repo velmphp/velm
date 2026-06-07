@@ -17,7 +17,7 @@ class Change extends Model
 
     protected static ?string $table = 'it_change';
 
-    protected static bool $mailThread = true;
+    protected static array $mixins = ['mail.thread'];
 
     public static function defineFields(): array
     {

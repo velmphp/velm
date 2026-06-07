@@ -34,15 +34,15 @@ View inherits use the `InheritView` fluent API (`updateSection`, `afterField`, `
 
 ## `demo_relations`
 
-Demonstrates **Many2one**, **One2many**, and **Many2many** (see [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md)):
+Demonstrates **Many2one**, **One2many**, **Many2many**, and **attachment pickers** (`file` / `files` widgets):
 
 | Model | Fields |
 |-------|--------|
-| `demo.project` | `tag_ids` (M2M → `demo.tag`), `task_ids` (O2M → `demo.task`) |
-| `demo.task` | `project_id` (M2O → `demo.project`) |
+| `demo.project` | `tag_ids` (M2M → `demo.tag`), `document_ids` (M2M → `ir.attachment`, **`files`** widget), `task_ids` (O2M → `demo.task`) |
+| `demo.task` | `project_id` (M2O → `demo.project`), `cover_id` (M2O → `ir.attachment`, **`file`** widget, images only) |
 | `demo.tag` | `name` |
 
-Installed by `composer run setup`. Open **Demos → Projects** in the Velm shell.
+Requires the bundled **`file_manager`** module (installed before this addon in `composer run setup`). Open **Demos → Projects** or **Demos → Tasks**, edit a record, and use **Pick a file** / the multi-file picker (upload or choose from the library).
 
 Documentation: [Platform features](https://github.com/velmphp/velm/blob/main/website/docs/guides/features.md) (demo module, relational UI), [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md), [Views and forms](https://github.com/velmphp/velm/blob/main/website/docs/guides/views-and-forms.md).
 

@@ -83,8 +83,29 @@
             }
         },
         confirmMulti() {
-            if (!this.selected.length) return;
-            window.PvDialog && window.PvDialog.close(this.selected.slice());
+            if (!this.selected.length) {
+                return;
+            }
+
+            const result = this.selected.slice();
+
+            if (window.PvDialog) {
+                window.PvDialog.close(result);
+
+                return;
+            }
+
+            const parent = window.parent;
+
+            if (parent && parent !== window && parent.PvDialog) {
+                parent.PvDialog.close(result);
+
+                return;
+            }
+
+            if (parent && parent !== window) {
+                parent.postMessage({ type: 'velm-picker-picked', row: result }, window.location.origin);
+            }
         },
 
         async browse(params) {

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Velm\Core\Tests\Support\Order;
+use Velm\Core\Tests\Support\OrderLine;
 use Velm\Environment;
 use Velm\Ui\Forms\FormMode;
 use Velm\Ui\Widgets\WidgetContext;
@@ -49,6 +51,42 @@ test('widget registry resolves file_url hint for char fields', function (): void
     expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-url');
 });
 
+test('widget registry resolves file hint for attachment many2one', function (): void {
+    $env = app(Environment::class);
+
+    if (! $env->registry->has('test.document')) {
+        $env->registry->register(\Velm\Ui\Tests\Support\Document::class);
+    }
+
+    $ctx = new WidgetContext(
+        $env,
+        'test.document',
+        ['name' => 'attachment_id', 'widget' => 'file'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-input');
+});
+
+test('widget registry resolves files hint for attachment many2many', function (): void {
+    $env = app(Environment::class);
+
+    if (! $env->registry->has('test.document')) {
+        $env->registry->register(\Velm\Ui\Tests\Support\Document::class);
+    }
+
+    $ctx = new WidgetContext(
+        $env,
+        'test.document',
+        ['name' => 'attachment_ids', 'widget' => 'files'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.files-input');
+});
+
 test('widget registry resolves rich_text hint for text fields', function (): void {
     $env = app(Environment::class);
     $ctx = new WidgetContext(
@@ -73,4 +111,38 @@ test('widget registry resolves code hint for text fields', function (): void {
     );
 
     expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.display.code');
+});
+
+test('widget registry resolves one2many default to dialog widget', function (): void {
+    $env = app(Environment::class);
+    if (! $env->registry->has('test.order')) {
+        $env->registry->register(OrderLine::class);
+        $env->registry->register(Order::class);
+    }
+    $ctx = new WidgetContext(
+        $env,
+        'test.order',
+        ['name' => 'line_ids'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.o2m-dialog');
+});
+
+test('widget registry resolves one2many inline hint to inline widget', function (): void {
+    $env = app(Environment::class);
+    if (! $env->registry->has('test.order')) {
+        $env->registry->register(OrderLine::class);
+        $env->registry->register(Order::class);
+    }
+    $ctx = new WidgetContext(
+        $env,
+        'test.order',
+        ['name' => 'line_ids', 'widget' => 'inline', 'columns' => ['description']],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.o2m-inline');
 });

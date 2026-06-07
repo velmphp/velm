@@ -316,6 +316,56 @@
         @apply space-y-1 border-l border-default py-1 pl-3;
     }
 
+    /* Attachment previews — fixed max size (detail, form chips, file_url) */
+    .pv-file-display-preview {
+        display: inline-block;
+        max-width: 8rem;
+        vertical-align: top;
+    }
+
+    .pv-file-display-preview img {
+        display: block;
+        max-width: 8rem;
+        max-height: 8rem;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-default);
+        background-color: var(--color-neutral-secondary);
+    }
+
+    .pv-file-display-grid {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .pv-file-picker-field img {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        max-width: 2rem;
+        max-height: 2rem;
+        object-fit: cover;
+        border-radius: var(--radius);
+    }
+
+    .pv-file-url__preview {
+        flex-shrink: 0;
+        width: 5rem;
+        height: 5rem;
+        max-width: 5rem;
+        max-height: 5rem;
+    }
+
+    .pv-file-url__preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
     .pv-checkbox {
         width: 0.875rem;
         height: 0.875rem;
@@ -424,10 +474,10 @@
     @apply rounded-md;
 }
 
-/* List toolbar (PyVelm-style search / filters) */
+/* List toolbar (PyVelm-style search / filters) — below sticky header (z-30) so app menu dropdowns stay on top */
 .velm-list-toolbar {
     position: relative;
-    z-index: 30;
+    z-index: 10;
 }
 
 .velm-list-toolbar .text-2xs {

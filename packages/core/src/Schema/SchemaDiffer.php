@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Schema;
 
+use Velm\Database\SqlQuote;
 use Velm\Database\Connection;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
@@ -14,12 +15,14 @@ use Velm\Registry;
 final class SchemaDiffer
 {
     private readonly SchemaBuilder $builder;
+    private readonly LaravelSchema $schema;
 
     public function __construct(
         private readonly Connection $connection,
         ?SchemaBuilder $builder = null,
     ) {
         $this->builder = $builder ?? new SchemaBuilder($connection);
+        $this->schema = LaravelSchema::for($connection);
     }
 
     /**
@@ -36,7 +39,7 @@ final class SchemaDiffer
 
             $table = $modelClass::table();
             $expected = $this->expectedColumns($registry, $modelClass);
-            $actual = $this->existingColumns($table);
+            $actual = $this->schema->columnListing($table);
 
             if ($actual === []) {
                 $diff->newTables[] = [$table, $modelClass];
@@ -64,13 +67,15 @@ final class SchemaDiffer
                         $column,
                         'set_not_null',
                         'SET NOT NULL when no NULL rows remain',
+                        $field,
                     );
                 } elseif (! $wantsRequired && ! $nullable) {
                     $diff->alterations[] = new SchemaAlteration(
                         $table,
                         $column,
                         'drop_not_null',
-                        'ALTER COLUMN DROP NOT NULL',
+                        'DROP NOT NULL',
+                        $field,
                     );
                 }
             }
@@ -105,27 +110,23 @@ final class SchemaDiffer
             }
 
             foreach ($diff->newColumns as [$table, $column, $field]) {
-                if (in_array($column, $this->existingColumns($table), true)) {
+                if (in_array($column, $this->schema->columnListing($table), true)) {
                     continue;
                 }
 
-                $sql = $field->sqlType();
-                $null = $field->required ? ' NOT NULL' : '';
-                $default = $this->defaultSql($field);
-
-                $this->connection->execute(
-                    'ALTER TABLE "'.$table.'" ADD COLUMN "'.$column.'" '.$sql.$null.$default,
-                );
+                $this->schema->addFieldColumn($table, $field);
             }
 
             foreach ($diff->alterations as $alteration) {
-                if ($alteration->kind === 'drop_not_null' && $this->supportsPostgresAlterColumn()) {
-                    $this->connection->execute(
-                        'ALTER TABLE "'.$alteration->table.'" ALTER COLUMN "'.$alteration->column.'" DROP NOT NULL',
-                    );
+                if ($alteration->field === null || ! $this->schema->supportsAlterColumnNullability()) {
+                    continue;
                 }
 
-                if ($alteration->kind === 'set_not_null' && $this->supportsPostgresAlterColumn()) {
+                if ($alteration->kind === 'drop_not_null') {
+                    $this->schema->setColumnNullable($alteration->table, $alteration->field, true);
+                }
+
+                if ($alteration->kind === 'set_not_null') {
                     if ($this->countNullRows($alteration->table, $alteration->column) > 0) {
                         $result->skippedNotNull++;
                         $result->skippedNotNullColumns[] = $alteration->table.'.'.$alteration->column;
@@ -133,9 +134,7 @@ final class SchemaDiffer
                         continue;
                     }
 
-                    $this->connection->execute(
-                        'ALTER TABLE "'.$alteration->table.'" ALTER COLUMN "'.$alteration->column.'" SET NOT NULL',
-                    );
+                    $this->schema->setColumnNullable($alteration->table, $alteration->field, false);
                     $result->setNotNull++;
                 }
             }
@@ -163,10 +162,16 @@ final class SchemaDiffer
     public function countNullRows(string $table, string $column): int
     {
         $row = $this->connection->fetchOne(
-            'SELECT COUNT(*) as c FROM "'.$table.'" WHERE "'.$column.'" IS NULL',
+            'SELECT COUNT(*) as c FROM '.SqlQuote::identifier($this->connection, $table)
+            .' WHERE '.SqlQuote::identifier($this->connection, $column).' IS NULL',
         );
 
         return (int) ($row['c'] ?? $row['C'] ?? 0);
+    }
+
+    public function supportsAlterColumnNullability(): bool
+    {
+        return $this->schema->supportsAlterColumnNullability();
     }
 
     /**
@@ -183,7 +188,7 @@ final class SchemaDiffer
         $columns = [];
 
         foreach ($fields as $field) {
-            if ($field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField) {
+            if ($field->name === 'display_name' || $field instanceof Many2manyField || $field instanceof One2manyField || ! $field->persistsInDatabase()) {
                 continue;
             }
 
@@ -193,63 +198,28 @@ final class SchemaDiffer
         return $columns;
     }
 
-    /**
-     * @return list<string>
-     */
-    private function existingColumns(string $table): array
-    {
-        $rows = $this->pragmaTableInfo($table);
-
-        if ($rows !== []) {
-            return array_values(array_map(
-                static fn (array $row): string => (string) ($row['name'] ?? ''),
-                $rows,
-            ));
-        }
-
-        if (! $this->supportsInformationSchema()) {
-            return [];
-        }
-
-        $database = $this->currentDatabase();
-
-        if ($database === null) {
-            return [];
-        }
-
-        $rows = $this->connection->fetchAll(
-            'SELECT column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ?',
-            [$database, $table],
-        );
-
-        return array_values(array_map(
-            static fn (array $row): string => (string) ($row['column_name'] ?? $row['COLUMN_NAME'] ?? ''),
-            $rows,
-        ));
-    }
-
     private function columnIsNullable(string $table, string $column): bool
     {
-        foreach ($this->pragmaTableInfo($table) as $row) {
-            if ((string) ($row['name'] ?? '') === $column) {
-                return (int) ($row['notnull'] ?? 1) === 0;
+        if ($this->schema->driver() === 'sqlite') {
+            foreach ($this->pragmaTableInfo($table) as $row) {
+                if ((string) ($row['name'] ?? '') === $column) {
+                    return (int) ($row['notnull'] ?? 1) === 0;
+                }
             }
         }
 
-        if (! $this->supportsInformationSchema()) {
+        if (! $this->schema->supportsAlterColumnNullability()) {
             return true;
         }
 
-        $database = $this->currentDatabase();
-
-        if ($database === null) {
-            return true;
-        }
+        $schemaName = $this->schema->driver() === 'pgsql'
+            ? 'public'
+            : $this->connection->illuminateConnection()->getDatabaseName();
 
         $rows = $this->connection->fetchAll(
             'SELECT is_nullable FROM information_schema.columns '
             .'WHERE table_schema = ? AND table_name = ? AND column_name = ?',
-            [$database, $table, $column],
+            [$schemaName, $table, $column],
         );
 
         if ($rows === []) {
@@ -259,16 +229,6 @@ final class SchemaDiffer
         $nullable = $rows[0]['is_nullable'] ?? $rows[0]['IS_NULLABLE'] ?? 'YES';
 
         return strtoupper((string) $nullable) === 'YES';
-    }
-
-    public function supportsAlterColumnNullability(): bool
-    {
-        return $this->supportsInformationSchema();
-    }
-
-    private function supportsPostgresAlterColumn(): bool
-    {
-        return $this->supportsAlterColumnNullability();
     }
 
     /**
@@ -281,58 +241,5 @@ final class SchemaDiffer
         } catch (\Throwable) {
             return [];
         }
-    }
-
-    private function supportsInformationSchema(): bool
-    {
-        static $supported = null;
-
-        if ($supported !== null) {
-            return $supported;
-        }
-
-        try {
-            $this->connection->fetchAll('SELECT DATABASE() as db');
-            $supported = true;
-        } catch (\Throwable) {
-            $supported = false;
-        }
-
-        return $supported;
-    }
-
-    private function currentDatabase(): ?string
-    {
-        if (! $this->supportsInformationSchema()) {
-            return null;
-        }
-
-        $driverRows = $this->connection->fetchAll('SELECT DATABASE() as db');
-        $database = $driverRows[0]['db'] ?? null;
-
-        return is_string($database) ? $database : null;
-    }
-
-    private function defaultSql(Field $field): string
-    {
-        if ($field->default === null) {
-            return '';
-        }
-
-        $value = $field->toSql($field->default);
-
-        if (is_bool($value)) {
-            return ' DEFAULT '.($value ? '1' : '0');
-        }
-
-        if (is_int($value)) {
-            return ' DEFAULT '.$value;
-        }
-
-        if (is_string($value)) {
-            return " DEFAULT '".$value."'";
-        }
-
-        return '';
     }
 }

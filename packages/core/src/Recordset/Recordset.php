@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Velm\Recordset;
 
+use Velm\Database\SqlQuote;
 use Velm\Domain\Domain;
+use Velm\Domain\DomainCompiler;
 use Velm\Environment;
 use Velm\Exception\AccessDeniedException;
 use Velm\Fields\DatetimeField;
@@ -93,6 +95,11 @@ final class Recordset
         return null;
     }
 
+    private function q(string $identifier): string
+    {
+        return SqlQuote::identifier($this->env->connection, $identifier);
+    }
+
     /**
      * @param  array<string, mixed>  $values
      */
@@ -113,7 +120,7 @@ final class Recordset
 
         foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
-            $columns[] = '"'.$field->column.'"';
+            $columns[] = $this->q($field->column);
             $placeholders[] = '?';
             $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
@@ -127,17 +134,17 @@ final class Recordset
                 continue;
             }
 
-            $columns[] = '"'.$field->column.'"';
+            $columns[] = $this->q($field->column);
             $placeholders[] = '?';
             $params[] = $field->toSql($this->datetimeToStorage($field->default, $field));
         }
 
         if ($columns === []) {
             $this->env->connection->execute(
-                'INSERT INTO "'.$modelClass::table().'" DEFAULT VALUES',
+                'INSERT INTO '.$this->q($modelClass::table()).' DEFAULT VALUES',
             );
         } else {
-            $sql = 'INSERT INTO "'.$modelClass::table().'" ('.implode(', ', $columns).') VALUES ('.implode(', ', $placeholders).')';
+            $sql = 'INSERT INTO '.$this->q($modelClass::table()).' ('.implode(', ', $columns).') VALUES ('.implode(', ', $placeholders).')';
             $this->env->connection->execute($sql, $params);
         }
 
@@ -153,6 +160,8 @@ final class Recordset
         if ($o2mValues !== []) {
             $created->writeO2m($o2mValues);
         }
+
+        $this->env->computeRunner()->computeStoredOnCreate($created);
 
         return $created;
     }
@@ -196,17 +205,20 @@ final class Recordset
         }
 
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-        $sql = 'SELECT "id"';
+        $sql = 'SELECT '.$this->q('id');
         foreach ($fieldNames as $name) {
             if ($name === 'id' || $name === 'display_name') {
                 continue;
             }
-            if (! isset($fields[$name]) || $fields[$name] instanceof Many2manyField || $fields[$name] instanceof One2manyField) {
+            $field = $fields[$name] ?? null;
+
+            if ($field === null || $field instanceof Many2manyField || $field instanceof One2manyField || ! $field->persistsInDatabase()) {
                 continue;
             }
-            $sql .= ', "'.$fields[$name]->column.'"';
+
+            $sql .= ', '.$this->q($field->column);
         }
-        $sql .= ' FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+        $sql .= ' FROM '.$this->q($modelClass::table()).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
 
         $rows = $this->env->connection->fetchAll($sql, $this->ids);
         $m2mByRecord = $m2mNames !== [] ? $this->loadM2mMaps($m2mNames) : [];
@@ -233,6 +245,10 @@ final class Recordset
                     continue;
                 }
 
+                if ($field->isComputed() && ! $field->isStored()) {
+                    continue;
+                }
+
                 $record[$name] = $this->datetimeFromStorage($row[$field->column] ?? null, $field);
             }
             $record['display_name'] = Registry::with(
@@ -253,6 +269,21 @@ final class Recordset
                 $this->env->cache->set($modelClass::name(), $record['id'], $fname, $fvalue);
             }
         }
+
+        $this->env->computeRunner()->fillUnstoredForRead($this, $fieldNames);
+
+        foreach ($result as &$record) {
+            foreach ($fieldNames as $name) {
+                $field = $fields[$name] ?? null;
+
+                if ($field === null || ! $field->isComputed() || $field->isStored()) {
+                    continue;
+                }
+
+                $record[$name] = $this->env->cache->get($modelClass::name(), $record['id'], $name);
+            }
+        }
+        unset($record);
 
         return $result;
     }
@@ -282,13 +313,13 @@ final class Recordset
 
         foreach ($columnValues as $name => $value) {
             $field = $fields[$name];
-            $sets[] = '"'.$field->column.'" = ?';
+            $sets[] = $this->q($field->column).' = ?';
             $params[] = $field->toSql($this->datetimeToStorage($value, $field));
         }
 
         if ($sets !== []) {
             $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-            $sql = 'UPDATE "'.$modelClass::table().'" SET '.implode(', ', $sets).' WHERE "id" IN ('.$placeholders.')';
+            $sql = 'UPDATE '.$this->q($modelClass::table()).' SET '.implode(', ', $sets).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
             $params = [...$params, ...$this->ids];
             $this->env->connection->execute($sql, $params);
         }
@@ -306,6 +337,8 @@ final class Recordset
                 $this->env->cache->forget($modelClass::name(), $id);
             }
         }
+
+        $this->env->computeRunner()->recomputeAfterWrite($this, array_keys($columnValues));
     }
 
     public function unlink(): void
@@ -340,7 +373,7 @@ final class Recordset
 
         $modelClass = $this->modelClass;
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
-        $sql = 'DELETE FROM "'.$modelClass::table().'" WHERE "id" IN ('.$placeholders.')';
+        $sql = 'DELETE FROM '.$this->q($modelClass::table()).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
         $this->env->connection->execute($sql, $this->ids);
 
         foreach ($this->ids as $id) {
@@ -358,7 +391,7 @@ final class Recordset
         $domain = $this->collectSearchDomain($domain, 'read');
 
         $modelClass = $this->modelClass;
-        $sql = 'SELECT "id" FROM "'.$modelClass::table().'"';
+        $sql = 'SELECT '.$this->q('id').' FROM '.$this->q($modelClass::table());
         $params = [];
         $clauses = $this->buildWhere($domain, $params);
 
@@ -366,7 +399,7 @@ final class Recordset
             $sql .= ' WHERE '.$clauses;
         }
 
-        $sql .= ' ORDER BY '.($order ?? '"id"');
+        $sql .= ' ORDER BY '.($order ?? $this->q('id'));
 
         if ($limit > 0) {
             $sql .= ' LIMIT '.$limit;
@@ -380,6 +413,35 @@ final class Recordset
         $ids = array_map(static fn (array $row): int => (int) $row['id'], $rows);
 
         return new self($this->env, $modelClass, $ids);
+    }
+
+    /**
+     * @param  list<mixed>|list<list<mixed>>  $domain
+     * @param  list<string>  $fields  Aggregate specs, e.g. {@code amount:sum}
+     * @param  list<string>  $groupby  e.g. {@code state}, {@code created_at:month}
+     * @return list<array<string, mixed>>
+     */
+    public function readGroup(
+        array $domain = [],
+        array $fields = [],
+        array $groupby = [],
+        int $offset = 0,
+        int $limit = 0,
+        ?string $orderby = null,
+    ): array {
+        $this->env->checkAccess($this->modelName(), 'read');
+
+        $scopedDomain = $this->collectSearchDomain($domain, 'read');
+
+        return (new ReadGroupQuery($this->env, $this->modelClass))->run(
+            $scopedDomain,
+            $fields,
+            $groupby,
+            fn (array $whereDomain, array &$whereParams): string => $this->buildWhere($whereDomain, $whereParams),
+            $offset,
+            $limit,
+            $orderby,
+        );
     }
 
     /**
@@ -422,50 +484,13 @@ final class Recordset
      */
     private function buildWhere(array $domain, array &$params): string
     {
-        $parts = [];
-
-        foreach ($this->expandDomain($domain) as $leaf) {
-            if ($leaf[0] === '__or__') {
-                $subParts = [];
-                $subs = is_array($leaf[2]) ? $leaf[2] : [];
-
-                foreach ($subs as $sub) {
-                    if (! is_array($sub) || count($sub) !== 3) {
-                        continue;
-                    }
-
-                    $subParts[] = $this->buildLeafClause(Domain::fromArray($sub), $params);
-                }
-
-                if ($subParts !== []) {
-                    $parts[] = '('.implode(' OR ', $subParts).')';
-                }
-
-                continue;
-            }
-
-            $parts[] = $this->buildLeafClause(Domain::fromArray($leaf), $params);
-        }
-
-        return implode(' AND ', $parts);
-    }
-
-    /**
-     * @param  list<mixed>|list<list<mixed>>  $domain
-     * @return list<list<mixed>>
-     */
-    private function expandDomain(array $domain): array
-    {
-        if ($domain === []) {
-            return [];
-        }
-
-        if (! is_array($domain[0])) {
-            return [$domain];
-        }
-
-        /** @var list<list<mixed>> $domain */
-        return $domain;
+        return (new DomainCompiler)->compileWhere(
+            $domain,
+            function (Domain $leaf) use (&$params): string {
+                return $this->buildLeafClause($leaf, $params);
+            },
+            $params,
+        );
     }
 
     /**
@@ -492,8 +517,8 @@ final class Recordset
 
         if ($leaf->value === null || $leaf->value === false) {
             return match ($leaf->operator) {
-                '=' => '"'.$field->column.'" IS NULL',
-                '!=' => '"'.$field->column.'" IS NOT NULL',
+                '=' => $this->q($field->column).' IS NULL',
+                '!=' => $this->q($field->column).' IS NOT NULL',
                 default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator} for null."),
             };
         }
@@ -511,22 +536,32 @@ final class Recordset
                 $params[] = $field->toSql($value);
             }
 
-            return '"'.$field->column.'" IN ('.$holders.')';
+            return $this->q($field->column).' IN ('.$holders.')';
         }
 
+        $column = $this->q($field->column);
         $sql = match ($leaf->operator) {
-            '=' => '"'.$field->column.'" = ?',
-            '!=' => '"'.$field->column.'" <> ?',
-            '>' => '"'.$field->column.'" > ?',
-            '<' => '"'.$field->column.'" < ?',
-            '>=' => '"'.$field->column.'" >= ?',
-            '<=' => '"'.$field->column.'" <= ?',
-            'like', 'ilike' => 'LOWER(CAST("'.$field->column.'" AS TEXT)) LIKE LOWER(?)',
+            '=' => $column.' = ?',
+            '!=' => $column.' <> ?',
+            '>' => $column.' > ?',
+            '<' => $column.' < ?',
+            '>=' => $column.' >= ?',
+            '<=' => $column.' <= ?',
+            'like', 'ilike' => $this->likeClause($column),
             default => throw new \InvalidArgumentException("Unsupported operator {$leaf->operator}."),
         };
         $params[] = $field->toSql($leaf->value);
 
         return $sql;
+    }
+
+    private function likeClause(string $column): string
+    {
+        return match ($this->env->connection->driver()) {
+            'pgsql' => $column.' ILIKE ?',
+            'mysql' => 'LOWER(CAST('.$column.' AS CHAR)) LIKE LOWER(?)',
+            default => 'LOWER(CAST('.$column.' AS TEXT)) LIKE LOWER(?)',
+        };
     }
 
     /**
@@ -550,6 +585,12 @@ final class Recordset
             }
 
             $field = $fields[$name];
+
+            if ($field->isComputed()) {
+                throw new \InvalidArgumentException(
+                    "Cannot write computed field {$name} on {$this->modelName()}; update its dependencies instead.",
+                );
+            }
 
             if ($field instanceof Many2manyField) {
                 $m2mValues[$name] = $this->normalizeRelationIds($value);
@@ -602,14 +643,14 @@ final class Recordset
             [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $this->env->connection->execute(
-                'DELETE FROM "'.$relation.'" WHERE "'.$col1.'" IN ('.$ownerPlaceholders.')',
+                'DELETE FROM '.$this->q($relation).' WHERE '.$this->q($col1).' IN ('.$ownerPlaceholders.')',
                 $this->ids,
             );
 
             foreach ($this->ids as $ownerId) {
                 foreach ($peerIds as $peerId) {
                     $this->env->connection->execute(
-                        'INSERT INTO "'.$relation.'" ("'.$col1.'", "'.$col2.'") VALUES (?, ?)',
+                        'INSERT INTO '.$this->q($relation).' ('.$this->q($col1).', '.$this->q($col2).') VALUES (?, ?)',
                         [$ownerId, $peerId],
                     );
                 }
@@ -636,8 +677,8 @@ final class Recordset
             [$relation, $col1, $col2] = $field->resolveSpec($this->modelClass, $this->env->registry);
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $rows = $this->env->connection->fetchAll(
-                'SELECT "'.$col1.'" AS owner_id, "'.$col2.'" AS peer_id FROM "'.$relation.'" '
-                .'WHERE "'.$col1.'" IN ('.$ownerPlaceholders.') ORDER BY "'.$col2.'"',
+                'SELECT '.$this->q($col1).' AS owner_id, '.$this->q($col2).' AS peer_id FROM '.$this->q($relation).' '
+                .'WHERE '.$this->q($col1).' IN ('.$ownerPlaceholders.') ORDER BY '.$this->q($col2),
                 $this->ids,
             );
             $map = [];
@@ -677,14 +718,14 @@ final class Recordset
             }
 
             $comodelClass = $this->env->registry->modelClass($field->comodel);
-            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverse = $this->env->registry->fieldSet($field->comodel)[$field->inverseName];
             $inverseColumn = $inverse->column;
             $table = $comodelClass::table();
             $placeholders = implode(', ', array_fill(0, count($childIds), '?'));
 
             $this->env->connection->execute(
-                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = NULL WHERE "'.$inverseColumn.'" = ?'
-                .($childIds !== [] ? ' AND "id" NOT IN ('.$placeholders.')' : ''),
+                'UPDATE '.$this->q($table).' SET '.$this->q($inverseColumn).' = NULL WHERE '.$this->q($inverseColumn).' = ?'
+                .($childIds !== [] ? ' AND '.$this->q('id').' NOT IN ('.$placeholders.')' : ''),
                 $childIds !== [] ? [$parentId, ...$childIds] : [$parentId],
             );
 
@@ -694,7 +735,7 @@ final class Recordset
 
             $linkPlaceholders = implode(', ', array_fill(0, count($childIds), '?'));
             $this->env->connection->execute(
-                'UPDATE "'.$table.'" SET "'.$inverseColumn.'" = ? WHERE "id" IN ('.$linkPlaceholders.')',
+                'UPDATE '.$this->q($table).' SET '.$this->q($inverseColumn).' = ? WHERE '.$this->q('id').' IN ('.$linkPlaceholders.')',
                 [$parentId, ...$childIds],
             );
         }
@@ -717,13 +758,13 @@ final class Recordset
             }
 
             $comodelClass = $this->env->registry->modelClass($field->comodel);
-            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverse = $this->env->registry->fieldSet($field->comodel)[$field->inverseName];
             $inverseColumn = $inverse->column;
             $table = $comodelClass::table();
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));
             $rows = $this->env->connection->fetchAll(
-                'SELECT "id", "'.$inverseColumn.'" AS owner_id FROM "'.$table.'" '
-                .'WHERE "'.$inverseColumn.'" IN ('.$ownerPlaceholders.') ORDER BY "id"',
+                'SELECT '.$this->q('id').', '.$this->q($inverseColumn).' AS owner_id FROM '.$this->q($table).' '
+                .'WHERE '.$this->q($inverseColumn).' IN ('.$ownerPlaceholders.') ORDER BY '.$this->q('id'),
                 $this->ids,
             );
             $map = [];

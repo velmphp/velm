@@ -63,15 +63,17 @@
                     </button>
                 @endif
 
-                <button
-                    type="button"
-                    @click="columnsOpen = !columnsOpen; if (columnsOpen) panelOpen = false"
-                    :class="columnsOpen ? 'pv-search-toolbar-btn--active' : 'pv-search-toolbar-btn--idle'"
-                    class="pv-search-toolbar-btn"
-                >
-                    <x-velm-ui::icon icon="heroicon-o-squares-2x2" class="h-3.5 w-3.5" />
-                    <span>{{ __('Columns') }}</span>
-                </button>
+                @if ($this->showListColumnsPanel())
+                    <button
+                        type="button"
+                        @click="columnsOpen = !columnsOpen; if (columnsOpen) panelOpen = false"
+                        :class="columnsOpen ? 'pv-search-toolbar-btn--active' : 'pv-search-toolbar-btn--idle'"
+                        class="pv-search-toolbar-btn"
+                    >
+                        <x-velm-ui::icon icon="heroicon-o-squares-2x2" class="h-3.5 w-3.5" />
+                        <span>{{ __('Columns') }}</span>
+                    </button>
+                @endif
 
                 <button
                     type="button"
@@ -90,6 +92,7 @@
                 </button>
             </div>
 
+            @if ($this->showListColumnsPanel())
             <div
                 x-show="columnsOpen"
                 x-cloak
@@ -117,6 +120,7 @@
                     @endforeach
                 </div>
             </div>
+            @endif
 
             <div
                 x-show="panelOpen"

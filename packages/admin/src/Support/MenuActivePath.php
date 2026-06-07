@@ -13,6 +13,7 @@ use Velm\Admin\Pages\WorkflowInboxPage;
 use Velm\Admin\Pages\StoredViewCreatePage;
 use Velm\Admin\Pages\StoredViewEditPage;
 use Velm\Admin\Pages\StoredViewListPage;
+use Velm\Admin\Pages\StoredViewPage;
 use Velm\Admin\Pages\StoredViewRecordPage;
 
 final class MenuActivePath
@@ -87,8 +88,8 @@ final class MenuActivePath
             return null;
         }
 
-        if ($class === StoredViewListPage::class) {
-            return StoredViewRoutes::listHref($module, $viewName);
+        if ($class === StoredViewListPage::class || $class === StoredViewPage::class) {
+            return StoredViewRoutes::viewHref($module, $viewName);
         }
 
         if ($class === StoredViewRecordPage::class || $class === StoredViewCreatePage::class || $class === StoredViewEditPage::class) {

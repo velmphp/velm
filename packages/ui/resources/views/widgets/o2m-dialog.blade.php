@@ -8,7 +8,6 @@
         'rows' => $rows ?? [],
         'parentRecordId' => $parentRecordId ?? null,
         'readonly' => $readonly ?? false,
-        'inline' => $inline ?? false,
         'columns' => $columns ?? [['name' => 'name', 'label' => 'Name']],
     ];
 @endphp

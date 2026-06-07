@@ -15,6 +15,42 @@ beforeEach(function (): void {
     }
 });
 
+test('uninstall with drop-schema removes module-owned tables', function (): void {
+    $roots = [
+        dirname(__DIR__, 2).'/modules',
+    ];
+    $installer = new ModuleInstaller;
+
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('partners', $roots);
+
+    $env = $installer->environment($roots);
+    $env->model('res.partner')->create(['name' => 'Acme']);
+
+    expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeTrue();
+
+    $installer->uninstall('partners', $roots, ['base', 'admin'], dropSchema: true);
+
+    expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeFalse()
+        ->and(DB::table(ModuleRepository::TABLE)->where('name', 'partners')->exists())->toBeFalse();
+});
+
+test('uninstall without drop-schema keeps module tables', function (): void {
+    $roots = [
+        dirname(__DIR__, 2).'/modules',
+    ];
+    $installer = new ModuleInstaller;
+
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('partners', $roots);
+
+    expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeTrue();
+
+    $installer->uninstall('partners', $roots);
+
+    expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeTrue();
+});
+
 test('uninstall removes module row and module views', function (): void {
     $roots = [
         dirname(__DIR__, 2).'/modules',

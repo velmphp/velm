@@ -315,7 +315,7 @@ trait InteractsWithVelmArchForm
     protected function normalizeVelmFormRow(array $row, array $arch): array
     {
         $model = (string) ($arch['model'] ?? '');
-        $fields = $model !== '' ? app(Environment::class)->registry->modelClass($model)::fields() : [];
+        $fields = $model !== '' ? app(Environment::class)->registry->fieldsFor($model) : [];
 
         foreach ($fields as $name => $field) {
             if ($field instanceof Many2manyField || $field instanceof One2manyField) {
@@ -332,7 +332,7 @@ trait InteractsWithVelmArchForm
 
         $arch = $this->arch();
         $model = (string) ($arch['model'] ?? '');
-        $fields = $model !== '' ? app(Environment::class)->registry->modelClass($model)::fields() : [];
+        $fields = $model !== '' ? app(Environment::class)->registry->fieldsFor($model) : [];
 
         foreach ($data as $key => $value) {
             $field = $fields[$key] ?? null;
