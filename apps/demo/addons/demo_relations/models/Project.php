@@ -6,6 +6,7 @@ namespace Addons\DemoRelations\Models;
 
 use Velm\Fields\CharField;
 use Velm\Fields\Many2manyField;
+use Velm\Fields\Many2oneField;
 use Velm\Fields\One2manyField;
 use Velm\Models\Model;
 
@@ -20,6 +21,7 @@ class Project extends Model
         return [
             'name' => CharField::make()->required()->label('Project'),
             'tag_ids' => Many2manyField::make('demo.tag')->label('Tags'),
+            'document_ids' => Many2manyField::make('ir.attachment')->label('Documents'),
             'task_ids' => One2manyField::make('demo.task', 'project_id')->label('Tasks'),
         ];
     }

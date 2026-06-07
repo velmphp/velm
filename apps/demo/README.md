@@ -24,8 +24,9 @@ Path repositories to `../../packages/*` are committed in `composer.json` (monore
 
 1. Publish Velm shell CSS/JS
 2. Laravel + Velm bootstrap migrations (`base`, `admin`)
-3. Install reference modules: `partners`, `partners_ext`, `workflow`, `change_management`, `demo_relations`
-4. Seed admin user
+3. Install reference modules: `partners`, `partners_ext`, `workflow`, `change_management`, `file_manager`, `demo_relations`
+4. Seed demo Velm records (`velm:seed` — countries, partners, and other module fixtures)
+5. Seed admin user
 
 Demo addon details: [addons/README.md](./addons/README.md).
 
@@ -40,7 +41,7 @@ composer run velm-rebuild-ui
 ## Resetting the Velm schema
 
 ```bash
-php artisan velm:migrate:fresh --yes --module=partners --module=partners_ext --module=workflow --module=change_management --module=demo_relations
+php artisan velm:migrate:fresh --yes --module=partners --module=partners_ext --module=workflow --module=change_management --module=file_manager --module=demo_relations
 php artisan velm:seed
 ```
 

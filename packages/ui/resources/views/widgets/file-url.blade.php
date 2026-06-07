@@ -18,7 +18,7 @@
         <div
             x-show="previewUrl"
             x-cloak
-            class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-default bg-neutral-secondary"
+            class="pv-file-url__preview flex items-center justify-center overflow-hidden rounded-lg border border-default bg-neutral-secondary"
         >
             <img :src="previewUrl" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
         </div>

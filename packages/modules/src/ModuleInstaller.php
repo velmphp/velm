@@ -290,6 +290,8 @@ final class ModuleInstaller
 
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
+
+        $this->runModuleSeeders($spec, $env);
     }
 
     /**
@@ -437,6 +439,8 @@ final class ModuleInstaller
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
 
+        $this->runModuleSeeders($spec, $env);
+
         $this->repository->markInstalled($spec);
     }
 
@@ -456,7 +460,24 @@ final class ModuleInstaller
         $this->viewSynchronizer->sync($spec, $env);
         $this->menuSynchronizer->sync($spec, $env);
 
+        $this->runModuleSeeders($spec, $env);
+
         $this->repository->markInstalled($spec);
+    }
+
+    private function runModuleSeeders(ModuleSpec $spec, Environment $env): void
+    {
+        foreach ($spec->seeders as $class) {
+            if (! class_exists($class)) {
+                throw new \RuntimeException("Seeder class {$class} for module {$spec->name} was not found.");
+            }
+
+            if (! method_exists($class, 'run')) {
+                throw new \RuntimeException("Seeder {$class} must define a static run(Environment \$env) method.");
+            }
+
+            $class::run($env);
+        }
     }
 
     private function applySchema(

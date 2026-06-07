@@ -180,6 +180,31 @@ final class Registry
         return $this->fieldSets[$name];
     }
 
+    public function field(string $modelName, string $fieldName): ?Field
+    {
+        if (! isset($this->fieldSets[$modelName])) {
+            return null;
+        }
+
+        return $this->fieldSets[$modelName][$fieldName] ?? null;
+    }
+
+    /**
+     * @return array<string, Field>
+     */
+    public function fieldsFor(string $modelName): array
+    {
+        if (isset($this->fieldSets[$modelName])) {
+            return $this->fieldSets[$modelName];
+        }
+
+        if (! isset($this->models[$modelName])) {
+            return [];
+        }
+
+        return $this->modelClass($modelName)::fields();
+    }
+
     /**
      * @return list<class-string<Model>>
      */

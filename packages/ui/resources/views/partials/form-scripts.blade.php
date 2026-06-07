@@ -825,6 +825,131 @@
             }
         };
 
+        Alpine.data('pvFilePickerField', (cfg) => ({
+            wireKey: cfg.wireKey || '',
+            multi: !!cfg.multi,
+            readonly: !!cfg.readonly,
+            accept: cfg.accept || '',
+            pickerTitle: cfg.pickerTitle || '{{ __('Pick a file') }}',
+            selected: (cfg.initial || []).slice(),
+
+            init() {
+                if (typeof this.$wire === 'undefined' || !this.wireKey) {
+                    return;
+                }
+
+                this.$watch('selected', () => this.syncWire(), { deep: true });
+            },
+
+            syncWire() {
+                if (typeof this.$wire === 'undefined' || !this.wireKey) {
+                    return;
+                }
+
+                if (this.multi) {
+                    this.$wire.set(
+                        this.wireKey,
+                        this.selected.map((row) => row.id),
+                    );
+                    return;
+                }
+
+                this.$wire.set(
+                    this.wireKey,
+                    this.selected.length ? this.selected[0].id : null,
+                );
+            },
+
+            normalizeRow(row) {
+                if (!row || !row.id) {
+                    return null;
+                }
+
+                const mime = String(row.mimetype || '').toLowerCase();
+                const download = row.download_url || ('/api/attachment/' + row.id + '/download');
+                let thumbnail = row.thumbnail_url || '';
+
+                if (!thumbnail && mime.startsWith('image/')) {
+                    thumbnail = download;
+                }
+
+                return {
+                    id: row.id,
+                    name: row.name || ('#' + row.id),
+                    mimetype: row.mimetype || '',
+                    thumbnail_url: thumbnail,
+                    download_url: download,
+                };
+            },
+
+            openPicker() {
+                if (this.readonly) {
+                    return;
+                }
+
+                const params = new URLSearchParams({ multi: this.multi ? '1' : '0' });
+
+                if (this.accept) {
+                    params.set('accept', this.accept);
+                }
+
+                const url = '/web/files/picker?' + params.toString();
+
+                if (!window.PvDialog) {
+                    window.location.href = url;
+                    return;
+                }
+
+                window.PvDialog.open({
+                    url,
+                    title: this.pickerTitle,
+                    onResult: (result) => {
+                        if (!result) {
+                            return;
+                        }
+
+                        if (this.multi && Array.isArray(result)) {
+                            result.forEach((row) => this.addRow(row));
+                            return;
+                        }
+
+                        this.addRow(result);
+                    },
+                });
+            },
+
+            addRow(row) {
+                const normalized = this.normalizeRow(row);
+
+                if (!normalized) {
+                    return;
+                }
+
+                if (this.multi) {
+                    if (this.selected.some((item) => item.id === normalized.id)) {
+                        return;
+                    }
+
+                    this.selected.push(normalized);
+                    this.syncWire();
+
+                    return;
+                }
+
+                this.selected = [normalized];
+                this.syncWire();
+            },
+
+            remove(id) {
+                if (this.readonly) {
+                    return;
+                }
+
+                this.selected = this.selected.filter((row) => row.id !== id);
+                this.syncWire();
+            },
+        }));
+
         Alpine.data('pvFileUrl', (cfg) => ({
             wireKey: cfg.wireKey || '',
             fallbackWireKey: cfg.fallbackWireKey || '',

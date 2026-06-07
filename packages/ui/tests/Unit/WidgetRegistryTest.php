@@ -51,6 +51,42 @@ test('widget registry resolves file_url hint for char fields', function (): void
     expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-url');
 });
 
+test('widget registry resolves file hint for attachment many2one', function (): void {
+    $env = app(Environment::class);
+
+    if (! $env->registry->has('test.document')) {
+        $env->registry->register(\Velm\Ui\Tests\Support\Document::class);
+    }
+
+    $ctx = new WidgetContext(
+        $env,
+        'test.document',
+        ['name' => 'attachment_id', 'widget' => 'file'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.file-input');
+});
+
+test('widget registry resolves files hint for attachment many2many', function (): void {
+    $env = app(Environment::class);
+
+    if (! $env->registry->has('test.document')) {
+        $env->registry->register(\Velm\Ui\Tests\Support\Document::class);
+    }
+
+    $ctx = new WidgetContext(
+        $env,
+        'test.document',
+        ['name' => 'attachment_ids', 'widget' => 'files'],
+        FormMode::Edit,
+        [],
+    );
+
+    expect((new WidgetRegistry)->resolve($ctx))->toBe('velm-ui::widgets.files-input');
+});
+
 test('widget registry resolves rich_text hint for text fields', function (): void {
     $env = app(Environment::class);
     $ctx = new WidgetContext(

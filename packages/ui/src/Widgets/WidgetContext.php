@@ -39,9 +39,7 @@ final readonly class WidgetContext
             return null;
         }
 
-        $modelClass = $this->env->registry->modelClass($this->model);
-
-        return $modelClass::fields()[$this->fieldName()] ?? null;
+        return $this->env->registry->field($this->model, $this->fieldName());
     }
 
     public function wireKey(): string

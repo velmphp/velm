@@ -44,6 +44,14 @@ final class ArchSchemaBuilder
             return new ListColumn($name, 'toggle');
         }
 
+        if ($widget === 'file' && $velmField instanceof Many2oneField) {
+            return new ListColumn($name, 'file', $velmField->comodel);
+        }
+
+        if ($widget === 'files' && $velmField instanceof Many2manyField) {
+            return new ListColumn($name, 'files', $velmField->comodel);
+        }
+
         if ($velmField instanceof Many2oneField) {
             return new ListColumn($name, 'm2o', $velmField->comodel);
         }
@@ -59,6 +67,37 @@ final class ArchSchemaBuilder
         return new ListColumn($name, 'text');
     }
 
+    /**
+     * @param  array<string, mixed>  $fieldSpec
+     */
+    public function formatFieldValue(string $model, array $fieldSpec, mixed $value, Environment $env): string
+    {
+        return $this->formatListCell($this->listColumnFor($fieldSpec, $env, $model), $value, $env);
+    }
+
+    public function formatGroupLabel(string $model, string $fieldName, mixed $value, Environment $env): string
+    {
+        if ($value === null || $value === '') {
+            return '—';
+        }
+
+        $field = $this->velmField($env, $model, $fieldName);
+
+        if ($field instanceof BooleanField) {
+            return $value ? 'Yes' : 'No';
+        }
+
+        if ($field instanceof Many2oneField) {
+            if ($value === false || $value === 0) {
+                return '—';
+            }
+
+            return $this->formatListCell(new ListColumn($fieldName, 'm2o', $field->comodel), $value, $env);
+        }
+
+        return (string) $value;
+    }
+
     public function formatListCell(ListColumn $column, mixed $value, Environment $env): string
     {
         if ($value === null || $value === '') {
@@ -71,8 +110,16 @@ final class ArchSchemaBuilder
             return (string) ($rows[0]['display_name'] ?? $value);
         }
 
+        if ($column->kind === 'file' && $column->comodel !== null) {
+            return $this->formatListCell(new ListColumn($column->name, 'm2o', $column->comodel), $value, $env);
+        }
+
         if (in_array($column->kind, ['m2m', 'o2m'], true) && $column->comodel !== null && is_array($value)) {
             return $this->formatRelationIds($value, $column->comodel, $env);
+        }
+
+        if ($column->kind === 'files' && $column->comodel !== null && is_array($value)) {
+            return $this->formatListCell(new ListColumn($column->name, 'm2m', $column->comodel), $value, $env);
         }
 
         if ($column->kind === 'toggle') {
@@ -116,8 +163,6 @@ final class ArchSchemaBuilder
             return null;
         }
 
-        $modelClass = $env->registry->modelClass($model);
-
-        return $modelClass::fields()[$name] ?? null;
+        return $env->registry->field($model, $name);
     }
 }

@@ -718,7 +718,7 @@ final class Recordset
             }
 
             $comodelClass = $this->env->registry->modelClass($field->comodel);
-            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverse = $this->env->registry->fieldSet($field->comodel)[$field->inverseName];
             $inverseColumn = $inverse->column;
             $table = $comodelClass::table();
             $placeholders = implode(', ', array_fill(0, count($childIds), '?'));
@@ -758,7 +758,7 @@ final class Recordset
             }
 
             $comodelClass = $this->env->registry->modelClass($field->comodel);
-            $inverse = $comodelClass::fields()[$field->inverseName];
+            $inverse = $this->env->registry->fieldSet($field->comodel)[$field->inverseName];
             $inverseColumn = $inverse->column;
             $table = $comodelClass::table();
             $ownerPlaceholders = implode(', ', array_fill(0, count($this->ids), '?'));

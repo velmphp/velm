@@ -18,6 +18,10 @@
         @endif
     </div>
 
+    @if (count($this->analyticsViewSwitcher()) > 1)
+        @include('velm-admin::pages.analytics.partials.view-switcher')
+    @endif
+
     @include('velm-admin::components.arch-list-toolbar')
 
     @include('velm-ui::list.table')

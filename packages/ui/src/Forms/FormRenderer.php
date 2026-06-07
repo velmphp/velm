@@ -156,7 +156,7 @@ final class FormRenderer
         ?int $parentRecordId,
     ): FormCell {
         $name = (string) $fieldSpec['name'];
-        $velmField = $model !== '' ? ($env->registry->modelClass($model)::fields()[$name] ?? null) : null;
+        $velmField = $model !== '' ? $env->registry->field($model, $name) : null;
         $label = is_string($fieldSpec['label'] ?? null) && $fieldSpec['label'] !== ''
             ? (string) $fieldSpec['label']
             : ($velmField?->displayLabel() ?? Field::humanizeFieldName($name));
@@ -195,11 +195,19 @@ final class FormRenderer
             'mode' => $ctx->mode->value,
         ];
 
-        if ($velmField instanceof Many2oneField) {
+        $widgetHint = isset($ctx->spec['widget']) && is_string($ctx->spec['widget'])
+            ? $ctx->spec['widget']
+            : null;
+
+        if ($velmField instanceof Many2oneField && $widgetHint === 'file') {
+            $props = array_merge($props, $this->attachmentPickerProps($ctx, false));
+        } elseif ($velmField instanceof Many2oneField) {
             $props = array_merge($props, $this->many2oneProps($ctx, $velmField));
         }
 
-        if ($velmField instanceof Many2manyField) {
+        if ($velmField instanceof Many2manyField && $widgetHint === 'files') {
+            $props = array_merge($props, $this->attachmentPickerProps($ctx, true));
+        } elseif ($velmField instanceof Many2manyField) {
             $props = array_merge($props, $this->many2manyProps($ctx, $velmField));
         }
 
@@ -223,6 +231,21 @@ final class FormRenderer
         }
 
         return $props;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function attachmentPickerProps(WidgetContext $ctx, bool $multi): array
+    {
+        $accept = is_string($ctx->spec['accept'] ?? null) ? (string) $ctx->spec['accept'] : '';
+
+        return [
+            'multi' => $multi,
+            'accept' => $accept,
+            'initial' => RelationalInitials::attachmentChips($ctx->env, $ctx->value(), $multi),
+            'pickerTitle' => $multi ? __('Pick files') : __('Pick a file'),
+        ];
     }
 
     /**

@@ -35,6 +35,44 @@ final class RelationalInitials
     }
 
     /**
+     * @return list<array{id: int, name: string, mimetype: string, thumbnail_url: string, download_url: string}>
+     */
+    public static function attachmentChips(Environment $env, mixed $value, bool $multi): array
+    {
+        $ids = $multi
+            ? self::normalizeIds($value)
+            : (($value !== null && $value !== '' && $value !== false) ? [(int) $value] : []);
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $env->browse('ir.attachment', $ids)->read(['name', 'mimetype', 'type', 'url', 'file_size', 'public']);
+        $byId = [];
+
+        foreach ($rows as $row) {
+            $chip = \Velm\Support\AttachmentRow::toArray($row);
+            $byId[(int) $chip['id']] = [
+                'id' => (int) $chip['id'],
+                'name' => (string) ($chip['name'] !== '' ? $chip['name'] : ($row['display_name'] ?? $chip['id'])),
+                'mimetype' => (string) $chip['mimetype'],
+                'thumbnail_url' => (string) $chip['thumbnail_url'],
+                'download_url' => (string) $chip['download_url'],
+            ];
+        }
+
+        $chips = [];
+
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $chips[] = $byId[$id];
+            }
+        }
+
+        return $chips;
+    }
+
+    /**
      * @param  list<array{name: string, label: string}>  $columns
      * @return list<array<string, mixed>>
      */

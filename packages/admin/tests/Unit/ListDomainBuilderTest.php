@@ -51,6 +51,7 @@ test('list domain builder adds boolean filter chips', function (): void {
 
     $rows = $this->env->model('res.partner')->search($domain)->read();
 
-    expect($rows)->toHaveCount(1)
-        ->and($rows[0]['name'])->toBe('Active Co');
+    expect($rows)->not->toBeEmpty()
+        ->and(collect($rows)->pluck('name'))->toContain('Active Co')
+        ->and(collect($rows)->every(static fn (array $row): bool => ($row['active'] ?? false) === true))->toBeTrue();
 });

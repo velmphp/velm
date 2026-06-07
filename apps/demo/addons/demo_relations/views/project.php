@@ -20,6 +20,7 @@ return ViewsData::make()
             ->columns([
                 'name',
                 Field::make('tag_ids')->widget('dialog'),
+                Field::make('document_ids')->widget('files'),
                 Field::make('task_ids')->widget('dialog'),
             ]),
         DetailView::make('project.detail')
@@ -28,6 +29,7 @@ return ViewsData::make()
             ->section('main', 'Project', [
                 'name',
                 Field::make('tag_ids')->widget('dialog'),
+                Field::make('document_ids')->widget('files'),
                 Field::make('task_ids')->widget('dialog')->colspan('full'),
             ]),
         FormView::make('project.form')
@@ -35,6 +37,7 @@ return ViewsData::make()
             ->section('main', 'Project', [
                 'name',
                 Field::make('tag_ids')->widget('dialog'),
+                Field::make('document_ids')->widget('files'),
                 Field::make('task_ids')->widget('dialog')->colspan('full'),
             ]),
     );

@@ -1,0 +1,130 @@
+<?php
+
+declare(strict_types=1);
+
+use Velm\Admin\Arch\GraphDataBuilder;
+use Velm\Admin\Arch\KanbanBoardBuilder;
+use Velm\Admin\Arch\ListQuery;
+use Velm\Admin\Arch\PivotGridBuilder;
+use Velm\Admin\Tests\TestCase;
+use Velm\Views\Authoring\Card;
+use Velm\Views\Authoring\GraphView;
+use Velm\Views\Authoring\KanbanView;
+use Velm\Views\Authoring\PivotView;
+use Velm\Views\ViewRegistry;
+
+uses(TestCase::class);
+
+beforeEach(function (): void {
+    if (! extension_loaded('pdo_sqlite')) {
+        skip('The pdo_sqlite extension is required.');
+    }
+});
+
+test('kanban board builder groups partner records when group by is set', function (): void {
+    $env = app(\Velm\Environment::class);
+    $env->model('res.partner')->create(['name' => 'Active Co', 'active' => true]);
+    $env->model('res.partner')->create(['name' => 'Inactive Co', 'active' => false]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $arch['group_by'] = 'active';
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch, new ListQuery, 'active');
+
+    expect($board['grouped'])->toBeTrue()
+        ->and($board['group_by'])->toBe('active')
+        ->and($board['columns'])->toHaveCount(2);
+
+    $labels = array_column($board['columns'], 'label');
+    expect($labels)->toContain('Yes', 'No');
+
+    $allTitles = [];
+    foreach ($board['columns'] as $column) {
+        foreach ($column['cards'] as $card) {
+            $allTitles[] = $card['title'];
+        }
+    }
+
+    expect($allTitles)->toContain('Active Co', 'Inactive Co');
+});
+
+test('kanban board builder returns flat cards when not grouped', function (): void {
+    $env = app(\Velm\Environment::class);
+    $env->model('res.partner')->create(['name' => 'Flat Partner', 'active' => true]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch);
+
+    expect($board['grouped'])->toBeFalse()
+        ->and($board['columns'])->toBe([])
+        ->and(collect($board['cards'])->pluck('title'))->toContain('Flat Partner');
+});
+
+test('graph data builder aggregates partners by country', function (): void {
+    $env = app(\Velm\Environment::class);
+    $be = $env->model('res.country')->create(['name' => 'Belgium', 'code' => 'BE']);
+    $nl = $env->model('res.country')->create(['name' => 'Netherlands', 'code' => 'NL']);
+
+    $env->model('res.partner')->create(['name' => 'Graph Velm BE', 'country_id' => $be->ids()[0]]);
+    $env->model('res.partner')->create(['name' => 'Graph Velm BE 2', 'country_id' => $be->ids()[0]]);
+    $env->model('res.partner')->create(['name' => 'Graph Velm NL', 'country_id' => $nl->ids()[0]]);
+
+    $arch = GraphView::make('partner.graph')
+        ->model('res.partner')
+        ->groupBy('country_id')
+        ->measure('__count')
+        ->domain([['name', 'ilike', 'Graph %']])
+        ->toArray();
+
+    $arch = [
+        'view_type' => $arch['view_type'],
+        'model' => $arch['model'],
+        ...$arch['arch'],
+    ];
+
+    $graph = (new GraphDataBuilder)->build($arch, $env);
+
+    expect($graph['points'])->toHaveCount(2);
+
+    $byLabel = collect($graph['points'])->keyBy('label');
+    expect($byLabel['Belgium']['value'])->toEqual(2)
+        ->and($byLabel['Netherlands']['value'])->toEqual(1);
+});
+
+test('pivot grid builder crosses company and active dimensions', function (): void {
+    $env = app(\Velm\Environment::class);
+
+    $env->model('res.partner')->create(['name' => 'A', 'is_company' => true, 'active' => true]);
+    $env->model('res.partner')->create(['name' => 'B', 'is_company' => true, 'active' => false]);
+    $env->model('res.partner')->create(['name' => 'C', 'is_company' => false, 'active' => true]);
+
+    $arch = PivotView::make('partner.pivot')
+        ->model('res.partner')
+        ->rows(['is_company'])
+        ->cols(['active'])
+        ->measures(['__count'])
+        ->toArray();
+
+    $arch = [
+        'view_type' => $arch['view_type'],
+        'model' => $arch['model'],
+        ...$arch['arch'],
+    ];
+
+    $grid = (new PivotGridBuilder)->build($arch, $env);
+
+    expect($grid['row_headers'])->toHaveCount(2)
+        ->and($grid['col_headers'])->toHaveCount(2)
+        ->and($grid['matrix'])->not->toBeEmpty();
+});
+
+test('kanban view declaration card schema feeds board builder', function (): void {
+    $arch = KanbanView::make('partner.kanban')
+        ->model('res.partner')
+        ->groupBy('active')
+        ->card(Card::make()->title('name')->subtitle('country_id'))
+        ->toArray();
+
+    expect($arch['arch']['card']['title'])->toBe('name');
+});

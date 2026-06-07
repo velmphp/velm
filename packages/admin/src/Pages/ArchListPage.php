@@ -130,6 +130,19 @@ abstract class ArchListPage extends VelmShellPage
         $this->resetPage();
     }
 
+    /**
+     * @return list<array{type: string, label: string, url: string, active: bool}>
+     */
+    public function analyticsViewSwitcher(): array
+    {
+        return [];
+    }
+
+    public function showListColumnsPanel(): bool
+    {
+        return true;
+    }
+
     public function render()
     {
         return view('velm-ui::list.page');

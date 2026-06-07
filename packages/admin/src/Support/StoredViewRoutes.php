@@ -55,12 +55,58 @@ final class StoredViewRoutes
         return self::listViewFromFormView($recordView);
     }
 
-    public static function listPageUrl(string $module, string $listView): string
+    /**
+     * @return array{module: string, view: string}|null
+     */
+    public static function parseViewHref(?string $href): ?array
+    {
+        return self::parseListHref($href);
+    }
+
+    public static function viewHref(string $module, string $viewName): string
+    {
+        return self::listHref($module, $viewName);
+    }
+
+    public static function viewPageUrl(string $module, string $viewName): string
     {
         return StoredViewListPage::getUrl([
             'module' => $module,
-            'viewName' => $listView,
+            'viewName' => $viewName,
         ], panel: 'velm');
+    }
+
+    public static function presentationType(string $module, string $viewName): string
+    {
+        $arch = app(ViewRegistry::class)->arch(app(Environment::class), $module, $viewName);
+        $type = $arch['view_type'] ?? null;
+
+        return is_string($type) && $type !== '' ? $type : 'list';
+    }
+
+    public static function siblingListView(string $module, string $viewName): string
+    {
+        try {
+            $arch = app(ViewRegistry::class)->arch(app(Environment::class), $module, $viewName);
+            $listView = $arch['list_view'] ?? null;
+
+            if (is_string($listView) && $listView !== '') {
+                return $listView;
+            }
+        } catch (\Throwable) {
+            // Fall back to naming convention when the view is not synced yet.
+        }
+
+        if (preg_match('/^(.+)\.[^.]+$/', $viewName, $matches) === 1) {
+            return $matches[1].'.list';
+        }
+
+        return self::listViewFromFormView($viewName);
+    }
+
+    public static function listPageUrl(string $module, string $viewName): string
+    {
+        return self::viewPageUrl($module, $viewName);
     }
 
     public static function createPageUrl(string $module, string $formView): string
