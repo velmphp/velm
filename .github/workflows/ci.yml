@@ -47,6 +47,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           fail_ci_if_error: false
+          slug: velmphp/velm
           verbose: true
 
   app-install:
