@@ -93,7 +93,7 @@ test('sequential approval advances through each group member', function (): void
 
         expect($pendingNow)->not->toBeEmpty();
 
-        $inst = WorkflowEngine::approve($env, $pendingNow[0], approved: true, userId: Environment::SUPERUSER_ID);
+        $inst = WorkflowEngine::approve($env, $pendingNow[0], approved: true, userId: (int) ($pendingNow[0]['assignee_user_id'] ?? $env->uid));
     }
 
     expect($inst['state'])->toBe('done');

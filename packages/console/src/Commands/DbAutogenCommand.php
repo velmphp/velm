@@ -10,12 +10,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Console\Support\ModuleRoots;
+use Velm\Console\Support\RequiresLaravelDatabase;
 use Velm\Modules\Migrations\ModuleMigrationAutogen;
 use Velm\Modules\ModuleInstaller;
 
 #[AsCommand(name: 'db:autogen', description: 'Write a versioned migration file and bump manifest VERSION')]
-final class DbAutogenCommand extends Command
+class DbAutogenCommand extends Command
 {
+    use RequiresLaravelDatabase;
     protected function configure(): void
     {
         $this
@@ -26,7 +28,7 @@ final class DbAutogenCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (! class_exists(\Illuminate\Support\Facades\DB::class)) {
+        if (! $this->laravelDatabaseAvailable()) {
             $output->writeln('<error>db:autogen requires a bootstrapped Laravel application (database).</error>');
 
             return Command::FAILURE;

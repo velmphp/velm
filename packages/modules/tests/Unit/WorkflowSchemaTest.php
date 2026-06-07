@@ -297,3 +297,290 @@ test('workflow schema rejects approval transitions missing user field', function
         ]],
     ], $registry);
 })->throws(WorkflowDefinitionError::class);
+
+test('workflow schema rejects empty states list and invalid state entries', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'non-empty list');
+
+test('workflow schema rejects non-object state entries', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => ['bad'],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'must be an object');
+
+test('workflow schema rejects invalid transitions container', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => 'bad',
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'must be a list');
+
+test('workflow schema rejects transition with empty from list', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => 'Go',
+            'from' => [],
+            'to' => 'draft',
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'non-empty list');
+
+test('workflow schema validates approval all strategy with reject_to', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [
+            ['key' => 'draft', 'label' => 'Draft', 'initial' => true],
+            ['key' => 'done', 'label' => 'Done'],
+            ['key' => 'rejected', 'label' => 'Rejected'],
+        ],
+        'transitions' => [[
+            'key' => 'submit',
+            'label' => 'Submit',
+            'from' => ['draft'],
+            'to' => 'done',
+            'kind' => 'approval',
+            'reject_to' => 'rejected',
+            'approval' => [
+                'strategy' => 'all',
+                'assignee_type' => 'user',
+                'user_id' => 1,
+            ],
+        ]],
+    ], $registry);
+
+    expect(true)->toBeTrue();
+});
+
+test('workflow schema rejects invalid approval object', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'submit',
+            'label' => 'Submit',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'kind' => 'approval',
+            'approval' => 'bad',
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'approval must be an object');
+
+test('workflow schema rejects invalid form field object', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => 'Go',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'form' => ['fields' => ['bad']],
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'must be an object');
+
+test('workflow schema rejects empty state key and label', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => '', 'label' => 'Draft', 'initial' => true]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'key must be a string');
+
+test('workflow schema rejects empty state label string', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => '', 'initial' => true]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'label must be a string');
+
+test('workflow schema rejects string transition entries', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => ['bad'],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'must be an object');
+
+test('workflow schema rejects empty transition label', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => '',
+            'from' => ['draft'],
+            'to' => 'draft',
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'label must be a string');
+
+test('workflow schema rejects invalid reject_to target', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => 'Go',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'reject_to' => 'missing',
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'reject_to');
+
+test('workflow schema rejects invalid approval strategy and assignee type', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'submit',
+            'label' => 'Submit',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'kind' => 'approval',
+            'approval' => ['strategy' => 'random', 'assignee_type' => 'team'],
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class);
+
+test('workflow schema rejects invalid form fields list and stage field type', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => 'Go',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'form' => ['fields' => 'bad'],
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'must be a list');
+
+test('workflow schema rejects invalid stage field type token', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+        'transitions' => [[
+            'key' => 'go',
+            'label' => 'Go',
+            'from' => ['draft'],
+            'to' => 'draft',
+            'form' => ['fields' => [['name' => 'note', 'type' => 'blob']]],
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'type invalid');

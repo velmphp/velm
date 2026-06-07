@@ -59,3 +59,33 @@ test('module schema drop no-ops when another installed module owns the models', 
 
     expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeTrue();
 });
+
+test('module schema drop skips extension models and empty table names', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('partners', $roots);
+
+    $env = $installer->environment($roots);
+    $spec = (new ModuleDiscovery)->discover($roots)['partners'];
+
+    (new ModuleSchemaDrop($env->connection))->dropModule($spec, $roots, ['base']);
+
+    expect(DB::getSchemaBuilder()->hasTable('res_partner'))->toBeFalse();
+});
+
+test('module schema drop removes workflow tables when module is uninstalled', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $spec = (new ModuleDiscovery)->discover($roots)['workflow'];
+
+    expect(DB::getSchemaBuilder()->hasTable('workflow_instance'))->toBeTrue();
+
+    (new ModuleSchemaDrop($env->connection))->dropModule($spec, $roots, ['base', 'admin']);
+
+    expect(DB::getSchemaBuilder()->hasTable('workflow_instance'))->toBeFalse();
+});

@@ -42,6 +42,12 @@ test('field colspan full maps to wide', function (): void {
         ->and($field)->not->toHaveKey('colspan');
 });
 
+test('field accept stores mime filter and invalid colspan throws', function (): void {
+    expect(Field::make('logo')->accept('image/*')->toArray()['accept'])->toBe('image/*');
+
+    Field::make('notes')->colspan(0);
+})->throws(InvalidArgumentException::class, 'colspan must be at least 1');
+
 test('cols below one throws', function (): void {
     FormView::make('x')->model('res.partner')->cols(0);
 })->throws(InvalidArgumentException::class);

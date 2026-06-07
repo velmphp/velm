@@ -78,7 +78,7 @@ Install **pcov** for your PHP version (e.g. `apt install php8.3-pcov`), then fro
 composer test:coverage:report
 ```
 
-This writes `coverage.xml` and fails if line coverage drops below the configured minimum (currently **85%**, raised incrementally toward **99%**; see [phpunit.xml](phpunit.xml) scope).
+This writes `coverage.xml` and fails if line coverage drops below the configured minimum (currently **95%**, raised incrementally toward **99%**; see [phpunit.xml](phpunit.xml) scope).
 
 ## GitHub release
 

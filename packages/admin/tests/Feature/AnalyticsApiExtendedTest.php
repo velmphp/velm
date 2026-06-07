@@ -43,6 +43,32 @@ test('graph data api works without module view using model fallback arch', funct
         ->assertJsonStructure(['labels', 'values', 'measure_label', 'groupby', 'measure']);
 });
 
+test('graph data api returns 400 for unknown groupby field', function (): void {
+    $this->getJson('/api/graph/data?'.http_build_query([
+        'model' => 'res.partner',
+        'groupby' => 'not_a_real_field',
+        'measure' => '__count',
+    ]))->assertStatus(400);
+});
+
+test('pivot data api returns 400 for unknown row groupby field', function (): void {
+    $this->getJson('/api/pivot/data?'.http_build_query([
+        'model' => 'res.partner',
+        'row_groupby' => 'missing_field',
+        'measures' => '__count',
+    ]))->assertStatus(400);
+});
+
+test('graph and pivot data apis return 403 when model access is denied', function (): void {
+    $this->actingAs(new GenericUser(['id' => 999, 'email' => 'noaccess@test']));
+
+    $this->getJson('/api/graph/data?model=res.partner&groupby=active')
+        ->assertStatus(403);
+
+    $this->getJson('/api/pivot/data?model=res.partner&row_groupby=active')
+        ->assertStatus(403);
+});
+
 test('pivot data api accepts multi measure specs', function (): void {
     $env = app(\Velm\Environment::class);
     $env->model('res.partner')->create(['name' => 'Multi Pivot', 'is_company' => true, 'active' => true]);

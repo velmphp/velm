@@ -80,3 +80,46 @@ test('workflow designer builder config hydrates existing definition row', functi
         ->and($config['recordFields'])->not->toBeEmpty()
         ->and($config['definition']['states'])->not->toBeEmpty();
 });
+
+test('workflow designer builderConfig returns defaults without definition row', function (): void {
+    if (! extension_loaded('pdo_sqlite')) {
+        skip('The pdo_sqlite extension is required.');
+    }
+
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $config = WorkflowDesigner::builderConfig($env);
+
+    expect($config['workflowId'])->toBeNull()
+        ->and($config['recordFields'])->toBe([])
+        ->and($config['models'])->not->toBeEmpty();
+});
+
+test('workflow designer listModelFields skips readonly fields', function (): void {
+    if (! extension_loaded('pdo_sqlite')) {
+        skip('The pdo_sqlite extension is required.');
+    }
+
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+
+    $env = $installer->environment($roots);
+    $fields = WorkflowDesigner::listModelFields($env, 'res.partner');
+
+    expect(collect($fields)->pluck('name'))->not->toContain('id', 'display_name');
+});
+
+test('workflow designer listGroups and listUsers return empty without models', function (): void {
+    $env = \Velm\Registry::using(function (\Velm\Registry $registry): \Velm\Environment {
+        return new \Velm\Environment(\Velm\Database\PdoConnection::sqliteMemory(), $registry);
+    });
+
+    expect(WorkflowDesigner::listGroups($env))->toBe([])
+        ->and(WorkflowDesigner::listUsers($env))->toBe([]);
+});

@@ -35,3 +35,26 @@ test('arch resolver throws for missing view', function (): void {
     expect(fn () => (new ArchResolver)->resolve($env, 'base', 'missing.view'))
         ->toThrow(RuntimeException::class);
 });
+
+test('arch resolver throws when root view has empty arch', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    $viewId = $env->model('ir.ui.view')->create([
+        'module' => 'base',
+        'name' => 'empty.arch',
+        'model' => 'res.partner',
+        'view_type' => 'form',
+        'arch' => null,
+        'priority' => 16,
+        'inherit_id' => null,
+        'operations' => null,
+    ])->ids()[0];
+
+    $row = $env->browse('ir.ui.view', [$viewId])->read()[0];
+
+    expect(fn () => (new ArchResolver)->resolveRecord($env, $row))
+        ->toThrow(RuntimeException::class, 'has no arch');
+});

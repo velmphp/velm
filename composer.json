@@ -40,7 +40,7 @@
     "scripts": {
         "test": "pest",
         "test:coverage": "pest --coverage-clover=coverage.xml",
-        "test:coverage:report": "pest --coverage --coverage-clover=coverage.xml --min=85",
+        "test:coverage:report": "pest --coverage --coverage-clover=coverage.xml --min=95",
         "analyse": "phpstan analyse --memory-limit=512M",
         "build-ui": [
             "npm --prefix packages/ui ci",

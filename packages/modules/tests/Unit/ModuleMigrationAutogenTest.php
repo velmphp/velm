@@ -97,3 +97,45 @@ test('migration autogen refuses to overwrite existing migration', function (): v
     @rmdir($dir.'/migrations');
     @rmdir($dir);
 });
+
+test('migration autogen renderMigration includes table and orphan comments', function (): void {
+    $diff = new SchemaDiff;
+    $diff->newTables[] = ['demo_table'];
+    $diff->newColumns[] = ['demo_table', 'note'];
+    $diff->orphanColumns[] = ['demo_table', 'legacy'];
+
+    $body = (new ModuleMigrationAutogen)->renderMigration($diff, [0, 1, 0], [0, 2, 0]);
+
+    expect($body)->toContain('+ table demo_table')
+        ->and($body)->toContain('demo_table.note')
+        ->and($body)->toContain('orphan demo_table.legacy');
+});
+
+test('migration autogen bumpManifestVersion rejects unreadable manifest', function (): void {
+    expect(fn () => (new ModuleMigrationAutogen)->bumpManifestVersion('/missing/__velm__.php', [0, 1, 0], [0, 2, 0]))
+        ->toThrow(RuntimeException::class);
+});
+
+test('migration autogen bumpManifestVersion rejects ambiguous fluent version', function (): void {
+    $dir = sys_get_temp_dir().'/velm_autogen_amb_'.uniqid('', true);
+    mkdir($dir, 0777, true);
+    file_put_contents($dir.'/__velm__.php', "<?php\nuse Velm\\Modules\\Manifest;\nreturn Manifest::make('demo')->version(0, 1, 0)->version(0, 1, 0);\n");
+
+    expect(fn () => (new ModuleMigrationAutogen)->bumpManifestVersion($dir.'/__velm__.php', [0, 1, 0], [0, 2, 0]))
+        ->toThrow(RuntimeException::class, 'Ambiguous version bump');
+
+    @unlink($dir.'/__velm__.php');
+    @rmdir($dir);
+});
+
+test('migration autogen bumpManifestVersion rejects missing version marker', function (): void {
+    $dir = sys_get_temp_dir().'/velm_autogen_missing_'.uniqid('', true);
+    mkdir($dir, 0777, true);
+    file_put_contents($dir.'/__velm__.php', "<?php\nuse Velm\\Modules\\Manifest;\nreturn Manifest::make('demo');\n");
+
+    expect(fn () => (new ModuleMigrationAutogen)->bumpManifestVersion($dir.'/__velm__.php', [0, 1, 0], [0, 2, 0]))
+        ->toThrow(RuntimeException::class, 'Could not find version');
+
+    @unlink($dir.'/__velm__.php');
+    @rmdir($dir);
+});

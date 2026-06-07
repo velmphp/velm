@@ -257,3 +257,110 @@ test('form renderer renders boolean active field on partner form', function (): 
     expect($sections[0]->cells[0]->widgetProps['value'])->toBeFalse()
         ->and($sections[0]->cells[1]->widgetProps['fallbackWireKey'])->toBe('data.active');
 });
+
+test('form renderer skips invalid section page and field specs', function (): void {
+    $env = app(Environment::class);
+
+    $arch = [
+        'view_type' => 'form',
+        'model' => 'res.partner',
+        'sections' => [
+            'ignored-section',
+            [
+                'name' => 'tabs',
+                'pages' => ['ignored-page', ['name' => 'a', 'fields' => [['name' => 'name']]]],
+            ],
+            [
+                'name' => 'main',
+                'fields' => [['label' => 'No name'], ['name' => 'active', 'label' => 'Active flag']],
+            ],
+        ],
+    ];
+
+    $sections = (new FormRenderer)->sections($arch, $env, FormMode::Edit, ['name' => 'Spec Co', 'active' => true]);
+
+    expect($sections)->toHaveCount(2)
+        ->and($sections[1]->cells)->toHaveCount(1)
+        ->and($sections[1]->cells[0]->label)->toBe('Active flag');
+});
+
+test('form renderer renders attachment file and files widgets', function (): void {
+    $env = app(Environment::class);
+    if (! $env->registry->has('test.document')) {
+        $env->registry->register(\Velm\Ui\Tests\Support\Document::class);
+    }
+
+    $attId = $env->model('ir.attachment')->create([
+        'name' => 'doc.txt',
+        'mimetype' => 'text/plain',
+        'type' => 'binary',
+        'datas' => base64_encode('doc'),
+        'file_size' => 3,
+        'public' => false,
+    ])->ids()[0];
+
+    $arch = [
+        'view_type' => 'form',
+        'model' => 'test.document',
+        'sections' => [[
+            'name' => 'files',
+            'fields' => [
+                ['name' => 'attachment_id', 'widget' => 'file', 'accept' => 'text/*'],
+                ['name' => 'attachment_ids', 'widget' => 'files'],
+            ],
+        ]],
+    ];
+
+    $sections = (new FormRenderer)->sections($arch, $env, FormMode::Edit, [
+        'attachment_id' => $attId,
+        'attachment_ids' => [$attId],
+    ]);
+
+    expect($sections[0]->cells[0]->widgetProps['accept'])->toBe('text/*')
+        ->and($sections[0]->cells[0]->widgetProps['multi'])->toBeFalse()
+        ->and($sections[0]->cells[1]->widgetProps['multi'])->toBeTrue()
+        ->and($sections[0]->cells[0]->widgetProps['initial'])->toHaveCount(1);
+});
+
+test('form renderer renders code widget language on char fields', function (): void {
+    $env = app(Environment::class);
+
+    $arch = [
+        'view_type' => 'form',
+        'model' => 'res.partner',
+        'sections' => [[
+            'name' => 'meta',
+            'fields' => [['name' => 'name', 'widget' => 'code', 'code_language' => 'json']],
+        ]],
+    ];
+
+    $sections = (new FormRenderer)->sections($arch, $env, FormMode::Edit, ['name' => 'Code Co']);
+
+    expect($sections[0]->cells[0]->widgetProps['codeLanguage'])->toBe('json');
+});
+
+test('form renderer notebook uses view module and name in storage key', function (): void {
+    $env = app(Environment::class);
+
+    $arch = [
+        'view_type' => 'form',
+        'model' => 'res.partner',
+        'sections' => [[
+            'name' => 'tabs',
+            'pages' => [['name' => 'main', 'fields' => [['name' => 'name']]]],
+        ]],
+    ];
+
+    $sections = (new FormRenderer)->sections(
+        $arch,
+        $env,
+        FormMode::Edit,
+        [],
+        [],
+        null,
+        'partners',
+        'partner.form',
+    );
+
+    expect($sections[0]->storageKey)->toBe('pv-nb-partners-partner.form-tabs');
+});

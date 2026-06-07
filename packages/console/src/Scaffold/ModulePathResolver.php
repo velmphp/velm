@@ -67,11 +67,15 @@ final class ModulePathResolver
         throw new \RuntimeException("Module {$moduleName} not found under: {$searched}");
     }
 
-    public static function inferModuleFromCwd(): ?string
+    public static function inferModuleFromCwd(string|false|null $cwdOverride = null): ?string
     {
-        $cwd = getcwd();
+        if ($cwdOverride === false) {
+            return null;
+        }
 
-        if ($cwd === false) {
+        $cwd = $cwdOverride ?? getcwd();
+
+        if ($cwd === false || $cwd === null || $cwd === '') {
             return null;
         }
 

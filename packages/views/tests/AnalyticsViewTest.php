@@ -35,18 +35,26 @@ test('kanban view declaration exposes route arch schema', function (): void {
 test('graph view declaration exposes route arch schema', function (): void {
     $view = GraphView::make('lead.graph')
         ->model('crm.lead')
+        ->title('Leads')
         ->groupBy('stage_id')
-        ->measure('expected_revenue:sum')
+        ->measures(['expected_revenue:sum', '__count'])
         ->chart('bar')
         ->domain([['active', '=', true]])
+        ->listView('lead.list')
         ->toArray();
 
     expect($view['view_type'])->toBe('graph')
         ->and($view['arch']['group_by'])->toBe('stage_id')
-        ->and($view['arch']['measures'])->toBe(['expected_revenue:sum'])
+        ->and($view['arch']['measures'])->toBe(['expected_revenue:sum', '__count'])
         ->and($view['arch']['chart'])->toBe('bar')
-        ->and($view['arch']['domain'])->toBe([['active', '=', true]]);
+        ->and($view['arch']['domain'])->toBe([['active', '=', true]])
+        ->and($view['arch']['title'])->toBe('Leads')
+        ->and($view['arch']['list_view'])->toBe('lead.list');
 });
+
+test('graph view requires model groupBy and measure before serialize', function (): void {
+    GraphView::make('incomplete.graph')->toArray();
+})->throws(LogicException::class, 'missing model()');
 
 test('pivot view declaration exposes route arch schema', function (): void {
     $view = PivotView::make('lead.pivot')

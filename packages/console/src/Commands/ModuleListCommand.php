@@ -11,11 +11,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Console\Support\ModuleRoots;
+use Velm\Console\Support\RequiresLaravelDatabase;
 use Velm\Modules\ModuleInstaller;
 
 #[AsCommand(name: 'module:list', description: 'List discovered and installed modules')]
-final class ModuleListCommand extends Command
+class ModuleListCommand extends Command
 {
+    use RequiresLaravelDatabase;
     protected function configure(): void
     {
         $this->addOption('discovered-only', null, InputOption::VALUE_NONE, 'Skip database state');
@@ -24,7 +26,7 @@ final class ModuleListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $installer = new ModuleInstaller;
-        $roots = ModuleRoots::resolve();
+        $roots = $this->moduleRoots();
 
         if ($roots === []) {
             $output->writeln('<error>No addon paths configured.</error>');
@@ -40,7 +42,7 @@ final class ModuleListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if (! class_exists(\Illuminate\Support\Facades\DB::class)) {
+        if (! $this->laravelDatabaseAvailable()) {
             $output->writeln('<comment>Laravel database not bootstrapped — showing discovered modules only.</comment>');
             $output->writeln('');
             $this->renderDiscovered($output, $installer, $roots);
@@ -65,6 +67,14 @@ final class ModuleListCommand extends Command
         $table->render();
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function moduleRoots(): array
+    {
+        return ModuleRoots::resolve();
     }
 
     /**

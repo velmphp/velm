@@ -90,3 +90,33 @@ test('envForCreate stamps company when request has no active company', function 
 
     expect($folder->read(['company_id'])[0]['company_id'])->toBe($companyId);
 });
+
+test('stampCompanyId falls back to default company when active company is unset', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('file_manager', $roots);
+
+    $env = $installer->environment($roots);
+    $defaultId = FileManagerCompanyScope::defaultCompanyId($env);
+
+    expect(FileManagerCompanyScope::stampCompanyId($env->withContext(['company_id' => null])))
+        ->toBe($defaultId);
+});
+
+test('backfillOrphans no-ops when no default company exists', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('file_manager', $roots);
+
+    $env = $installer->environment($roots);
+
+    $env->withAclBypass(function () use ($env): void {
+        $env->model('res.company')->search([])->unlink();
+    });
+
+    FileManagerCompanyScope::backfillOrphans($env);
+
+    expect(true)->toBeTrue();
+});

@@ -41,4 +41,49 @@ final class ArchListProbe extends ArchListPage
     {
         return 'partner.list';
     }
+
+    public function exposeListFormViewName(): ?string
+    {
+        return $this->listFormViewName();
+    }
+
+    public function exposeListDetailViewName(): ?string
+    {
+        return $this->listDetailViewName();
+    }
+
+    public function exposeListEditViewName(): ?string
+    {
+        return $this->listEditViewName();
+    }
+
+    public function exposeCreatePageUrl(): ?string
+    {
+        return $this->createPageUrl();
+    }
+
+    public function exposeOpenRecordUrl(int $recordId): ?string
+    {
+        return $this->openRecordUrl($recordId);
+    }
+
+    public function exposeEditRecordUrl(int $recordId): ?string
+    {
+        return $this->editRecordUrl($recordId);
+    }
+
+    public function exposeSupportsRecordOpen(): bool
+    {
+        return $this->supportsRecordOpen();
+    }
+
+    public function exposeSupportsRecordEdit(): bool
+    {
+        return $this->supportsRecordEdit();
+    }
+
+    public function exposeListHasEditTarget(): bool
+    {
+        return $this->listHasEditTarget();
+    }
 }

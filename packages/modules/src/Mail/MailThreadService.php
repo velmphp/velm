@@ -38,6 +38,14 @@ final class MailThreadService
     }
 
     /**
+     * @param  array<string, true>  $models
+     */
+    public static function seedRegisteredModelsForTesting(array $models): void
+    {
+        self::$threadModels = $models;
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public static function threadContext(Environment $env, string $resModel, int $resId): ?array

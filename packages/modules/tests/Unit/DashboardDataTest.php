@@ -22,3 +22,40 @@ test('dashboard data builder collects widget specs', function (): void {
         ->and($widgets[0]->module)->toBe('demo')
         ->and($widgets[0]->model)->toBe('demo.model');
 });
+
+test('dashboard data rejects empty module name', function (): void {
+    expect(fn () => DashboardData::make(''))
+        ->toThrow(InvalidArgumentException::class, 'module name must not be empty');
+});
+
+test('dashboard data rejects incomplete widget definitions', function (): void {
+    expect(fn () => DashboardData::make('demo')->widget(
+        id: '',
+        title: 'Title',
+        model: 'demo.model',
+        view: 'velm-ui::dashboard.stat-card',
+        resolver: 'Demo\\Widget::resolve',
+    ))->toThrow(InvalidArgumentException::class, 'required');
+});
+
+test('dashboard data rejects invalid widget size and perm', function (): void {
+    $builder = DashboardData::make('demo');
+
+    expect(fn () => $builder->widget(
+        id: 'x',
+        title: 'X',
+        model: 'demo.model',
+        view: 'velm-ui::dashboard.stat-card',
+        resolver: 'Demo\\Widget::resolve',
+        size: 'wide',
+    ))->toThrow(InvalidArgumentException::class, 'size');
+
+    expect(fn () => $builder->widget(
+        id: 'y',
+        title: 'Y',
+        model: 'demo.model',
+        view: 'velm-ui::dashboard.stat-card',
+        resolver: 'Demo\\Widget::resolve',
+        perm: 'delete',
+    ))->toThrow(InvalidArgumentException::class, 'perm');
+});

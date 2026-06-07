@@ -56,6 +56,39 @@ test('branding prefers application name over company name', function (): void {
     expect($branding['app_name'])->toBe('Panel Title');
 });
 
+test('branding falls back to application config name when company fields are empty', function (): void {
+    config(['app.name' => 'Config App Name']);
+
+    $base = app(Environment::class);
+    $branding = CompanyBranding::forEnvironment(new Environment($base->connection, new \Velm\Registry, 1));
+
+    expect($branding['app_name'])->toBe('Config App Name');
+});
+
+test('branding reads boolean and integer overrides from velm config', function (): void {
+    $env = app(Environment::class);
+    $row = $env->withAclBypass(
+        fn () => $env->model('res.company')->search(limit: 1)->read(['id'])[0] ?? null,
+    );
+
+    $env->withAclBypass(
+        fn () => $env->browse('res.company', [(int) $row['id']])->write([
+            'show_header_brand_text' => null,
+            'header_logo_height' => 0,
+        ]),
+    );
+
+    config([
+        'velm.branding.VELM_SHOW_HEADER_BRAND_TEXT' => 'false',
+        'velm.branding.VELM_HEADER_LOGO_HEIGHT' => '72',
+    ]);
+
+    $branding = CompanyBranding::forEnvironment($env);
+
+    expect($branding['show_header_brand_text'])->toBeFalse()
+        ->and($branding['header_logo_height'])->toBe(72);
+});
+
 test('login page title uses shared shell branding', function (): void {
     config(['app.name' => 'Laravel']);
 

@@ -45,3 +45,49 @@ PHP);
     rmdir($directory.'/migrations');
     rmdir($directory);
 });
+
+test('migration runner rejects invalid migration filename', function (): void {
+    $directory = sys_get_temp_dir().'/velm_migrate_bad_'.uniqid('', true);
+    mkdir($directory.'/migrations', 0777, true);
+    file_put_contents($directory.'/migrations/not_a_version.php', '<?php return static fn () => null;');
+
+    $spec = new ModuleSpec(name: 'demo', version: [0, 2, 0], depends: [], path: $directory);
+    $env = new Environment(PdoConnection::sqliteMemory(), new Registry);
+
+    expect(fn () => (new ModuleMigrationRunner)->run($env, $spec, [0, 1, 0], [0, 2, 0]))
+        ->toThrow(InvalidArgumentException::class, 'must match');
+
+    @unlink($directory.'/migrations/not_a_version.php');
+    @rmdir($directory.'/migrations');
+    @rmdir($directory);
+});
+
+test('migration runner rejects migration that does not return callable', function (): void {
+    $directory = sys_get_temp_dir().'/velm_migrate_call_'.uniqid('', true);
+    mkdir($directory.'/migrations', 0777, true);
+    file_put_contents($directory.'/migrations/0_1_0_to_0_2_0.php', '<?php return 42;');
+
+    $spec = new ModuleSpec(name: 'demo', version: [0, 2, 0], depends: [], path: $directory);
+    $env = new Environment(PdoConnection::sqliteMemory(), new Registry);
+
+    expect(fn () => (new ModuleMigrationRunner)->run($env, $spec, [0, 1, 0], [0, 2, 0]))
+        ->toThrow(RuntimeException::class, 'callable');
+
+    @unlink($directory.'/migrations/0_1_0_to_0_2_0.php');
+    @rmdir($directory.'/migrations');
+    @rmdir($directory);
+});
+
+test('migration runner no-ops when migrations directory is missing', function (): void {
+    $directory = sys_get_temp_dir().'/velm_migrate_none_'.uniqid('', true);
+    mkdir($directory, 0777, true);
+
+    $spec = new ModuleSpec(name: 'demo', version: [0, 2, 0], depends: [], path: $directory);
+    $env = new Environment(PdoConnection::sqliteMemory(), new Registry);
+
+    (new ModuleMigrationRunner)->run($env, $spec, [0, 1, 0], [0, 2, 0]);
+
+    expect(true)->toBeTrue();
+
+    @rmdir($directory);
+});
