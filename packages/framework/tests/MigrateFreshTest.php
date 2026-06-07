@@ -40,3 +40,11 @@ test('migrate fresh drops velm tables and reinstalls requested modules', functio
         ->and(app(ModuleRepository::class)->isInstalled('base'))->toBeTrue();
 });
 
+test('artisan db diff succeeds after module install', function (): void {
+    $velm = app(VelmManager::class);
+    $velm->installBootstrap();
+    $velm->install('partners');
+
+    $this->artisan('velm:db:diff', ['--module' => 'partners'])
+        ->assertSuccessful();
+});

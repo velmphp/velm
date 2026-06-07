@@ -41,7 +41,11 @@ jobs:
           coverage: pcov
           extensions: intl, pcov, pdo_sqlite
       - run: composer install --prefer-dist --no-progress
-      - run: composer test:coverage
+      - run: composer test:coverage:report
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

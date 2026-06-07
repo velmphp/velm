@@ -179,7 +179,8 @@ final class FileManagerService
         $originalName = $file->getClientOriginalName() ?: 'file';
         $backend = AttachmentStorage::backend();
         $storageKey = $backend->save($originalName, $content);
-        $mimetype = $file->getMimeType()
+        $mimetype = $file->getClientMimeType()
+            ?: $file->getMimeType()
             ?: (is_string($file->getRealPath()) ? mime_content_type($file->getRealPath()) : null)
             ?: 'application/octet-stream';
 

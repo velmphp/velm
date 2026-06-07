@@ -16,7 +16,7 @@ final class MakeMenuCommand extends Command
                             {--path= : Addon root to search}
                             {--group=main : Sidebar group id}
                             {--group-label= : Group label (default: module title)}
-                            {--item= : Menu item id (default: {group}.{view-stem})}
+                            {--item= : Menu item id (default: group plus view stem)}
                             {--item-label= : Menu item label}
                             {--append : Add an item to an existing views/menu.php}
                             {--force : Overwrite views/menu.php}';

@@ -9,9 +9,13 @@ use Velm\Storage\AttachmentStorage;
 
 uses(TestCase::class);
 
-test('flysystem disk stores and removes sharded attachment keys', function (): void {
+beforeEach(function (): void {
     Storage::fake('local');
+    AttachmentStorage::resetBackendCache();
+    config(['filesystems.default' => 'local']);
+});
 
+test('flysystem disk stores and removes sharded attachment keys', function (): void {
     $backend = new FlysystemAttachmentBackend(Storage::disk('local'));
     $key = $backend->save('report.pdf', '%PDF');
 
@@ -24,7 +28,6 @@ test('flysystem disk stores and removes sharded attachment keys', function (): v
 });
 
 test('attachment storage configurator uses laravel default filesystem disk', function (): void {
-    Storage::fake('local');
     AttachmentStorage::resetBackendCache();
 
     $backend = AttachmentStorage::backend();
