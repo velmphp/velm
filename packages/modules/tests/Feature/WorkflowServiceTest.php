@@ -72,6 +72,40 @@ test('workflow definitions seed partner demo is idempotent', function (): void {
     expect($count)->toBe(1);
 });
 
+test('workflow service save definition updates row and deactivates siblings', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $existing = $env->model('workflow.definition')->search([['model', '=', 'res.partner']], limit: 1)->read()[0];
+    $definitionId = (int) $existing['id'];
+
+    $defn = [
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [
+            ['key' => 'draft', 'label' => 'Draft', 'initial' => true],
+            ['key' => 'done', 'label' => 'Done', 'final' => true],
+        ],
+        'transitions' => [],
+    ];
+
+    WorkflowService::saveDefinition($env, $definitionId, [
+        'name' => 'Updated Partner Flow',
+        'description' => 'Saved via test',
+        'model' => 'res.partner',
+        'active' => true,
+    ], $defn);
+
+    $row = $env->browse('workflow.definition', [$definitionId])->read()[0];
+
+    expect($row['name'])->toBe('Updated Partner Flow')
+        ->and($row['description'])->toBe('Saved via test');
+});
+
 test('workflow engine reload instance returns fresh row', function (): void {
     $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;

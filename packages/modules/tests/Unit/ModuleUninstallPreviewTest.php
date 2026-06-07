@@ -16,6 +16,16 @@ test('blockers summarize reverse dependencies in one line', function (): void {
     ]);
 });
 
+test('blockers include protected system module messages', function (): void {
+    $preview = new ModuleUninstallPreview(
+        module: 'base',
+        canUninstall: false,
+        systemBlockers: ['base is a protected system module'],
+    );
+
+    expect($preview->blockers())->toContain('base is a protected system module');
+});
+
 test('blockers omit model extensions already listed as reverse dependencies', function (): void {
     $preview = new ModuleUninstallPreview(
         module: 'partners',

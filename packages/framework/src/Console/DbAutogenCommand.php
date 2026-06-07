@@ -15,7 +15,7 @@ final class DbAutogenCommand extends Command
 {
     protected $signature = 'velm:db:autogen
                             {--module= : Technical module name}
-                            {--version= : Explicit target version (e.g. 0.2.0)}
+                            {--target-version= : Explicit target version (e.g. 0.2.0)}
                             {--with-views : Scaffold list+form views for models touched by the schema diff}
                             {--dry-run : Print the migration file without writing}';
 
@@ -42,7 +42,7 @@ final class DbAutogenCommand extends Command
 
         $spec = $specs[$module];
         $dryRun = (bool) $this->option('dry-run');
-        $explicitVersion = $this->option('version');
+        $explicitVersion = $this->option('target-version');
         $targetVersion = is_string($explicitVersion) && $explicitVersion !== '' ? $explicitVersion : null;
 
         try {

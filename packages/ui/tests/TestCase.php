@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Ui\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Velm\Framework\VelmManager;
 use Velm\Framework\VelmServiceProvider;
@@ -18,6 +19,7 @@ abstract class TestCase extends Orchestra
     {
         return [
             ModulesServiceProvider::class,
+            LivewireServiceProvider::class,
             VelmServiceProvider::class,
         ];
     }

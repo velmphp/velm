@@ -20,7 +20,7 @@ final class DbAutogenCommand extends Command
     {
         $this
             ->addOption('module', null, InputOption::VALUE_REQUIRED, 'Technical module name')
-            ->addOption('version', null, InputOption::VALUE_REQUIRED, 'Explicit target version (e.g. 0.2.0)')
+            ->addOption('target-version', null, InputOption::VALUE_REQUIRED, 'Explicit target version (e.g. 0.2.0)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Print the migration file without writing');
     }
 
@@ -52,7 +52,7 @@ final class DbAutogenCommand extends Command
 
         $spec = $specs[$module];
         $dryRun = (bool) $input->getOption('dry-run');
-        $explicitVersion = $input->getOption('version');
+        $explicitVersion = $input->getOption('target-version');
         $targetVersion = is_string($explicitVersion) ? $explicitVersion : null;
 
         try {

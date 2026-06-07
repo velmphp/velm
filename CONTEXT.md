@@ -87,7 +87,7 @@ Monorepo tests use **Pest** (`composer test`). Coverage scope is defined in [php
 | `modules` / `views` | `Velm\Modules\Tests\TestCase` | `ModuleInstaller` + SQLite `:memory:` |
 | `core` / `ui` | Pure unit | Minimal env |
 
-Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). Run `composer test:coverage:report` (currently enforces **78%** minimum; raise toward **99%** per phase). CI uploads `coverage.xml` and reports to Codecov.
+Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). Run `composer test:coverage:report` (currently enforces **85%** minimum; raise toward **99%** per phase). CI uploads `coverage.xml` and reports to Codecov.
 
 ## Still open (do not assume done)
 
