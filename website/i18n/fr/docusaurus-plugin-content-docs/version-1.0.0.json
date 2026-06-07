@@ -1,0 +1,18 @@
+{
+  "version.label": {
+    "message": "Prochaine",
+    "description": "The label for version 1.0.0"
+  },
+  "sidebar.docs.category.Prologue": {
+    "message": "Prologue",
+    "description": "The label for category 'Prologue' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Models": {
+    "message": "Modèles",
+    "description": "The label for category 'Models' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Digging Deeper": {
+    "message": "Aller plus loin",
+    "description": "The label for category 'Digging Deeper' in sidebar 'docs'"
+  }
+}

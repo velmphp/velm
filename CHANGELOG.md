@@ -4,6 +4,25 @@ All notable changes to the Velm monorepo are documented here. Packagist packages
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-06-07
+
+First **stable** Velm release — installable from Packagist without `-s rc`, with docs and constraints aligned to `^1.0`.
+
+### Changed
+
+- **Stable Packagist** — `composer create-project velmphp/app my_app` resolves `velmphp/*` at **`^1.0`** (no release-candidate flag required)
+- **Documentation** — stable install guides, computed fields / mixins / OR-domain coverage, production runbook; Docusaurus snapshot **`1.0.0`** as default docs version
+- **Test coverage** — monorepo enforces **95%** line coverage in CI (`composer test:coverage:report`)
+
+### Install
+
+```bash
+composer create-project velmphp/app my_app
+cd my_app && composer run setup
+```
+
+Sign in at `/velm` with `admin@velm.test` / `password`.
+
 ## [1.0.0-rc3] - 2026-06-05
 
 Last release candidate before stable **1.0.0** — full Tier 2 parity, analytics views, geo reference data, and attachment field widgets.
@@ -90,6 +109,7 @@ cd my_app && composer run setup
 
 Sign in at `/velm` with `admin@velm.test` / `password`.
 
+[1.0.0]: https://github.com/velmphp/velm/releases/tag/v1.0.0
 [1.0.0-rc3]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc3
 [1.0.0-rc2]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc2
 [1.0.0-rc1]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc1

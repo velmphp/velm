@@ -13,7 +13,7 @@ We ship **feature release candidates** before `v1.0.0` — each RC is tagged on 
 | **v1.0-rc1** | Installable, documented, resettable dev DB | **Done** |
 | **v1.0-rc2** | Packagist publishing, MIT, install/CI fixes | **Done** |
 | **v1.0-rc3** | Full 1.0 feature set — ORM, widgets, ops, kanban/graph/pivot | **Done** |
-| **v1.0.0** | Stable tag, `^1.0` constraints, no `-s rc` for `create-project` | Target |
+| **v1.0.0** | Stable tag, `^1.0` constraints, no `-s rc` for `create-project` | **Done** |
 
 ### Release candidate plan (pre-1.0)
 
@@ -37,7 +37,7 @@ Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0
 | 1.3 | Packagist-ready `velmphp/framework` + tagged releases | **Done** | rc1–rc2 shipped; see [RELEASE.md](./RELEASE.md) |
 | 1.4 | Production ops guide (cron, attachments disk, DB choice) | **rc3** | Done — `website/docs/guides/production.md` |
 | 1.5 | CI matrix (PHP 8.3+, SQLite + MySQL/Postgres smoke) | **rc3** | Done — MySQL/Postgres dialect smoke jobs in CI |
-| 1.6 | Docs / ROADMAP sync | Ongoing | Per RC: `docs:version`, install guides, feature docs |
+| 1.6 | Docs / ROADMAP sync | **Done** | Stable `1.0.0` docs snapshot; install guides use plain `create-project` |
 
 ### Tier 2 — Core parity (pre-1.0)
 
@@ -314,13 +314,13 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 
 ## Backlog (was “Next up”)
 
-See [Stable v1.0 target](#stable-v10-target) tiers above. Remaining items before **v1.0.0**:
+See [Stable v1.0 target](#stable-v10-target) tiers above. **v1.0.0** shipped; next items:
 
-| Item | RC |
-|------|-----|
-| Tier 1.6 docs / ROADMAP sync per RC | **1.0.0** |
-| Constraint tighten; plain `create-project velmphp/app` | **1.0.0** |
-| `header_actions` / list inline edit | post-1.0 (Tier 3) |
+| Item | Target |
+|------|--------|
+| `header_actions` / list inline edit | 1.0.1 / 1.1 (Tier 3) |
+| Per-model arch `dashboard` boards | 1.0.1 / 1.1 (Tier 3) |
+| `velmphp/composer-plugin` | v1.1+ (Tier 4) |
 | Optional Filament arch adapter | — (won't do) |
 
 See [PLAN.md](./PLAN.md) for the long-range design; user-facing behavior is in `website/docs/guides/`.

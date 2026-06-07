@@ -1,11 +1,11 @@
-# Release v1.0.0-rc2
+# Release v1.0.0 (stable)
 
 Runbook for maintainers after [PACKAGIST.md](./PACKAGIST.md) one-time setup is complete (mirrors, split token, Packagist linked).
 
 ## Pre-flight
 
-- [ ] `main` CI green (tests + `app-install` + `demo-setup`)
-- [ ] RC2 prep merged: MIT license, no `"version"` in library `composer.json`, `^1.0@dev` constraints, [CHANGELOG](./CHANGELOG.md) `[1.0.0-rc2]`
+- [ ] `main` CI green (tests + coverage + `app-install` + `demo-setup` + DB matrix)
+- [ ] Stable prep merged: `^1.0` constraints, [CHANGELOG](./CHANGELOG.md) `[1.0.0]`, docs snapshot `1.0.0`
 - [ ] All nine mirror repos populated on `main`
 - [ ] All nine packages visible on Packagist under `velmphp/*`
 
@@ -15,15 +15,15 @@ From an up-to-date `main`:
 
 ```bash
 git pull origin main
-git tag -a v1.0.0-rc2 -m "Velm 1.0 release candidate 2"
-git push origin v1.0.0-rc2
+git tag -a v1.0.0 -m "Velm 1.0.0 stable"
+git push origin v1.0.0
 ```
 
-This triggers **Split packages to mirror repos**, which pushes `v1.0.0-rc2` to every mirror. Packagist webhooks should update within a few minutes.
+This triggers **Split packages to mirror repos**, which pushes `v1.0.0` to every mirror. Packagist webhooks should update within a few minutes.
 
 ## Verify Packagist
 
-Each package should list **`1.0.0-RC2`** (Composer normalizes `v1.0.0-rc2`):
+Each package should list **`1.0.0`**:
 
 ```bash
 for pkg in core views modules console web ui admin framework app; do
@@ -35,40 +35,40 @@ done
 
 If library packages show only `dev-main`, Packagist rejected the tag — confirm library `composer.json` files have **no** `"version"` field and re-tag.
 
-## Regenerate app lock (optional, recommended)
+## Regenerate app lock (recommended)
 
-After all nine packages show `1.0.0-RC2`:
+After all nine packages show `1.0.0`:
 
 ```bash
 ./scripts/regenerate-app-lock.sh
 git add apps/app/composer.lock
-git commit -m "Pin velmphp/app lock from Packagist RC2"
+git commit -m "Pin velmphp/app lock from Packagist 1.0.0"
 git push origin main
 ```
-
-Split on `main` updates the app mirror; users on `dev-main` get the pinned lock. Tagged `v1.0.0-rc2` dist stays without lock unless you tag `v1.0.0-rc2.1` or accept lock on `main` only.
 
 ## Snapshot documentation
 
 ```bash
 cd website && npm ci
-npm run docs:version -- 1.0.0-rc2
+npm run docs:version -- 1.0.0
 npm run write-translations -- --locale fr
 ```
 
-Commit `versioned_docs/`, `versions.json`, and config updates; push `main` (see [website/DOCS_MAINTAINERS.md](./website/DOCS_MAINTAINERS.md)).
+Commit `versioned_docs/`, `versions.json`, `docusaurus.config.ts`, and i18n updates; push `main` (see [website/DOCS_MAINTAINERS.md](./website/DOCS_MAINTAINERS.md)).
 
 ## Smoke test
 
 ```bash
-rm -rf /tmp/velm-rc2-smoke
-composer create-project velmphp/app /tmp/velm-rc2-smoke v1.0.0-rc2 -s rc
-cd /tmp/velm-rc2-smoke
+rm -rf /tmp/velm-stable-smoke
+composer create-project velmphp/app /tmp/velm-stable-smoke
+cd /tmp/velm-stable-smoke
 composer run setup
 php artisan serve
 ```
 
 Open http://127.0.0.1:8000/velm — sign in with `admin@velm.test` / `password`.
+
+No `-s rc` flag is required for stable installs.
 
 ## Local test coverage
 
@@ -78,36 +78,27 @@ Install **pcov** for your PHP version (e.g. `apt install php8.3-pcov`), then fro
 composer test:coverage:report
 ```
 
-This writes `coverage.xml` and fails if line coverage drops below the configured minimum (currently **95%**, raised incrementally toward **99%**; see [phpunit.xml](phpunit.xml) scope).
+This writes `coverage.xml` and fails if line coverage drops below the configured minimum (currently **95%**; see [phpunit.xml](phpunit.xml) scope).
 
 ## GitHub release
 
-Create a **pre-release** on `velmphp/velm` from tag `v1.0.0-rc2`. Copy the `[1.0.0-rc2]` section from [CHANGELOG.md](./CHANGELOG.md).
+Create a **release** (not pre-release) on `velmphp/velm` from tag `v1.0.0`. Copy the `[1.0.0]` section from [CHANGELOG.md](./CHANGELOG.md).
 
-## RC1 post-mortem (reference)
-
-| Issue | Fix in RC2 |
-|-------|------------|
-| `Could not find package … with stability stable` | Use `-s rc` or pin `v1.0.0-rc2` |
-| Library packages missing as RC on Packagist | Removed `"version": "1.0.0"` from library `composer.json` |
-| `Source path "../../packages/core" is not found` | Removed monorepo path lock from `velmphp/app` |
-| LGPL → MIT | All `composer.json` + [LICENSE](./LICENSE) |
-
-## After RC2
+## Post-1.0 patches
 
 | When | Action |
 |------|--------|
-| Bugfix on RC | Tag `v1.0.0-rc3`, same flow |
-| Stable 1.0 | Tag `v1.0.0`, tighten constraints to `^1.0`, update ROADMAP 1.3 → Done |
-| Docs | Bump ROADMAP / intro if needed |
+| Bugfix | Tag `v1.0.1`, same flow |
+| Minor feature | Tag `v1.1.0` per [ROADMAP.md](./ROADMAP.md) Tier 3 |
+| Docs only | Update `website/docs/` + deploy; optional `docs:version` on next tag |
 
 ## Rollback
 
-Delete the tag locally and remotely (only if RC was not widely consumed):
+Delete the tag locally and remotely (only if the release was not widely consumed):
 
 ```bash
-git tag -d v1.0.0-rc2
-git push origin :refs/tags/v1.0.0-rc2
+git tag -d v1.0.0
+git push origin :refs/tags/v1.0.0
 ```
 
 Re-run split from `main` to refresh mirrors.

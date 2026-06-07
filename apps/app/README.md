@@ -7,7 +7,7 @@ Published on Packagist as **`velmphp/app`**. Monorepo path: `apps/app/`.
 ## Packagist install
 
 ```bash
-composer create-project velmphp/app my_app -s rc
+composer create-project velmphp/app my_app
 cd my_app
 composer run setup
 composer run dev

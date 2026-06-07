@@ -87,21 +87,18 @@ Pushes to **`main`** also re-sync mirrors (for `dev-main` / `1.x-dev` installs).
 
 ## Constraints
 
-- **Published installs:** `velmphp/app` requires `velmphp/framework` at `^1.0@dev` with `"prefer-stable": true` (RC tags win over `dev-main`). Use `create-project … -s rc` until stable `1.0.0`. Library packages also use `^1.0@dev`.
-- **After stable 1.0.0:** tighten to `^1.0` across packages and `apps/app`.
-- **Monorepo dev:** path repos + `^1.0@dev`; `apps/app` optional `composer.local.json` overrides framework to `@dev` for path installs.
+- **Published installs:** `velmphp/app` requires `velmphp/framework` at **`^1.0`**. Plain `composer create-project velmphp/app my_app` resolves stable **1.0.0**. Library packages also use `^1.0`.
+- **Monorepo dev:** path repos + `^1.0`; `apps/app` optional `composer.local.json` overrides framework to `@dev` for path installs.
 
 ## Smoke test after tag
 
 ```bash
 rm -rf /tmp/velm-smoke
-composer create-project velmphp/app /tmp/velm-smoke v1.0.0-rc2 -s rc
+composer create-project velmphp/app /tmp/velm-smoke
 cd /tmp/velm-smoke && composer run setup
 ```
 
-`-s rc` is required until stable **`v1.0.0`** exists (`create-project` defaults to stable-only).
-
-Verify every mirror package lists **`1.0.0-RC2`** on Packagist (not just `dev-main`):
+Verify every mirror package lists **`1.0.0`** on Packagist (not just `dev-main`):
 
 ```bash
 curl -s https://repo.packagist.org/p2/velmphp/framework.json | python3 -c \
@@ -112,7 +109,7 @@ curl -s https://repo.packagist.org/p2/velmphp/framework.json | python3 -c \
 
 | Symptom | Fix |
 |---------|-----|
-| `Could not find package velmphp/app with stability stable` | RC is not stable — use `-s rc` or pin `v1.0.0-rc2` (see smoke test above) |
+| `Could not find package velmphp/app with stability stable` | Packagist has not indexed `v1.0.0` yet — wait for webhooks or pin `v1.0.0-rc3 -s rc` temporarily |
 | Packagist shows only `dev-main`, not `1.0.0-RC*` for library packages | Remove `"version"` from `composer.json` in packages (Packagist derives version from the tag; `"version": "1.0.0"` on tag `v1.0.0-rc1` is rejected). Re-tag after fix (`v1.0.0-rc2`) |
 | `Source path "../../packages/core" is not found` | `apps/app/composer.lock` was built with monorepo path repos — regenerate lock from Packagist-only install after RC tags index |
 | Packagist shows `velmphp/velm-dev` | You submitted the monorepo URL — use mirror URLs instead |

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerate apps/app/composer.lock from Packagist only (no monorepo path repos).
-# Run AFTER v1.0.0-rc2 (or later) is indexed on Packagist for all velmphp/* packages.
+# Run AFTER v1.0.0 (or later) is indexed on Packagist for all velmphp/* packages.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

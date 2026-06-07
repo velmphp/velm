@@ -31,7 +31,7 @@ Built output is in `website/build/`.
 Maintainer runbook: [DOCS_MAINTAINERS.md](./DOCS_MAINTAINERS.md)
 
 ```bash
-npm run docs:version -- 1.0.0-rc3   # after each release tag
+npm run docs:version -- 1.0.0   # after each release tag
 npm run write-translations -- --locale fr
 npm start -- --locale fr
 ```
