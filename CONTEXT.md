@@ -62,17 +62,16 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Module install state: `ir.module` (not Composer)
 - Cron: Laravel Scheduler + `php artisan velm:cron:run`
 
-## Release path (pre-stable)
+## Release path
 
-Ship **rc3** then **v1.0.0** — see [ROADMAP.md](./ROADMAP.md) *Stable v1.0 target*.
+**v1.0.0** is stable — see [ROADMAP.md](./ROADMAP.md) *Stable v1.0 target*.
 
-| RC | Focus |
-|----|-------|
-| **rc1–rc2** | migrate:fresh/seed, Packagist/MIT/install — **done** |
-| **rc3** | Full 1.0 feature set: ORM parity, widgets, mixins, kanban/graph/pivot, ops, DB CI — **done** |
-| **1.0.0** | Stable tag; plain `create-project velmphp/app` |
+| Milestone | Focus |
+|-----------|-------|
+| **rc1–rc3** | Install, Packagist, full 1.0 feature set — **done** |
+| **1.0.0** | Stable tag; `composer create-project velmphp/app`; `^1.0` constraints — **done** |
 
-Tag flow: [RELEASE.md](./RELEASE.md) + `npm run docs:version` per RC.
+Tag flow: [RELEASE.md](./RELEASE.md) + `npm run docs:version` per release.
 
 ## Writing tests
 
@@ -91,6 +90,5 @@ Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). R
 
 ## Still open (do not assume done)
 
-- **v1.0.0** stable release (Tier 1.6 docs sync, constraint tighten, final smoke)
 - **Post-1.0** (Tier 3): `header_actions`, list inline edit, per-model arch `dashboard`
 - Filament arch adapter (optional; not used by app/demo)

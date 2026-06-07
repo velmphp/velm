@@ -6,7 +6,7 @@
     "require": {
         "php": "^8.3",
         "symfony/console": "^7.0",
-        "velmphp/modules": "^1.0@dev"
+        "velmphp/modules": "^1.0"
     },
     "autoload": { "psr-4": { "Velm\\Console\\": "src/" } },
     "extra": { "branch-alias": { "dev-main": "1.x-dev" } },
