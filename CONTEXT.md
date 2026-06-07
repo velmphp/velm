@@ -69,13 +69,13 @@ Ship **rc3** then **v1.0.0** — see [ROADMAP.md](./ROADMAP.md) *Stable v1.0 tar
 | RC | Focus |
 |----|-------|
 | **rc1–rc2** | migrate:fresh/seed, Packagist/MIT/install — **done** |
-| **rc3** | Full 1.0 feature set: ORM parity, widgets, mixins, kanban/graph/pivot, ops, DB CI |
+| **rc3** | Full 1.0 feature set: ORM parity, widgets, mixins, kanban/graph/pivot, ops, DB CI — **done** |
 | **1.0.0** | Stable tag; plain `create-project velmphp/app` |
 
 Tag flow: [RELEASE.md](./RELEASE.md) + `npm run docs:version` per RC.
 
 ## Still open (do not assume done)
 
-- **rc3** tier items above (all pre-stable work)
+- **v1.0.0** stable release (Tier 1.6 docs sync, constraint tighten, final smoke)
 - **Post-1.0** (Tier 3): `header_actions`, list inline edit, per-model arch `dashboard`
 - Filament arch adapter (optional; not used by app/demo)

@@ -12,7 +12,7 @@ We ship **feature release candidates** before `v1.0.0` — each RC is tagged on 
 |-----------|------|--------|
 | **v1.0-rc1** | Installable, documented, resettable dev DB | **Done** |
 | **v1.0-rc2** | Packagist publishing, MIT, install/CI fixes | **Done** |
-| **v1.0-rc3** | Full 1.0 feature set — ORM, widgets, ops, kanban/graph/pivot | Planned |
+| **v1.0-rc3** | Full 1.0 feature set — ORM, widgets, ops, kanban/graph/pivot | **Done** |
 | **v1.0.0** | Stable tag, `^1.0` constraints, no `-s rc` for `create-project` | Target |
 
 ### Release candidate plan (pre-1.0)
@@ -49,11 +49,11 @@ Ship in **rc3** — last RC before stable.
 | 2.2 | Domain OR-groups | **rc3** | **Done** | `\|` / `&` / `!` prefix notation; legacy `__or__`; search + record rules |
 | 2.3 | `mail.thread` mixins (`$mixins`) | **rc3** | **Done** | `$mixins = ['mail.thread']`; abstract `MailThread` mixin registration |
 | 2.4 | O2M inline / table widget | **rc3** | **Done** | Opt-in `widget: inline` / `table`; default `dialog` opens detail/edit in embed |
-| 2.5 | `file` / `files` field widgets | **rc3** | Pending | Attachments API done; form widgets + list column |
+| 2.5 | `file` / `files` field widgets | **rc3** | **Done** | M2O/M2M `ir.attachment` pickers via file library; `file_url` for Char URLs |
 | 2.6 | Uninstall optional schema cleanup (`--drop-schema`) | **rc3** | **Done** | `velm:module:uninstall --drop-schema` (local/testing only) |
-| 2.7 | Kanban view renderer | **rc3** | Pending | Arch type exists; Livewire board + card drag |
-| 2.8 | Graph view renderer | **rc3** | Pending | `read_group` backend + chart Livewire page |
-| 2.9 | Pivot view renderer | **rc3** | Pending | `read_group` + pivot grid Livewire page |
+| 2.7 | Kanban view renderer | **rc3** | **Done** | `KanbanView` arch + Livewire board; column groupby, card template |
+| 2.8 | Graph view renderer | **rc3** | **Done** | `GraphView` + `read_group` API + ApexCharts page |
+| 2.9 | Pivot view renderer | **rc3** | **Done** | `PivotView` + row/col groupby grid + measures |
 
 ### Tier 3 — Shell polish (1.0.1 or 1.1)
 
@@ -97,9 +97,9 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 
 ---
 
-## RC3 slice — v1.0 feature set (planned)
+## RC3 slice — v1.0 feature set (done)
 
-**Branch:** `feature/rc3-v1-features` (suggested)  
+**Branch:** `feature/rc3-v1-features`  
 **Tag:** `v1.0.0-rc3` — last RC before stable (consolidated rc3–rc5 + analytics views)
 
 ### ORM + domain
@@ -118,18 +118,18 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 |------|------|
 | R3.6 | `$mixins` / abstract model registration — migrate `$mailThread` to `mail.thread` mixin | **Done** |
 | R3.7 | O2M inline/table Livewire widget on form arch | **Done** |
-| R3.8 | `file` + `files` form widgets wired to attachment API |
-| R3.9 | Docs: models, views-and-forms, addons; demo addon coverage |
+| R3.8 | `file` + `files` form widgets wired to attachment API | **Done** |
+| R3.9 | Docs: models, views-and-forms, addons; demo addon coverage | **Done** |
 
 ### Analytics views
 
 | Step | Work |
 |------|------|
 | R3.10 | `read_group` on recordsets (groupby, aggregates, date trunc helpers) | **Done** — `Recordset::readGroup()` with sum/avg/min/max/count |
-| R3.11 | Kanban Livewire renderer — card template, columns, drag reorder |
-| R3.12 | Graph Livewire renderer — measures, chart library integration |
-| R3.13 | Pivot Livewire renderer — row/col groupby grid |
-| R3.14 | Stored routes for `view_type` kanban/graph/pivot; demo views + tests |
+| R3.11 | Kanban Livewire renderer — card template, columns, drag reorder | **Done** |
+| R3.12 | Graph Livewire renderer — measures, chart library integration | **Done** |
+| R3.13 | Pivot Livewire renderer — row/col groupby grid | **Done** |
+| R3.14 | Stored routes for `view_type` kanban/graph/pivot; demo views + tests | **Done** |
 
 ### Ops + stable prep
 
@@ -214,7 +214,7 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 | `res.company` on base module + default company on install | Done |
 | Field `displayLabel()` / form list label humanization | Done |
 
-## Phase 3b — Attachments & file manager (in progress)
+## Phase 3b — Attachments & file manager
 
 | Item | Status |
 |------|--------|
@@ -222,7 +222,7 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 | `POST/GET/DELETE /api/attachment/*` | Done |
 | `file_manager` module (`res.attachment.folder`, ACL install hook, list views) | Done |
 | Drive-style library shell (`/web/files/library`) | Done |
-| File picker widgets (`file`, `files`) | Pending |
+| File picker widgets (`file`, `files`) | **Done** |
 | `file_url` widget (company logos / favicon via library picker) | Done |
 | Bulk actions, properties page, Alpine `pvFileLibrary` | Done |
 | View/menu sync prunes stale views removed from disk | Done |
@@ -310,17 +310,16 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 | `mail.thread` opt-in via model `$mailThread = true` | Done (interim; see mixins below) |
 | Chatter sidebar on record display (messages, follow, post) | Done |
 | `it.change` wired with chatter | Done |
-| Abstract model mixins (`mail.thread` via `$mixins` / registry) | Deferred → Tier 2 |
+| Abstract model mixins (`mail.thread` via `$mixins` / registry) | Done — Tier 2 `$mixins` |
 
 ## Backlog (was “Next up”)
 
-See [Stable v1.0 target](#stable-v10-target) tiers above. Remaining items not in rc1/rc2:
+See [Stable v1.0 target](#stable-v10-target) tiers above. Remaining items before **v1.0.0**:
 
 | Item | RC |
 |------|-----|
-| Computed fields, OR-groups, mixins, O2M inline, file widgets | **rc3** |
-| Kanban / graph / pivot + `read_group` | **rc3** |
-| `--drop-schema`, production ops, DB CI | **rc3** |
+| Tier 1.6 docs / ROADMAP sync per RC | **1.0.0** |
+| Constraint tighten; plain `create-project velmphp/app` | **1.0.0** |
 | `header_actions` / list inline edit | post-1.0 (Tier 3) |
 | Optional Filament arch adapter | — (won't do) |
 

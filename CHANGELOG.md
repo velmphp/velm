@@ -4,6 +4,39 @@ All notable changes to the Velm monorepo are documented here. Packagist packages
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-rc3] - 2026-06-05
+
+Last release candidate before stable **1.0.0** — full Tier 2 parity, analytics views, geo reference data, and attachment field widgets.
+
+### Added
+
+- **Computed fields** — `@depends` / `depends()` with stored and unstored compute paths; list/form read includes computed values
+- **Domain OR-groups** — `\|`, `&`, `!` prefix notation for search domains and record rules
+- **`$mixins`** — abstract model registration (e.g. `mail.thread` via `$mixins = ['mail.thread']`)
+- **O2M inline/table widgets** — opt-in `widget('inline')` / `widget('table')` on One2many fields
+- **`file` / `files` widgets** — M2O/M2M `ir.attachment` pickers wired to the file library (`file_url` remains for Char URLs)
+- **`velm:module:uninstall --drop-schema`** — optional dev-only schema cleanup on uninstall
+- **Analytics views** — `KanbanView`, `GraphView`, `PivotView` arch types; `Recordset::readGroup()`; stored routes and ApexCharts graph/pivot pages
+- **`geo_data` module** — continents, countries, states, cities; `res.country` on base; partner country relations
+- **Production ops guide** — cron, attachments disk, MySQL/Postgres notes (`website/docs/guides/production.md`)
+- **CI DB matrix** — MySQL and Postgres dialect smoke jobs alongside SQLite
+
+### Fixed
+
+- **Extended model fields in UI** — list/form/M2O resolution uses registry `fieldSet()` so `$inherit` extensions (e.g. `country_id` on `partners_ext`) render correctly
+- **O2M inverse writes** — `Recordset::writeO2m` uses merged field set for comodel columns
+- **List toolbar z-index** — search dropdown no longer covers shell menu dropdowns
+- **Multi file picker** — “Use selected” closes parent dialog from iframe context
+
+### Install
+
+```bash
+composer create-project velmphp/app my_app v1.0.0-rc3 -s rc
+cd my_app && composer run setup
+```
+
+Sign in at `/velm` with `admin@velm.test` / `password`.
+
 ## [1.0.0-rc2] - 2026-06-05
 
 Packagist-installable RC2 — fixes RC1 publishing issues, MIT license, and documented install flags.
@@ -57,5 +90,6 @@ cd my_app && composer run setup
 
 Sign in at `/velm` with `admin@velm.test` / `password`.
 
+[1.0.0-rc3]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc3
 [1.0.0-rc2]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc2
 [1.0.0-rc1]: https://github.com/velmphp/velm/releases/tag/v1.0.0-rc1

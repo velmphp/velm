@@ -83,7 +83,7 @@ After deploy:
 Until **v1.0.0**, pin RC versions when installing:
 
 ```bash
-composer create-project velmphp/app my_app v1.0.0-rc2 -s rc
+composer create-project velmphp/app my_app v1.0.0-rc3 -s rc
 ```
 
 After stable `1.0.0`, plain `composer create-project velmphp/app my_app` works without `-s rc`.

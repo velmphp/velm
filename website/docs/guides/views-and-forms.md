@@ -170,6 +170,23 @@ Field::make('logo_url_dark')->widget('file_url')->whenEmptyUse('logo_url'),
 
 Requires the **`file_manager`** module and `ir.attachment` API. Used on **Settings → Companies → Branding**.
 
+### Attachment pickers (`file`, `files`)
+
+For relational attachment fields (stores attachment id(s), not a URL string):
+
+```php
+Field::make('attachment_id')->widget('file'),
+Field::make('attachment_ids')->widget('files'),
+Field::make('cover_id')->widget('file')->accept('image/*'),
+```
+
+| Widget | Field type | Behavior |
+|--------|------------|----------|
+| **`file`** | `Many2oneField('ir.attachment')` | Single chip + **Pick a file** → library picker dialog |
+| **`files`** | `Many2manyField('ir.attachment')` | Chip list + multi-select picker |
+
+List columns resolve attachment **display names** when these widgets are used. Requires **`file_manager`** and `ir.attachment`.
+
 ### Rich text (`rich_text`)
 
 For long HTML content on `text` fields (descriptions, notes):

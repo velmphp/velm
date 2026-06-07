@@ -107,13 +107,43 @@ The **`file_manager`** module adds Drive-style storage over **`ir.attachment`**:
 | Surface | URL / API |
 |---------|-----------|
 | **File library** | `/web/files/library` — folders, grid/tiles/details, upload, bulk actions, properties panel |
-| **File picker** | `/web/files/picker` — opened from **`file_url`** fields via the record dialog |
+| **File picker** | `/web/files/picker` — opened from **`file_url`**, **`file`**, and **`files`** fields via the record dialog |
 | **Upload / download / delete** | `POST /api/attachment/upload`, `GET /api/attachment/{id}/download`, `DELETE /api/attachment/{id}` |
 | **Web file routes** | `/web/files/*` — tree, move/copy, bulk download/public, picker browse/upload |
 
 Install from the apps catalog or `php artisan velm:module:install file_manager`. Menus: **Files → Library**, **All files**, **Folders**.
 
 Storage backend: `VELM_ATTACHMENT_BACKEND` (`local` or `db`); local path via `VELM_ATTACHMENT_DIR`. See module manifest under `packages/modules/modules/file_manager/`.
+
+### Attachment field widgets (`file`, `files`)
+
+For relational fields pointing at **`ir.attachment`**, use dedicated widgets instead of raw M2O/M2M chips:
+
+| Widget | Field type | UI |
+|--------|------------|-----|
+| **`file`** | `Many2oneField('ir.attachment')` | Single chip + **Pick a file** |
+| **`files`** | `Many2manyField('ir.attachment')` | Multi chip list + multi-select picker |
+
+```php
+Field::make('cover_id')->widget('file')->accept('image/*'),
+Field::make('document_ids')->widget('files'),
+```
+
+Requires **`file_manager`**. **`file_url`** remains for Char columns that store download URLs (e.g. company logos). See [Views and forms — Attachment pickers](./views-and-forms#attachment-pickers-file-files).
+
+## Analytics views (kanban, graph, pivot)
+
+Stored view types beyond list/form/detail:
+
+| View | Authoring | Shell |
+|------|-----------|-------|
+| **Kanban** | `KanbanView::make('…')->model(…)->groupBy('…')->card(…)` | Column board with card template |
+| **Graph** | `GraphView::make('…')->measure(…)->groupBy(…)` | Bar/line chart (ApexCharts) |
+| **Pivot** | `PivotView::make('…')->row(…)->col(…)->measure(…)` | Row/column groupby grid |
+
+Data comes from **`Recordset::readGroup()`** (sum, avg, min, max, count) via `/velm/api/analytics/*` endpoints. A view switcher on list pages links sibling stored views when registered.
+
+Demo: **Partners** module ships `partner.kanban`, `partner.graph`, and `partner.pivot` under **Contacts → Partners** (sync `partners` module). Authoring details: [Views and forms](./views-and-forms).
 
 ## Users, groups, and ACL in the shell
 
@@ -154,6 +184,7 @@ Panel login uses Laravel session guard; Velm ACL applies after bind. See [Securi
 | **Embedded forms** | `?embed=1` for record dialogs; `postMessage` updates parent M2M chips |
 | **Relational widgets** | M2O combobox, M2M/O2M dialog widgets — work on **New** forms (same widgets as edit) |
 | **`file_url` widget** | Char fields with `Field::make('logo_url')->widget('file_url')` — library picker, image preview, public attachment URLs |
+| **`file` / `files` widgets** | M2O/M2M `ir.attachment` — single or multi library picker with chips (see [Attachment pickers](./views-and-forms#attachment-pickers-file-files)) |
 | **M2O prefill** | Query params on create URL (e.g. `?project_id=3` from O2M “new line”) |
 
 Stored view URLs:
@@ -181,15 +212,19 @@ ORM semantics: [Relational fields](../models/relational-fields). Authoring: [Vie
 
 ## Demo addon (`demo_relations`)
 
-Shipped with the monorepo demo app under `apps/demo/addons/demo_relations`:
+Shipped with the monorepo demo app under `apps/demo/addons/demo_relations` (depends on **`file_manager`**):
 
-| Model | Relations |
-|-------|-----------|
-| `demo.project` | `tag_ids` (M2M), `task_ids` (O2M) |
-| `demo.task` | `project_id` (M2O) |
+| Model | Relations / widgets |
+|-------|---------------------|
+| `demo.project` | `tag_ids` (M2M), `task_ids` (O2M), `document_ids` (M2M **`files`**) |
+| `demo.task` | `project_id` (M2O), `cover_id` (M2O **`file`**, `accept('image/*')`) |
 | `demo.tag` | `name` |
 
-Menu: **Demos → Projects**. Install/sync: `php artisan velm:module:sync demo_relations`.
+Menus: **Demos → Projects**, **Demos → Tasks**. Install/sync:
+
+```bash
+php artisan velm:module:sync demo_relations
+```
 
 ## HTTP JSON API
 

@@ -44,7 +44,7 @@ cd my_app
 Or pin an exact RC tag:
 
 ```bash
-composer create-project velmphp/app my_app v1.0.0-rc2 -s rc
+composer create-project velmphp/app my_app v1.0.0-rc3 -s rc
 cd my_app
 ```
 
