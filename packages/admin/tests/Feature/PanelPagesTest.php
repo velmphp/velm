@@ -71,6 +71,13 @@ test('partner and company arch pages render for authenticated users', function (
     Livewire::test(CreateCompanyPage::class)->assertOk();
 });
 
+test('edit company page renders for existing record', function (): void {
+    $this->actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']));
+    $companyId = app(\Velm\Environment::class)->model('res.company')->search(limit: 1)->ids()[0];
+
+    Livewire::test(\Velm\Admin\Pages\EditCompanyPage::class, ['record' => $companyId])->assertOk();
+});
+
 test('stored view create page renders with module and view params', function (): void {
     $this->actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']));
 
@@ -122,4 +129,22 @@ test('stored view partner pages render for list form and detail', function (): v
         'viewName' => 'partner.form',
         'record' => $partnerId,
     ])->assertOk();
+});
+
+test('stored view edit page uses embed form trait for partner record', function (): void {
+    $this->actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']));
+    $partnerId = app(\Velm\Environment::class)->model('res.partner')->create(['name' => 'Embed Partner'])->ids()[0];
+
+    Livewire::withQueryParams(['embed' => '1'])
+        ->test(StoredViewEditPage::class, [
+            'module' => 'partners',
+            'viewName' => 'partner.form',
+            'record' => $partnerId,
+        ])
+        ->assertOk();
+
+    $url = \Velm\Admin\Support\StoredViewRoutes::recordPageUrl('partners', 'partner.form', $partnerId);
+
+    expect($url)->toContain('partners')
+        ->and($url)->toContain((string) $partnerId);
 });

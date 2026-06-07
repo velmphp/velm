@@ -52,11 +52,12 @@ final class ModuleListCommand extends Command
         $table->setHeaders(['Module', 'State', 'Version', 'Depends', 'Summary']);
 
         foreach ($installer->catalog($roots) as $row) {
+            $depends = $row['depends'] ?? [];
             $table->addRow([
                 $row['name'],
                 $row['state'],
-                $row['version'],
-                $row['depends'],
+                $row['available_version'] ?? '—',
+                $depends === [] ? '—' : implode(', ', $depends),
                 $row['summary'],
             ]);
         }

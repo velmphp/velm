@@ -35,3 +35,35 @@ test('module path resolver resolve addon root prefers explicit path', function (
 
     expect(ModulePathResolver::resolveAddonRoot($explicit))->toBe($explicit);
 });
+
+test('module path resolver module search roots uses all roots when addon root omitted', function (): void {
+    $roots = ModulePathResolver::moduleSearchRoots();
+
+    expect($roots)->not->toBeEmpty();
+});
+
+test('module path resolver throws when module is missing', function (): void {
+    $root = sys_get_temp_dir().'/velm-missing-'.uniqid('', true);
+    mkdir($root, 0777, true);
+
+    try {
+        ModulePathResolver::findModulePath('no_such_module', $root);
+    } finally {
+        @rmdir($root);
+    }
+})->throws(RuntimeException::class, 'not found');
+
+test('module path resolver infers module from cwd under addon root', function (): void {
+    $root = dirname(__DIR__, 3).'/modules/modules';
+    $previous = getcwd();
+
+    try {
+        chdir($root.'/partners');
+
+        expect(ModulePathResolver::inferModuleFromCwd())->toBe('partners');
+    } finally {
+        if (is_string($previous)) {
+            chdir($previous);
+        }
+    }
+});

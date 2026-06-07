@@ -32,6 +32,41 @@ test('many2many field resolveSpec builds default relation names', function (): v
         ->and($col2)->toEndWith('_id');
 });
 
+test('many2many field resolveSpec requires explicit self relation', function (): void {
+    $registry = \Velm\Registry::using(function (\Velm\Registry $registry): \Velm\Registry {
+        $registry->register(\Velm\Core\Tests\Support\Tag::class);
+
+        return $registry;
+    });
+
+    $field = Many2manyField::make('test.tag');
+
+    expect(fn () => $field->resolveSpec(\Velm\Core\Tests\Support\Tag::class, $registry))
+        ->toThrow(LogicException::class, 'Self-referential Many2many');
+});
+
+test('many2many field resolveSpec accepts explicit self relation columns', function (): void {
+    $registry = \Velm\Registry::using(function (\Velm\Registry $registry): \Velm\Registry {
+        $registry->register(\Velm\Core\Tests\Support\Tag::class);
+
+        return $registry;
+    });
+
+    $field = Many2manyField::make('test.tag')
+        ->relation('test_tag_rel', 'tag1_id', 'tag2_id');
+
+    expect($field->resolveSpec(\Velm\Core\Tests\Support\Tag::class, $registry))
+        ->toBe(['test_tag_rel', 'tag1_id', 'tag2_id']);
+});
+
+test('many2many field requires comodel before resolveSpec', function (): void {
+    $registry = \Velm\Registry::using(fn (\Velm\Registry $registry): \Velm\Registry => $registry);
+    $field = Many2manyField::make();
+
+    expect(fn () => $field->resolveSpec(\Velm\Core\Tests\Support\Article::class, $registry))
+        ->toThrow(LogicException::class, 'requires a comodel');
+});
+
 test('many2many field rejects direct sql column access', function (): void {
     expect(fn () => Many2manyField::make('res.groups')->sqlType())
         ->toThrow(LogicException::class);

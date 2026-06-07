@@ -92,3 +92,38 @@ test('resolver detects dependency cycles', function (): void {
     expect(fn () => (new DependencyResolver)->resolve($specs))
         ->toThrow(RuntimeException::class, 'dependency cycle');
 });
+
+test('discovery skips non-directories and duplicate module names', function (): void {
+    writeModule($this->tempRoot, 'alpha', [
+        'NAME' => 'alpha',
+        'VERSION' => [0, 1, 0],
+        'DEPENDS' => [],
+    ]);
+    writeModule($this->tempRoot, 'alpha_dup', [
+        'NAME' => 'alpha',
+        'VERSION' => [0, 1, 0],
+        'DEPENDS' => [],
+    ]);
+
+    expect(fn () => (new ModuleDiscovery)->discover([$this->tempRoot]))
+        ->toThrow(RuntimeException::class, 'Duplicate module name');
+});
+
+test('discovery ignores missing roots', function (): void {
+    $specs = (new ModuleDiscovery)->discover([$this->tempRoot.'/missing']);
+
+    expect($specs)->toBe([]);
+});
+
+test('resolver reports missing discovered dependency', function (): void {
+    writeModule($this->tempRoot, 'needs_base', [
+        'NAME' => 'needs_base',
+        'VERSION' => [0, 1, 0],
+        'DEPENDS' => ['missing_dep'],
+    ]);
+
+    $specs = (new ModuleDiscovery)->discover([$this->tempRoot]);
+
+    expect(fn () => (new DependencyResolver)->resolve($specs))
+        ->toThrow(RuntimeException::class, 'was not discovered');
+});

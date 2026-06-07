@@ -37,18 +37,127 @@ test('workflow runtime backfill auto start creates missing instances', function 
     $roots = ModuleRoots::forTests();
     $installer = new ModuleInstaller;
     $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
     $installer->install('workflow', $roots);
-    $installer->install('change_management', $roots);
 
     $env = $installer->environment($roots);
-    $env->model('it.change')->create([
-        'name' => 'Backfill change',
-        'change_type' => 'standard',
-        'priority' => '2',
-        'risk_level' => 'low',
+
+    $minimalDefn = [
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [
+            ['key' => 'draft', 'label' => 'Draft', 'initial' => true],
+            ['key' => 'done', 'label' => 'Done', 'final' => true],
+        ],
+        'transitions' => [],
+    ];
+
+    $env->model('workflow.definition')->search([['model', '=', 'res.partner']])->write([
+        'definition' => json_encode([...$minimalDefn, 'auto_start' => false], JSON_THROW_ON_ERROR),
     ]);
 
-    $count = WorkflowRuntime::backfillAutoStart($env, 'it.change');
+    $partnerId = $env->model('res.partner')->create(['name' => 'Backfill Partner'])->ids()[0];
 
-    expect($count)->toBeGreaterThanOrEqual(1);
+    $env->model('workflow.definition')->search([['model', '=', 'res.partner']])->write([
+        'definition' => json_encode([...$minimalDefn, 'auto_start' => true], JSON_THROW_ON_ERROR),
+    ]);
+
+    expect(WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId))->toBeNull();
+
+    $count = WorkflowRuntime::backfillAutoStart($env, 'res.partner');
+
+    expect($count)->toBeGreaterThanOrEqual(1)
+        ->and(WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId))->not->toBeNull();
+});
+
+test('workflow runtime maybeAutoStart skips when auto_start is disabled', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $partnerId = $env->model('res.partner')->create(['name' => 'Manual Start'])->ids()[0];
+
+    $env->model('workflow.definition')->search([['model', '=', 'res.partner']])->write([
+        'definition' => json_encode([
+            'version' => 1,
+            'model' => 'res.partner',
+            'auto_start' => false,
+            'states' => [
+                ['key' => 'draft', 'label' => 'Draft', 'initial' => true],
+                ['key' => 'done', 'label' => 'Done', 'final' => true],
+            ],
+            'transitions' => [],
+        ], JSON_THROW_ON_ERROR),
+    ]);
+
+    WorkflowRuntime::maybeAutoStart($env, 'res.partner', $partnerId);
+
+    expect(WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId))->toBeNull();
+});
+
+test('workflow runtime maybeAutoStart is no-op without workflow models', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+
+    $env = $installer->environment($roots);
+    $partnerId = $env->model('res.partner')->create(['name' => 'No workflow'])->ids()[0];
+
+    WorkflowRuntime::maybeAutoStart($env, 'res.partner', $partnerId);
+
+    expect(WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId))->toBeNull();
+});
+
+test('workflow runtime maybeAutoStart skips when instance already exists', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $partnerId = $env->model('res.partner')->create(['name' => 'Existing Instance'])->ids()[0];
+
+    WorkflowRuntime::maybeAutoStart($env, 'res.partner', $partnerId);
+    $first = WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId);
+
+    WorkflowRuntime::maybeAutoStart($env, 'res.partner', $partnerId);
+    $second = WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId);
+
+    expect($first['id'])->toBe($second['id']);
+});
+
+test('workflow runtime maybeAutoStart swallows invalid definition errors', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $partnerId = $env->model('res.partner')->create(['name' => 'Bad Defn'])->ids()[0];
+
+    $env->model('workflow.definition')->search([['model', '=', 'res.partner']])->write([
+        'definition' => '{"version":1,"model":"res.partner","states":[],"transitions":[]}',
+    ]);
+
+    WorkflowRuntime::maybeAutoStart($env, 'res.partner', $partnerId);
+
+    expect(WorkflowEngine::instanceForRecord($env, 'res.partner', $partnerId))->toBeNull();
+});
+
+test('workflow runtime backfill returns zero when no auto_start definition', function (): void {
+    $roots = ModuleRoots::forTests();
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+
+    expect(WorkflowRuntime::backfillAutoStart($env, 'res.country'))->toBe(0);
 });

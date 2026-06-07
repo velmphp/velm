@@ -243,3 +243,57 @@ test('workflow schema rejects duplicate state keys', function (): void {
         ],
     ], $registry);
 })->throws(WorkflowDefinitionError::class);
+
+test('workflow schema rejects unsupported version and invalid auto_start', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 2,
+        'model' => 'res.partner',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'Unsupported workflow version');
+
+test('workflow schema rejects non-boolean auto_start flag', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'auto_start' => 'yes',
+        'states' => [['key' => 'draft', 'label' => 'Draft', 'initial' => true]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class, 'auto_start');
+
+test('workflow schema rejects approval transitions missing user field', function (): void {
+    $registry = Registry::using(function (Registry $registry): Registry {
+        $registry->register(Partner::class);
+
+        return $registry;
+    });
+
+    WorkflowSchema::validate([
+        'version' => 1,
+        'model' => 'res.partner',
+        'states' => [
+            ['key' => 'draft', 'label' => 'Draft', 'initial' => true],
+            ['key' => 'done', 'label' => 'Done'],
+        ],
+        'transitions' => [[
+            'key' => 'submit',
+            'label' => 'Submit',
+            'from' => ['draft'],
+            'to' => 'done',
+            'kind' => 'approval',
+            'approval' => ['assignee_type' => 'field', 'user_field' => 'missing_field'],
+        ]],
+    ], $registry);
+})->throws(WorkflowDefinitionError::class);

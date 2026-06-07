@@ -38,3 +38,17 @@ test('manifest reader accepts fluent manifest return value', function (): void {
     expect($spec->name)->toBe('fluent_mod')
         ->and($spec->summary)->toBe('Fluent manifest');
 });
+
+test('manifest reader rejects missing manifest file', function (): void {
+    expect(fn () => (new ManifestReader)->read($this->tempRoot.'/empty'))
+        ->toThrow(InvalidArgumentException::class, 'No __velm__.php');
+});
+
+test('manifest reader rejects non-array manifest return', function (): void {
+    $path = $this->tempRoot.DIRECTORY_SEPARATOR.'bad';
+    mkdir($path, 0777, true);
+    file_put_contents($path.DIRECTORY_SEPARATOR.'__velm__.php', "<?php\nreturn 'nope';\n");
+
+    expect(fn () => (new ManifestReader)->read($path))
+        ->toThrow(InvalidArgumentException::class, 'must return');
+});

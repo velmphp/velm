@@ -63,6 +63,100 @@ test('formats many2one list cells as display name', function (): void {
         ->and($builder->formatListCell($column, $partner->read()[0]['country_id'], $env))->toBe('Belgium');
 });
 
+test('arch schema builder maps relation widgets and formats grouped labels', function (): void {
+    $roots = [dirname(__DIR__, 3).'/modules/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('partners', $roots);
+    $installer->install('workflow', $roots);
+
+    $env = $installer->environment($roots);
+    $builder = new ArchSchemaBuilder;
+
+    $workflowColumns = $builder->buildListColumns([
+        'model' => 'workflow.definition',
+        'fields' => [
+            ['name' => 'name'],
+            ['name' => 'group_ids', 'widget' => 'files'],
+        ],
+    ], $env);
+    $groupColumn = collect($workflowColumns)->firstWhere('name', 'group_ids');
+
+    expect($groupColumn)->not->toBeNull()
+        ->and($groupColumn->kind)->toBe('files');
+
+    $countryColumns = $builder->buildListColumns([
+        'model' => 'res.country',
+        'fields' => [
+            ['name' => 'name'],
+            ['name' => 'partner_ids'],
+        ],
+    ], $env);
+    $partnerColumn = collect($countryColumns)->firstWhere('name', 'partner_ids');
+
+    expect($partnerColumn)->not->toBeNull()
+        ->and($partnerColumn->kind)->toBe('o2m')
+        ->and($builder->formatGroupLabel('res.partner', 'active', null, $env))->toBe('—')
+        ->and($builder->formatGroupLabel('res.partner', 'active', true, $env))->toBe('Yes')
+        ->and($builder->formatGroupLabel('res.partner', 'country_id', false, $env))->toBe('—');
+
+    $country = $env->model('res.country')->create(['name' => 'Schema NL', 'code' => 'NL']);
+    $partner = $env->model('res.partner')->create([
+        'name' => 'Schema Partner',
+        'country_id' => $country->ids()[0],
+    ]);
+    $m2oColumn = new ListColumn('country_id', 'm2o', 'res.country');
+
+    expect($builder->formatListCell($m2oColumn, $partner->read()[0]['country_id'], $env))->toBe('Schema NL')
+        ->and($builder->formatListCell(new ListColumn('active', 'toggle'), true, $env))->toBe('Yes')
+        ->and($builder->formatListCell(new ListColumn('tags', 'text'), ['a', 'b'], $env))->toBe('a, b')
+        ->and($builder->formatListCell(new ListColumn('active', 'text'), false, $env))->toBe('No')
+        ->and($builder->formatListCell(new ListColumn('country_id', 'file', 'res.country'), $country->ids()[0], $env))->toBe('Schema NL');
+});
+
+test('arch schema builder handles file widgets and plain group labels', function (): void {
+    $env = $this->env;
+    $builder = new ArchSchemaBuilder;
+
+    $fileColumn = $builder->buildListColumns([
+        'model' => 'res.partner',
+        'fields' => [['name' => 'country_id', 'widget' => 'file']],
+    ], $env)[0];
+
+    expect($fileColumn->kind)->toBe('file');
+
+    $roots = [dirname(__DIR__, 3).'/modules/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $installer->install('workflow', $roots);
+    $workflowEnv = $installer->environment($roots);
+
+    $m2mColumn = $builder->buildListColumns([
+        'model' => 'workflow.definition',
+        'fields' => [['name' => 'group_ids']],
+    ], $workflowEnv)[0];
+
+    expect($m2mColumn->kind)->toBe('m2m')
+        ->and($builder->formatGroupLabel('res.partner', 'name', 'Acme', $env))->toBe('Acme');
+
+    $filesColumn = new ListColumn('group_ids', 'files', 'res.groups');
+    $adminGroup = $env->model('res.groups')->search([['name', '=', 'Admin']], limit: 1)->ids()[0];
+
+    expect($builder->formatListCell($filesColumn, [$adminGroup], $env))->toContain('Admin');
+});
+
+test('arch schema builder formats many2many relation ids and empty values', function (): void {
+    $env = $this->env;
+    $builder = new ArchSchemaBuilder;
+    $adminGroup = $env->model('res.groups')->search([['name', '=', 'Admin']], limit: 1)->ids()[0];
+    $column = new ListColumn('group_ids', 'm2m', 'res.groups');
+
+    expect($builder->formatListCell($column, [$adminGroup], $env))->toContain('Admin')
+        ->and($builder->formatListCell($column, [], $env))->toBe('')
+        ->and($builder->formatListCell(new ListColumn('name', 'text'), '', $env))->toBe('')
+        ->and($builder->buildListColumns(['model' => '', 'fields' => [['name' => 'name']]], $env)[0]->kind)->toBe('text');
+});
+
 test('many2one list columns resolve through merged field set when partner is extended', function (): void {
     $roots = [
         dirname(__DIR__, 3).'/modules/modules',

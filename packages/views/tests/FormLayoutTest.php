@@ -45,3 +45,34 @@ test('field colspan full maps to wide', function (): void {
 test('cols below one throws', function (): void {
     FormView::make('x')->model('res.partner')->cols(0);
 })->throws(InvalidArgumentException::class);
+
+test('form view notebook stores pages and field declarations', function (): void {
+    $form = FormView::make('partner.form')
+        ->model('res.partner')
+        ->notebook('tabs', 'Tabs', [
+            [
+                'name' => 'main',
+                'title' => 'Main',
+                'fields' => [Field::make('name'), 'active'],
+                'cols' => 2,
+            ],
+            [
+                'name' => 'extra',
+                'fields' => ['website'],
+            ],
+        ], cols: 1)
+        ->toArray();
+
+    expect($form['arch']['sections'][0]['pages'])->toHaveCount(2)
+        ->and($form['arch']['sections'][0]['pages'][0]['fields'][0])->toMatchArray(['name' => 'name'])
+        ->and($form['arch']['sections'][0]['pages'][0]['fields'][1])->toBe(['name' => 'active'])
+        ->and($form['arch']['sections'][0]['cols'])->toBe(1);
+});
+
+test('section cols below one throws', function (): void {
+    FormView::make('x')->model('res.partner')->section('main', 'Main', ['name'], cols: 0);
+})->throws(InvalidArgumentException::class, 'Section cols');
+
+test('notebook cols below one throws', function (): void {
+    FormView::make('x')->model('res.partner')->notebook('tabs', 'Tabs', [['name' => 'a', 'fields' => []]], cols: 0);
+})->throws(InvalidArgumentException::class, 'Notebook cols');

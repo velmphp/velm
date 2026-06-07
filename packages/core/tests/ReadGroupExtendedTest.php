@@ -135,3 +135,108 @@ test('readGroup applies domain filter to grouped results', function (): void {
 
     expect($groups[0]['amount_sum'])->toBe(100);
 });
+
+test('readGroup supports datetime month granularity', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    $env->model('sale.order')->create(['name' => 'SO1', 'amount' => 10]);
+    $groups = $env->model('sale.order')->readGroup([], ['amount:count'], ['created_at:month']);
+
+    expect($groups)->not->toBeEmpty()
+        ->and($groups[0]['__count'])->toBe(1)
+        ->and($groups[0]['amount_count'])->toBe(1);
+});
+
+test('readGroup rejects unsupported aggregate operator', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    expect(fn () => $env->model('sale.order')->readGroup([], ['amount:median'], ['state']))
+        ->toThrow(InvalidArgumentException::class, 'Unsupported aggregate');
+});
+
+test('readGroup rejects unknown group field', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    expect(fn () => $env->model('sale.order')->readGroup([], [], ['missing_field']))
+        ->toThrow(InvalidArgumentException::class, 'Unknown group field');
+});
+
+test('readGroup rejects granularity on non-datetime field', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    expect(fn () => $env->model('sale.order')->readGroup([], [], ['state:month']))
+        ->toThrow(InvalidArgumentException::class, 'requires a datetime field');
+});
+
+test('readGroup supports orderby limit and offset', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    $env->model('sale.order')->create(['name' => 'A', 'state' => 'draft', 'amount' => 10]);
+    $env->model('sale.order')->create(['name' => 'B', 'state' => 'done', 'amount' => 20]);
+
+    $groups = $env->model('sale.order')->readGroup([], [], ['state'], offset: 1, limit: 1, orderby: '-state');
+
+    expect($groups)->toHaveCount(1);
+});
+
+test('readGroup supports day and year datetime granularities', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(SaleOrder::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    $env->model('sale.order')->create(['name' => 'SO1', 'amount' => 10]);
+
+    $dayGroups = $env->model('sale.order')->readGroup([], [], ['created_at:day']);
+    $yearGroups = $env->model('sale.order')->readGroup([], [], ['created_at:year']);
+
+    expect($dayGroups[0]['created_at'])->not->toBeFalse()
+        ->and($yearGroups[0]['created_at'])->not->toBeFalse()
+        ->and($dayGroups[0]['__domain'])->not->toBeEmpty();
+});
+
+test('readGroup rejects computed fields that are not groupable', function (): void {
+    $env = Registry::using(function (Registry $registry): Environment {
+        $registry->register(\Velm\Core\Tests\Support\ComputedArticle::class);
+        $connection = PdoConnection::sqliteMemory();
+        (new SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new Environment($connection, $registry);
+    });
+
+    expect(fn () => $env->model('test.article')->readGroup([], [], ['headline']))
+        ->toThrow(InvalidArgumentException::class, 'cannot be used in readGroup');
+});

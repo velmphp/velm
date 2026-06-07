@@ -148,3 +148,121 @@ test('apply rethrows missing targets when skip flag disabled', function (): void
         ['op' => 'set', 'target' => ['sections', 'missing', 'title'], 'value' => 'X'],
     ], skipMissingTargets: false);
 })->throws(RuntimeException::class);
+
+test('wildcard update requires selector after star star', function (): void {
+    $arch = [
+        'sections' => [
+            ['name' => 'main', 'fields' => [['name' => 'a']]],
+        ],
+    ];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'update', 'target' => ['**'], 'value' => ['readonly' => true]],
+    ], skipMissingTargets: false);
+})->throws(InvalidArgumentException::class, "'**' must be followed");
+
+test('prepend on non-list target throws', function (): void {
+    $arch = ['sections' => [['name' => 'main', 'title' => 'Main']]];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'prepend', 'target' => ['sections', 'main'], 'value' => ['name' => 'x']],
+    ], skipMissingTargets: false);
+})->throws(InvalidArgumentException::class, 'requires a list target');
+
+test('before on associative parent throws', function (): void {
+    $arch = ['meta' => ['title' => 'Old']];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'before', 'target' => ['meta', 'title'], 'value' => 'New'],
+    ], skipMissingTargets: false);
+})->throws(InvalidArgumentException::class, 'requires a list parent');
+
+test('stepInto resolves integer index and dict keys', function (): void {
+    $node = [
+        'sections' => [
+            ['name' => 'main'],
+        ],
+    ];
+
+    expect(ArchOperations::stepInto($node, 'sections')[0]['name'])->toBe('main')
+        ->and(ArchOperations::stepInto($node['sections'], 0)['name'])->toBe('main');
+});
+
+test('resolvePosition throws for invalid list index', function (): void {
+    $parent = [['name' => 'a']];
+
+    ArchOperations::resolvePosition($parent, 3);
+})->throws(RuntimeException::class, 'out of range');
+
+test('matchesPredicate returns false for non-array items', function (): void {
+    expect(ArchOperations::matchesPredicate('text', ['name' => 'a']))->toBeFalse();
+});
+
+test('remove splices list entries by numeric index', function (): void {
+    $arch = [
+        'sections' => [
+            ['name' => 'main', 'fields' => [['name' => 'a'], ['name' => 'b']]],
+        ],
+    ];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'remove', 'target' => ['sections', 'main', 'fields', 0]],
+    ]);
+
+    expect(array_column($arch['sections'][0]['fields'], 'name'))->toBe(['b']);
+});
+
+test('set replaces list entry by numeric index', function (): void {
+    $arch = [
+        'sections' => [
+            ['name' => 'main', 'fields' => [['name' => 'a'], ['name' => 'b']]],
+        ],
+    ];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'set', 'target' => ['sections', 'main', 'fields', 1], 'value' => ['name' => 'z']],
+    ]);
+
+    expect(array_column($arch['sections'][0]['fields'], 'name'))->toBe(['a', 'z']);
+});
+
+test('wildcard lookup failure wraps runtime exception', function (): void {
+    $arch = ['sections' => [['name' => 'main', 'fields' => []]]];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'set', 'target' => ['**', 'missing', 'readonly'], 'value' => true],
+    ], skipMissingTargets: false);
+})->throws(RuntimeException::class, '`**` lookup found no descendant');
+
+test('empty target on replace throws', function (): void {
+    $arch = ['sections' => []];
+
+    ArchOperations::apply($arch, [
+        ['op' => 'replace', 'target' => [], 'value' => ['name' => 'x']],
+    ], skipMissingTargets: false);
+})->throws(InvalidArgumentException::class, 'empty target');
+
+test('stepInto rejects invalid segment types', function (): void {
+    $node = [['name' => 'a']];
+
+    ArchOperations::stepInto($node, 1.5);
+})->throws(InvalidArgumentException::class, "can't step into list");
+
+test('resolvePosition matches predicate segments', function (): void {
+    $parent = [
+        ['name' => 'a', 'widget' => 'char'],
+        ['name' => 'b', 'widget' => 'text'],
+    ];
+
+    expect(ArchOperations::resolvePosition($parent, ['widget' => 'text']))->toBe(1);
+});
+
+test('resolvePosition throws for missing dict key', function (): void {
+    $parent = ['meta' => ['title' => 'Old']];
+
+    ArchOperations::resolvePosition($parent, 'missing');
+})->throws(RuntimeException::class, 'no key missing');
+
+test('resolvePosition throws for invalid associative segment type', function (): void {
+    ArchOperations::resolvePosition(['meta' => ['title' => 'Old']], 1);
+})->throws(InvalidArgumentException::class, "can't address array");
