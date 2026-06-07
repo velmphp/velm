@@ -119,6 +119,69 @@ test('pivot grid builder crosses company and active dimensions', function (): vo
         ->and($grid['matrix'])->not->toBeEmpty();
 });
 
+test('kanban board builder returns static domain when query domain is empty', function (): void {
+    $env = app(\Velm\Environment::class);
+    $env->model('res.partner')->create(['name' => 'Static Only', 'active' => true]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $arch['domain'] = [['active', '=', true]];
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch);
+
+    expect(collect($board['cards'])->pluck('title'))->toContain('Static Only');
+});
+
+test('kanban board builder merges static and dynamic domains', function (): void {
+    $env = app(\Velm\Environment::class);
+    $env->model('res.partner')->create(['name' => 'Domain Merge', 'active' => true]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $arch['domain'] = [['active', '=', true]];
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch, new ListQuery(search: 'Domain'));
+
+    expect(collect($board['cards'])->pluck('title'))->toContain('Domain Merge');
+});
+
+test('kanban board builder skips invalid card field specs and labels unknown fields', function (): void {
+    $env = app(\Velm\Environment::class);
+    $env->model('res.partner')->create(['name' => 'Card Spec', 'active' => true]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $arch['card'] = [
+        'title' => 'name',
+        'fields' => ['not-an-array', ['name' => ''], ['name' => 'custom_label']],
+        'badges' => [['name' => 'active', 'widget' => 'toggle']],
+    ];
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch);
+    $card = $board['cards'][0];
+
+    expect(collect($card['fields'])->pluck('label'))->toContain('Custom label')
+        ->and($card['badges'][0]['kind'])->toBe('toggle');
+});
+
+test('kanban board builder builds many2one group domains', function (): void {
+    $env = app(\Velm\Environment::class);
+    $country = $env->model('res.country')->create(['name' => 'Grouped Country', 'code' => 'GC']);
+    $env->model('res.partner')->create([
+        'name' => 'Country Card',
+        'country_id' => $country->ids()[0],
+    ]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.kanban');
+    $queryArch = (new ViewRegistry)->arch($env, 'partners', 'partner.list');
+    $board = (new KanbanBoardBuilder)->build($arch, $env, $queryArch, new ListQuery, 'country_id');
+
+    $domains = array_column($board['columns'], 'domain');
+
+    expect($board['grouped'])->toBeTrue()
+        ->and($domains)->toContain([['country_id', '=', $country->ids()[0]]]);
+});
+
 test('kanban view declaration card schema feeds board builder', function (): void {
     $arch = KanbanView::make('partner.kanban')
         ->model('res.partner')

@@ -12,7 +12,7 @@ use Velm\Fields\IntegerField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\TextField;
 
-final class ViewFieldCatalog
+class ViewFieldCatalog
 {
     /**
      * @return array{

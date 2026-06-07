@@ -11,6 +11,11 @@ final class AttachmentStorage
     /** @var (callable(): StorageBackend)|null */
     private static $resolver = null;
 
+    /** @var (callable(): object)|null */
+    private static $testAppFactory = null;
+
+    private static bool $forceNoAppFunction = false;
+
     /**
      * Laravel apps register a Flysystem-backed resolver from {@see Velm\Framework\Storage\AttachmentStorageConfigurator}.
      *
@@ -52,6 +57,27 @@ final class AttachmentStorage
         self::$backend = null;
     }
 
+    /**
+     * @param  (callable(): object)|null  $factory
+     */
+    public static function useAppFactoryForTesting(?callable $factory): void
+    {
+        self::$testAppFactory = $factory;
+    }
+
+    public static function forceNoAppFunctionForTesting(bool $value): void
+    {
+        self::$forceNoAppFunction = $value;
+    }
+
+    public static function resetTestingState(): void
+    {
+        self::$testAppFactory = null;
+        self::$forceNoAppFunction = false;
+        self::resetBackendCache();
+        self::resolveUsing(null);
+    }
+
     public static function fallbackLocalRoot(): string
     {
         $configured = self::config('dir');
@@ -60,10 +86,10 @@ final class AttachmentStorage
             return rtrim($configured, '/');
         }
 
-        if (function_exists('app')) {
-            try {
-                $app = app();
+        $app = self::appInstance();
 
+        if ($app !== null) {
+            try {
                 if (method_exists($app, 'storagePath')) {
                     return rtrim($app->storagePath('app/velm/attachments'), '/');
                 }
@@ -76,18 +102,48 @@ final class AttachmentStorage
 
     private static function config(string $key): mixed
     {
-        if (! function_exists('app')) {
+        if (! self::appFunctionExists()) {
             return null;
         }
 
         try {
-            $app = app();
+            $app = self::appInstance();
+
+            if ($app === null) {
+                return null;
+            }
 
             if (! $app->bound('config')) {
                 return null;
             }
 
             return $app->make('config')->get("velm.attachments.{$key}");
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private static function appFunctionExists(): bool
+    {
+        if (self::$forceNoAppFunction) {
+            return false;
+        }
+
+        return self::$testAppFactory !== null || function_exists('app');
+    }
+
+    private static function appInstance(): ?object
+    {
+        if (self::$testAppFactory !== null) {
+            return (self::$testAppFactory)();
+        }
+
+        if (! function_exists('app')) {
+            return null;
+        }
+
+        try {
+            return app();
         } catch (\Throwable) {
             return null;
         }

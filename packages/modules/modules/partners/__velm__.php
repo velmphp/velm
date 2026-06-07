@@ -8,7 +8,7 @@ use Velm\Modules\Partners\Models\Partner;
 use Velm\Modules\Partners\Seeders\PartnerDemoSeeder;
 
 return Manifest::make('partners')
-    ->version(0, 2, 0)
+    ->version(0)
     ->depends('base')
     ->models(Partner::class, CountryExtension::class)
     ->seeders(PartnerDemoSeeder::class)

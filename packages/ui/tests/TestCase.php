@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Ui\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Velm\Framework\VelmManager;
 use Velm\Framework\VelmServiceProvider;
@@ -18,6 +19,7 @@ abstract class TestCase extends Orchestra
     {
         return [
             ModulesServiceProvider::class,
+            LivewireServiceProvider::class,
             VelmServiceProvider::class,
         ];
     }
@@ -37,6 +39,7 @@ abstract class TestCase extends Orchestra
         ]);
 
         $app['config']->set('velm.bootstrap_modules', ['base']);
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
     }
 
     protected function defineDatabaseMigrations(): void

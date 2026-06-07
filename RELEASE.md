@@ -70,6 +70,16 @@ php artisan serve
 
 Open http://127.0.0.1:8000/velm — sign in with `admin@velm.test` / `password`.
 
+## Local test coverage
+
+Install **pcov** for your PHP version (e.g. `apt install php8.3-pcov`), then from the monorepo root:
+
+```bash
+composer test:coverage:report
+```
+
+This writes `coverage.xml` and fails if line coverage drops below the configured minimum (currently **95%**, raised incrementally toward **99%**; see [phpunit.xml](phpunit.xml) scope).
+
 ## GitHub release
 
 Create a **pre-release** on `velmphp/velm` from tag `v1.0.0-rc2`. Copy the `[1.0.0-rc2]` section from [CHANGELOG.md](./CHANGELOG.md).

@@ -10,23 +10,25 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Console\Support\ModuleRoots;
+use Velm\Console\Support\RequiresLaravelDatabase;
 use Velm\Modules\Migrations\ModuleMigrationAutogen;
 use Velm\Modules\ModuleInstaller;
 
 #[AsCommand(name: 'db:autogen', description: 'Write a versioned migration file and bump manifest VERSION')]
-final class DbAutogenCommand extends Command
+class DbAutogenCommand extends Command
 {
+    use RequiresLaravelDatabase;
     protected function configure(): void
     {
         $this
             ->addOption('module', null, InputOption::VALUE_REQUIRED, 'Technical module name')
-            ->addOption('version', null, InputOption::VALUE_REQUIRED, 'Explicit target version (e.g. 0.2.0)')
+            ->addOption('target-version', null, InputOption::VALUE_REQUIRED, 'Explicit target version (e.g. 0.2.0)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Print the migration file without writing');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (! class_exists(\Illuminate\Support\Facades\DB::class)) {
+        if (! $this->laravelDatabaseAvailable()) {
             $output->writeln('<error>db:autogen requires a bootstrapped Laravel application (database).</error>');
 
             return Command::FAILURE;
@@ -52,7 +54,7 @@ final class DbAutogenCommand extends Command
 
         $spec = $specs[$module];
         $dryRun = (bool) $input->getOption('dry-run');
-        $explicitVersion = $input->getOption('version');
+        $explicitVersion = $input->getOption('target-version');
         $targetVersion = is_string($explicitVersion) ? $explicitVersion : null;
 
         try {

@@ -21,7 +21,7 @@ use Velm\Views\Sync\MenuSynchronizer;
 use Velm\Views\Sync\UiSyncDiffer;
 use Velm\Views\Sync\ViewSynchronizer;
 
-final class ModuleInstaller
+class ModuleInstaller
 {
     public function __construct(
         private readonly ModuleDiscovery $discovery = new ModuleDiscovery,

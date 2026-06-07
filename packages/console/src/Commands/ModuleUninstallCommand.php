@@ -10,11 +10,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Velm\Console\Support\ModuleRoots;
+use Velm\Console\Support\RequiresLaravelDatabase;
 use Velm\Modules\ModuleInstaller;
 
 #[AsCommand(name: 'module:uninstall', description: 'Uninstall a module')]
-final class ModuleUninstallCommand extends Command
+class ModuleUninstallCommand extends Command
 {
+    use RequiresLaravelDatabase;
     protected function configure(): void
     {
         $this->addArgument('module', InputArgument::REQUIRED, 'Technical module name');
@@ -22,7 +24,7 @@ final class ModuleUninstallCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (! class_exists(\Illuminate\Support\Facades\DB::class)) {
+        if (! $this->laravelDatabaseAvailable()) {
             $output->writeln('<error>module:uninstall requires a bootstrapped Laravel application (database).</error>');
 
             return Command::FAILURE;

@@ -84,3 +84,55 @@ test('inherit view accepts bulk operations array', function (): void {
 test('inherit view requires extends before serialize', function (): void {
     InheritView::make('orphan')->toArray();
 })->throws(LogicException::class);
+
+test('inherit view rejects empty name and parent ref', function (): void {
+    InheritView::make('');
+})->throws(InvalidArgumentException::class, 'name must not be empty');
+
+test('inherit view rejects empty extends target', function (): void {
+    InheritView::make('x')->extends('');
+})->throws(InvalidArgumentException::class, 'parent ref must not be empty');
+
+test('inherit view rejects non-array bulk operations', function (): void {
+    InheritView::make('partner.list.ext')
+        ->extends('partners.partner.list')
+        ->operations(['not-an-array']);
+})->throws(InvalidArgumentException::class, 'must be an array');
+
+test('inherit view supports before replace remove column and generic targets', function (): void {
+    $inherit = InheritView::make('partner.form.ext')
+        ->extends('partners.partner.form')
+        ->beforeField('identity', 'name', Field::make('ref'))
+        ->beforeSection('identity', Section::make('lead', 'Lead')->fields('title'))
+        ->removeColumn('website')
+        ->replace(ViewTarget::section('identity'), Section::make('identity', 'Identity')->fields('name'))
+        ->append('sections.identity.fields', Field::make('phone'))
+        ->prepend('sections.identity.fields', Field::make('code'));
+
+    $ops = $inherit->toArray()['operations'];
+
+    expect($ops)->toEqual([
+        ['op' => 'before', 'target' => ['sections', 'identity', 'fields', 'name'], 'value' => ['name' => 'ref']],
+        ['op' => 'before', 'target' => ['sections', 'identity'], 'value' => [
+            'name' => 'lead',
+            'title' => 'Lead',
+            'fields' => [['name' => 'title']],
+        ]],
+        ['op' => 'remove', 'target' => ['fields', 'website']],
+        ['op' => 'replace', 'target' => ['sections', 'identity'], 'value' => [
+            'name' => 'identity',
+            'title' => 'Identity',
+            'fields' => [['name' => 'name']],
+        ]],
+        ['op' => 'append', 'target' => ['sections', 'identity', 'fields'], 'value' => ['name' => 'phone']],
+        ['op' => 'prepend', 'target' => ['sections', 'identity', 'fields'], 'value' => ['name' => 'code']],
+    ]);
+});
+
+test('inherit view accepts raw target arrays', function (): void {
+    $inherit = InheritView::make('partner.list.ext')
+        ->extends('partners.partner.list')
+        ->update(['fields', 'name'], ['label' => 'Partner']);
+
+    expect($inherit->toArray()['operations'][0]['target'])->toBe(['fields', 'name']);
+});

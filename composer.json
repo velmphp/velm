@@ -33,12 +33,14 @@
             "Velm\\Framework\\Tests\\": "packages/framework/tests/",
             "Velm\\Views\\Tests\\": "packages/views/tests/",
             "Velm\\Web\\Tests\\": "packages/web/tests/",
-            "Velm\\Ui\\Tests\\": "packages/ui/tests/"
+            "Velm\\Ui\\Tests\\": "packages/ui/tests/",
+            "Velm\\Console\\Tests\\": "packages/console/tests/"
         }
     },
     "scripts": {
         "test": "pest",
         "test:coverage": "pest --coverage-clover=coverage.xml",
+        "test:coverage:report": "pest --coverage --coverage-clover=coverage.xml --min=95",
         "analyse": "phpstan analyse --memory-limit=512M",
         "build-ui": [
             "npm --prefix packages/ui ci",

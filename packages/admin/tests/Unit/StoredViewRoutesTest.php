@@ -43,3 +43,30 @@ test('create page url resolves to the create livewire page not the record page',
 
     expect($route->getAction('livewire_component'))->toBe(StoredViewCreatePage::class);
 });
+
+test('stored view routes reject empty or invalid list hrefs', function (): void {
+    expect(StoredViewRoutes::parseListHref(null))->toBeNull()
+        ->and(StoredViewRoutes::parseListHref(''))->toBeNull()
+        ->and(StoredViewRoutes::parseListHref('/not/a/stored/view'))->toBeNull();
+});
+
+test('stored view routes expose edit page url and sibling list view from arch', function (): void {
+    if (! extension_loaded('pdo_sqlite')) {
+        skip('The pdo_sqlite extension is required.');
+    }
+
+    $url = StoredViewRoutes::editPageUrl('partners', 'partner.form', 15);
+
+    expect($url)->toContain('partners')
+        ->and($url)->toContain('partner.form')
+        ->and($url)->toContain('15')
+        ->and(StoredViewRoutes::siblingListView('partners', 'partner.graph'))->toBe('partner.list');
+});
+
+test('record view from form view keeps form name when detail view is missing', function (): void {
+    if (! extension_loaded('pdo_sqlite')) {
+        skip('The pdo_sqlite extension is required.');
+    }
+
+    expect(StoredViewRoutes::recordViewFromFormView('partners', 'custom.form'))->toBe('custom.form');
+});

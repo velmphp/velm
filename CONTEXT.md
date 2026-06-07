@@ -74,6 +74,21 @@ Ship **rc3** then **v1.0.0** — see [ROADMAP.md](./ROADMAP.md) *Stable v1.0 tar
 
 Tag flow: [RELEASE.md](./RELEASE.md) + `npm run docs:version` per RC.
 
+## Writing tests
+
+Monorepo tests use **Pest** (`composer test`). Coverage scope is defined in [phpunit.xml](phpunit.xml) (`packages/*/src`, bundled modules).
+
+| Package | Extend | Notes |
+|---------|--------|-------|
+| `web` | `Velm\Web\Tests\TestCase` | HTTP feature tests; installs `base`, `admin`, `partners` |
+| `admin` | `Velm\Admin\Tests\TestCase` | Livewire + HTTP |
+| `framework` | `Velm\Framework\Tests\TestCase` | `$this->artisan('velm:…')` |
+| `console` | `Velm\Console\Tests\ConsoleTestCase` | Symfony `CommandTester` |
+| `modules` / `views` | `Velm\Modules\Tests\TestCase` | `ModuleInstaller` + SQLite `:memory:` |
+| `core` / `ui` | Pure unit | Minimal env |
+
+Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). Run `composer test:coverage:report` (currently enforces **95%** minimum; raise toward **99%** per phase). CI uploads `coverage.xml` and reports to Codecov.
+
 ## Still open (do not assume done)
 
 - **v1.0.0** stable release (Tier 1.6 docs sync, constraint tighten, final smoke)

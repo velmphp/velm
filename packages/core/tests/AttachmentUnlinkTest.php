@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Velm\Database\PdoConnection;
 use Velm\Environment;
-use Velm\Modules\Base\Models\Attachment;
+use Velm\Core\Tests\Support\TestAttachment;
 use Velm\Registry;
 use Velm\Schema\SchemaBuilder;
 use Velm\Storage\AttachmentStorage;
@@ -14,7 +14,7 @@ test('unlink removes database row and local storage blob', function (): void {
     AttachmentStorage::resetBackendCache();
 
     $env = Registry::using(function (Registry $registry): Environment {
-        $registry->register(Attachment::class);
+        $registry->register(TestAttachment::class);
 
         $connection = PdoConnection::sqliteMemory();
         $env = new Environment($connection, $registry);
