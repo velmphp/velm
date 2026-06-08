@@ -8,7 +8,23 @@ sidebar_position: 1
 
 **Install from Packagist:** `composer create-project velmphp/app my_app` — see [Installation](./guides/installation). Use the **version dropdown** above for docs tied to a release tag (e.g. **1.0.1**); **Next** tracks unreleased changes on `main`.
 
-This site documents how to **author modules** and use the ORM. For repository architecture and contributor context, see the monorepo [PLAN.md](https://github.com/velmphp/velm/blob/main/PLAN.md) and [CONTEXT.md](https://github.com/velmphp/velm/blob/main/CONTEXT.md).
+## Developer journey
+
+If you are new to Velm, think in three steps — not nine packages.
+
+![Velm developer journey: a stick figure walks from create-project through module authoring to Laravel deploy](/img/developer-journey.svg)
+
+| Step | What you do | What you get |
+|------|-------------|--------------|
+| **Start** | `composer create-project velmphp/app` → `composer run setup` | A Laravel app with the Velm panel at `/velm` and bootstrap modules installed |
+| **Code** | Add an addon under `addons/` — models, `views/*.php` (list, form, menus), then `velm:module:sync` | Working list and form pages in the shell — no hand-built CRUD or Filament resources |
+| **Ship** | Deploy like any Laravel app; run `php artisan velm:migrate` on the server | The same `/velm` UI against your production database; modules are opt-in **per database** |
+
+**Why it feels easy:** you stay in one stack (Composer, Artisan, Eloquent connections, your host). Velm adds module install/sync and declarative view arch — you do not run a parallel ERP runtime beside Laravel.
+
+Next reads: [Installation](./guides/installation) → [Scaffolding](./guides/scaffolding) → [App addons](./guides/addons) → [Production](./guides/production).
+
+The diagram SVG lives in the monorepo at `website/static/img/developer-journey.svg` — import it into [Excalidraw](https://excalidraw.com) to edit the doodle.
 
 ## Documentation map
 
