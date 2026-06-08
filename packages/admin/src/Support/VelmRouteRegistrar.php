@@ -18,7 +18,9 @@ use Velm\Framework\Http\Middleware\BindVelmEnvironment;
 use Velm\Admin\Http\Middleware\ShareVelmMenuContext;
 use Velm\Admin\Pages\AppsDetailPage;
 use Velm\Admin\Pages\AppsPage;
+use Velm\Admin\Pages\ChangePasswordPage;
 use Velm\Admin\Pages\DashboardPage;
+use Velm\Admin\Pages\ProfilePage;
 use Velm\Admin\Pages\CompanyListPage;
 use Velm\Admin\Pages\CreateCompanyPage;
 use Velm\Admin\Pages\CreatePartnerPage;
@@ -36,6 +38,8 @@ final class VelmRouteRegistrar
     /** @var list<class-string<VelmShellPage>> */
     private const PAGES = [
         DashboardPage::class,
+        ProfilePage::class,
+        ChangePasswordPage::class,
         AppsPage::class,
         AppsDetailPage::class,
         CompanyListPage::class,

@@ -116,7 +116,7 @@ test('dashboard view declaration exposes widget arch schema', function (): void 
         ->widgets([
             StatWidget::make('total')->title('Total contacts'),
             StatWidget::make('companies')->domain([['is_company', '=', true]]),
-            TableWidget::make('recent')->view('partner.list')->limit(3)->size('full'),
+            TableWidget::make('recent')->view('partner.list')->limit(3)->colspan('full'),
             ChartWidget::make('by_country')->view('partner.graph'),
         ])
         ->toArray();
@@ -126,7 +126,8 @@ test('dashboard view declaration exposes widget arch schema', function (): void 
         ->and($view['arch']['list_view'])->toBe('partner.list')
         ->and($view['arch']['widgets'])->toHaveCount(4)
         ->and($view['arch']['widgets'][0]['type'])->toBe('stat')
-        ->and($view['arch']['widgets'][2]['limit'])->toBe(3);
+        ->and($view['arch']['widgets'][2]['limit'])->toBe(3)
+        ->and($view['arch']['widgets'][2]['colspan'])->toBe('full');
 });
 
 test('dashboard view requires model and widgets before serialize', function (): void {
@@ -145,6 +146,20 @@ test('arch normalizer coerces dashboard widget specs', function (): void {
 
     expect($dashboard['columns'])->toBe(1)
         ->and($dashboard['widgets'])->toHaveCount(2)
-        ->and($dashboard['widgets'][0]['size'])->toBe('half')
+        ->and($dashboard['widgets'][0]['colspan'])->toBe(1)
         ->and($dashboard['widgets'][1]['limit'])->toBe(1);
 });
+
+test('arch normalizer migrates legacy dashboard widget size full to colspan', function (): void {
+    $dashboard = ArchNormalizer::normalize([
+        'widgets' => [
+            ['type' => 'chart', 'id' => 'wide', 'view' => 'partner.graph', 'size' => 'full'],
+        ],
+    ], 'dashboard');
+
+    expect($dashboard['widgets'][0]['colspan'])->toBe('full');
+});
+
+test('dashboard widget colspan rejects values below one', function (): void {
+    StatWidget::make('total')->colspan(0);
+})->throws(InvalidArgumentException::class, 'colspan must be at least 1');

@@ -39,21 +39,17 @@
                 init() {
                     this.syncThemeState();
                     document.addEventListener('livewire:navigated', () => this.syncThemeState());
+                    document.addEventListener('velm:theme-changed', (e) => {
+                        this.isDark = !! e.detail?.isDark;
+                    });
                 },
                 syncThemeState() {
-                    this.isDark = document.documentElement.classList.contains('dark');
+                    window.VelmTheme?.apply?.();
+                    this.isDark = window.VelmTheme?.shouldBeDark?.() ?? document.documentElement.classList.contains('dark');
                 },
                 toggleTheme() {
-                    const html = document.documentElement;
-                    const nextDark = ! html.classList.contains('dark');
-                    if (nextDark) {
-                        html.classList.add('dark');
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        html.classList.remove('dark');
-                        localStorage.setItem('theme', 'light');
-                    }
-                    this.isDark = nextDark;
+                    window.VelmTheme?.toggle?.();
+                    this.isDark = window.VelmTheme?.shouldBeDark?.() ?? false;
                 },
             }"
             @keydown.escape.window="sidebarOpen = false"

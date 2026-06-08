@@ -87,6 +87,12 @@ final class ActionResolver
                 $resolvedAction['form'] = $inlineForm;
             }
 
+            $wire = (string) ($action['wire'] ?? '');
+
+            if ($wire !== '') {
+                $resolvedAction['wire'] = $wire;
+            }
+
             $resolved[] = $resolvedAction;
         }
 

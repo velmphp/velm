@@ -78,6 +78,19 @@ test('inline action form requires model', function (): void {
         ->toArray();
 })->throws(LogicException::class);
 
+test('list view stores bulk_actions arch key', function (): void {
+    $list = ListView::make('partner.list')
+        ->model('res.partner')
+        ->columns(['name'])
+        ->bulkActions([
+            Action::make('Archive')->url('/web/partners/archive')->perm('write'),
+        ])
+        ->toArray();
+
+    expect($list['arch']['bulk_actions'])->toHaveCount(1)
+        ->and($list['arch']['bulk_actions'][0]['label'])->toBe('Archive');
+});
+
 test('list view stores page_actions arch key', function (): void {
     $list = ListView::make('partner.list')
         ->model('res.partner')

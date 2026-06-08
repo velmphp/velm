@@ -27,7 +27,7 @@ Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0
 
 **Branch naming:** `feature/rc3-v1-features` — thematic PRs on one branch where practical.
 
-**Deferred past v1.0.0** (Tier 3 → 1.0.1+): list inline edit — remaining Tier 3 item for a future **1.1.0** release.
+**v1.1.0** (in progress): account self-service (profile + password), list inline edit, then Tier 4 composer plugin.
 
 ### Tier 1 — Release blockers (pre-1.0)
 
@@ -65,6 +65,8 @@ Shipped in **v1.0.1** except list inline edit (deferred to **1.1.0**).
 | `header_actions` / `page_actions` from arch | **Done** | Export, duplicate, custom toolbar; ACL `perm` gating |
 | IT audit trail (`system_audit` module) | **Done** | Audit log, login history, user lifecycle; export + retention cron |
 | Arch `dashboard` view type (per-model boards) | **Done** | `DashboardView` + stat/table/chart widgets; `/velm/views/{module}/{name}` |
+| Account profile + password self-service | Pending | User menu → `/velm/account/profile`, `/velm/account/password` |
+| List bulk actions | **Done** | `bulk_actions` arch; row selection + bulk delete + URL handlers |
 | List inline row edit | Pending | PLAN Phase 4+ |
 
 ### Tier 4 — Post-stable (v1.1+)
@@ -320,6 +322,7 @@ See [Stable v1.0 target](#stable-v10-target) tiers above. **v1.0.1** shipped; ne
 
 | Item | Target |
 |------|--------|
+| Account profile + password | 1.1.0 |
 | List inline edit | 1.1.0 (Tier 3) |
 | `velmphp/composer-plugin` | 1.1+ (Tier 4) |
 | Optional Filament arch adapter | — (won't do) |

@@ -8312,8 +8312,131 @@
 
   // resources/js/src/pv-graph.entry.js
   var import_apexcharts = __toESM(require_apexcharts_common());
+
+  // resources/js/src/apex-chart.js
+  var CHART_PALETTE = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
+  function themeVar(name, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  function buildApexChartOptions(config) {
+    const labels = Array.isArray(config.labels) ? config.labels : [];
+    const values = Array.isArray(config.values) ? config.values : [];
+    const measureLabel = config.measureLabel || "Count";
+    const chartType = config.chartType || "bar";
+    const height = config.height || 320;
+    const isDark = document.documentElement.classList.contains("dark");
+    const fg = themeVar("--color-body", isDark ? "#e5e7eb" : "#1f2937");
+    const fgSubtle = themeVar("--color-body-subtle", isDark ? "#9ca3af" : "#6b7280");
+    const brand = themeVar("--color-fg-brand", "#2563eb");
+    const gridClr = themeVar("--color-border-default", isDark ? "#374151" : "#e5e7eb");
+    const palette = [brand, ...CHART_PALETTE.filter((color) => color !== brand)];
+    const apexType = chartType === "pie" ? "pie" : chartType === "line" ? "line" : chartType === "area" ? "area" : "bar";
+    const base = {
+      chart: {
+        type: apexType,
+        height,
+        background: "transparent",
+        toolbar: { show: false },
+        animations: { speed: 220 },
+        foreColor: fg
+      },
+      theme: { mode: isDark ? "dark" : "light" },
+      colors: palette,
+      grid: { borderColor: gridClr },
+      tooltip: { theme: isDark ? "dark" : "light" },
+      legend: { labels: { colors: fgSubtle } }
+    };
+    if (apexType === "pie") {
+      return {
+        ...base,
+        series: values,
+        labels,
+        dataLabels: { enabled: true }
+      };
+    }
+    return {
+      ...base,
+      series: [{ name: measureLabel, data: values }],
+      xaxis: { categories: labels, labels: { style: { colors: fgSubtle } } },
+      yaxis: { labels: { style: { colors: fgSubtle } } },
+      dataLabels: { enabled: false },
+      plotOptions: { bar: { horizontal: false, borderRadius: 4 } },
+      fill: apexType === "area" ? {
+        type: "gradient",
+        gradient: { shadeIntensity: 1, opacityFrom: 0.55, opacityTo: 0.05 }
+      } : {},
+      stroke: apexType === "line" || apexType === "area" ? { curve: "smooth", width: 2 } : { width: 0 }
+    };
+  }
+  function renderApexChart(el, options, ApexCharts3) {
+    if (!el || typeof ApexCharts3 === "undefined" || !options) {
+      return null;
+    }
+    const chart = new ApexCharts3(el, options);
+    chart.render();
+    return chart;
+  }
+
+  // resources/js/src/pv-graph.entry.js
   window.ApexCharts = import_apexcharts.default;
+  function mountApexChart(component, height = 400) {
+    if (typeof import_apexcharts.default === "undefined") {
+      setTimeout(() => mountApexChart(component, height), 60);
+      return;
+    }
+    const el = component.$refs.mount;
+    if (!el) {
+      return;
+    }
+    if (component._chart) {
+      component._chart.destroy();
+      component._chart = null;
+    }
+    if (!component.values.length) {
+      return;
+    }
+    const options = buildApexChartOptions({
+      labels: component.labels,
+      values: component.values,
+      measureLabel: component.measureLabel,
+      chartType: component.chartType,
+      height
+    });
+    component._chart = renderApexChart(el, options, import_apexcharts.default);
+  }
   document.addEventListener("alpine:init", () => {
+    Alpine.data("pvDashboardChart", (cfg) => ({
+      labels: cfg.labels || [],
+      values: cfg.values || [],
+      measureLabel: cfg.measureLabel || "",
+      chartType: cfg.chartType || "bar",
+      height: cfg.height || 240,
+      _chart: null,
+      _onResize: null,
+      _onTheme: null,
+      get hasData() {
+        return this.values.length > 0;
+      },
+      init() {
+        this.$nextTick(() => this.renderChart());
+        this._onResize = () => this.renderChart();
+        this._onTheme = () => this.renderChart();
+        window.addEventListener("resize", this._onResize);
+        document.addEventListener("velm:theme-changed", this._onTheme);
+      },
+      destroy() {
+        window.removeEventListener("resize", this._onResize);
+        document.removeEventListener("velm:theme-changed", this._onTheme);
+        if (this._chart) {
+          this._chart.destroy();
+          this._chart = null;
+        }
+      },
+      renderChart() {
+        mountApexChart(this, this.height);
+      }
+    }));
     Alpine.data("pvGraphToolbar", (cfg) => ({
       model: cfg.model,
       module: cfg.module || "",
@@ -8360,9 +8483,11 @@
           this.renderChart();
         });
         window.addEventListener("resize", this._onResize = () => this.renderChart());
+        document.addEventListener("velm:theme-changed", this._onTheme = () => this.renderChart());
       },
       destroy() {
         window.removeEventListener("resize", this._onResize);
+        document.removeEventListener("velm:theme-changed", this._onTheme);
         if (this._chart) {
           this._chart.destroy();
           this._chart = null;
@@ -8404,73 +8529,8 @@
           this.renderChart();
         }
       },
-      themeVar(name, fallback) {
-        const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-        return value || fallback;
-      },
       renderChart() {
-        if (typeof import_apexcharts.default === "undefined") {
-          setTimeout(() => this.renderChart(), 60);
-          return;
-        }
-        const el = this.$refs.mount;
-        if (!el) {
-          return;
-        }
-        if (this._chart) {
-          this._chart.destroy();
-          this._chart = null;
-        }
-        if (!this.values.length) {
-          return;
-        }
-        const isDark = document.documentElement.classList.contains("dark");
-        const fg = this.themeVar("--color-body", isDark ? "#e5e7eb" : "#1f2937");
-        const fgSubtle = this.themeVar("--color-body-subtle", isDark ? "#9ca3af" : "#6b7280");
-        const brand = this.themeVar("--color-fg-brand", "#2563eb");
-        const gridClr = this.themeVar("--color-border-default", isDark ? "#374151" : "#e5e7eb");
-        const palette = [brand, "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
-        const apexType = this.chartType === "pie" ? "pie" : this.chartType === "line" ? "line" : this.chartType === "area" ? "area" : "bar";
-        const base = {
-          chart: {
-            type: apexType,
-            height: 400,
-            background: "transparent",
-            toolbar: { show: false },
-            animations: { speed: 220 },
-            foreColor: fg
-          },
-          theme: { mode: isDark ? "dark" : "light" },
-          colors: palette,
-          grid: { borderColor: gridClr },
-          tooltip: { theme: isDark ? "dark" : "light" },
-          legend: { labels: { colors: fgSubtle } }
-        };
-        let opts;
-        if (apexType === "pie") {
-          opts = {
-            ...base,
-            series: this.values,
-            labels: this.labels,
-            dataLabels: { enabled: true }
-          };
-        } else {
-          opts = {
-            ...base,
-            series: [{ name: this.measureLabel, data: this.values }],
-            xaxis: { categories: this.labels, labels: { style: { colors: fgSubtle } } },
-            yaxis: { labels: { style: { colors: fgSubtle } } },
-            dataLabels: { enabled: false },
-            plotOptions: { bar: { horizontal: false, borderRadius: 4 } },
-            fill: apexType === "area" ? {
-              type: "gradient",
-              gradient: { shadeIntensity: 1, opacityFrom: 0.55, opacityTo: 0.05 }
-            } : {},
-            stroke: apexType === "line" || apexType === "area" ? { curve: "smooth", width: 2 } : { width: 0 }
-          };
-        }
-        this._chart = new import_apexcharts.default(el, opts);
-        this._chart.render();
+        mountApexChart(this, 400);
       }
     }));
   });

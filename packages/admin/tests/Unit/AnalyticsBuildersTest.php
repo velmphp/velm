@@ -210,5 +210,7 @@ test('dashboard board builder resolves stat table and chart widgets', function (
         ->and($board['widgets'][0]['view'])->toBe('velm-ui::dashboard.stat-card')
         ->and($board['widgets'][0]['data']['value'])->toBeGreaterThanOrEqual(1)
         ->and(collect($board['widgets'][2]['data']['items'])->pluck('label'))->toContain('Board Partner')
-        ->and($board['widgets'][3]['data']['points'])->not->toBeEmpty();
+        ->and($board['widgets'][3]['data']['labels'])->not->toBeEmpty()
+        ->and($board['widgets'][3]['data']['values'])->not->toBeEmpty()
+        ->and($board['widgets'][3]['data']['chart_type'])->toBe('bar');
 });

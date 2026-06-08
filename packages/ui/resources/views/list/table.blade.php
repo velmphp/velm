@@ -4,7 +4,10 @@
     $headerByName = collect($headers)->keyBy('name');
     $rowActions = $this->listRowActions();
     $hasRowActions = $this->hasListRowActions();
+    $showsSelection = $this->listShowsSelection();
     $grouped = filled($this->listGroupBy);
+    $visibleColumnCount = collect($columns)->filter(fn ($c) => $this->isListColumnVisible($c->name))->count();
+    $tableColspan = $visibleColumnCount + ($showsSelection ? 1 : 0) + ($hasRowActions ? 1 : 0);
     $records = $grouped ? null : $this->paginatedListRecords();
     $groups = $grouped ? $this->groupedListRecords() : [];
 @endphp
@@ -13,7 +16,17 @@
     <table class="w-full text-sm">
         <thead class="border-b border-default bg-neutral-tertiary">
             <tr>
-                <th class="w-9 px-3 py-3" aria-hidden="true"></th>
+                @if ($showsSelection)
+                    <th class="w-9 px-3 py-3">
+                        <input
+                            type="checkbox"
+                            class="h-4 w-4 rounded border-default text-fg-brand focus:ring-fg-brand/40"
+                            wire:click="toggleListSelectAllOnPage"
+                            @checked($this->listAllPageSelected())
+                            aria-label="{{ __('Select all on this page') }}"
+                        />
+                    </th>
+                @endif
                 @foreach ($columns as $column)
                     @if ($this->isListColumnVisible($column->name))
                         <th class="px-4 py-3 text-left text-xs font-semibold tracking-wider whitespace-nowrap text-body-subtle uppercase">
@@ -33,7 +46,7 @@
             @foreach ($groups as $group)
                 <tbody class="divide-y divide-default" x-data="{ open: true }">
                     <tr class="cursor-pointer select-none bg-neutral-tertiary/60 hover:bg-neutral-tertiary" @click="open = ! open">
-                        <td colspan="{{ collect($columns)->filter(fn ($c) => $this->isListColumnVisible($c->name))->count() + ($hasRowActions ? 2 : 1) }}" class="px-4 py-3 text-xs font-semibold text-heading">
+                        <td colspan="{{ $tableColspan }}" class="px-4 py-3 text-xs font-semibold text-heading">
                             <span class="inline-flex items-center gap-2">
                                 <svg class="h-3 w-3 text-body-subtle transition-transform" :class="{ 'rotate-90': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -48,6 +61,7 @@
                             'record' => $record,
                             'columns' => $columns,
                             'rowActions' => $rowActions,
+                            'showsSelection' => $showsSelection,
                             'xShow' => 'open',
                         ])
                     @endforeach
@@ -56,10 +70,15 @@
         @else
             <tbody class="divide-y divide-default">
                 @forelse ($records as $record)
-                    @include('velm-ui::list.row', ['record' => $record, 'columns' => $columns, 'rowActions' => $rowActions])
+                    @include('velm-ui::list.row', [
+                        'record' => $record,
+                        'columns' => $columns,
+                        'rowActions' => $rowActions,
+                        'showsSelection' => $showsSelection,
+                    ])
                 @empty
                     <tr>
-                        <td colspan="{{ collect($columns)->filter(fn ($c) => $this->isListColumnVisible($c->name))->count() + ($hasRowActions ? 2 : 1) }}" class="px-4 py-8 text-center text-sm text-body-subtle">
+                        <td colspan="{{ $tableColspan }}" class="px-4 py-8 text-center text-sm text-body-subtle">
                             {{ __('No records found.') }}
                         </td>
                     </tr>

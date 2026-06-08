@@ -30,6 +30,14 @@ final class UiAssets
         );
     }
 
+    public static function themeScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/velm-theme.js',
+            'Missing packages/ui/resources/js/velm-theme.js.',
+        );
+    }
+
     public static function stylesheetHref(): string
     {
         $published = public_path('css/velm/velm.css');
@@ -55,6 +63,11 @@ final class UiAssets
     public static function navigationScriptHref(): string
     {
         return self::publishedOrVendor('js/velm/velm-nav.js', 'resources/js/velm-nav.js');
+    }
+
+    public static function themeScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/velm-theme.js', 'resources/js/velm-theme.js');
     }
 
     public static function fileHelpersScriptHref(): string

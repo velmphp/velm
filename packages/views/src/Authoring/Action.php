@@ -49,6 +49,8 @@ final class Action
     /** @var array{sections: list<array<string, mixed>>, cols?: int, model?: string}|null */
     private ?array $form = null;
 
+    private ?string $wireAction = null;
+
     private function __construct(string $label)
     {
         $this->label = $label;
@@ -143,6 +145,17 @@ final class Action
      *
      * @param  callable(ActionForm): ActionForm|ActionForm  $form
      */
+    /**
+     * Livewire bulk handler on the list page (e.g. {@code delete}).
+     */
+    public function wire(string $action): self
+    {
+        $clone = clone $this;
+        $clone->wireAction = $action;
+
+        return $clone;
+    }
+
     public function form(callable|ActionForm $form): self
     {
         $schema = $form instanceof ActionForm ? $form : $form(ActionForm::make());
@@ -174,9 +187,10 @@ final class Action
         $hasInlineForm = $this->form !== null && ($this->form['sections'] ?? []) !== [];
         $hasStoredForm = $this->formView !== null && $this->formView !== '';
         $hasUrl = $this->url !== null && $this->url !== '';
+        $hasWire = $this->wireAction !== null && $this->wireAction !== '';
 
-        if (! $hasInlineForm && ! $hasStoredForm && ! $hasUrl) {
-            throw new \LogicException("Action {$this->label} requires url(), formView(), or form().");
+        if (! $hasInlineForm && ! $hasStoredForm && ! $hasUrl && ! $hasWire) {
+            throw new \LogicException("Action {$this->label} requires url(), formView(), form(), or wire().");
         }
 
         if ($hasInlineForm && ($this->model === null || $this->model === '')) {
@@ -227,6 +241,10 @@ final class Action
 
         if ($hasInlineForm) {
             $action['form'] = $this->form;
+        }
+
+        if ($hasWire) {
+            $action['wire'] = $this->wireAction;
         }
 
         return $action;

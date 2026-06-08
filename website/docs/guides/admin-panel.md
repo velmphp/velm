@@ -18,6 +18,17 @@ Panel login uses Laravel’s session guard. Velm’s security principal **`res.u
 
 After `composer run setup`, sign in with those credentials. Velm ACL fields (`group_ids`, `company_id`, etc.) live on `res.users` and are provisioned when the user logs in.
 
+### Your account
+
+From the **user menu** (top bar, avatar):
+
+| Link | Route | Purpose |
+|------|-------|---------|
+| **My profile** | `/velm/account/profile` | Update display name, sign-in email, and default company |
+| **Change password** | `/velm/account/password` | Set a new password (requires current password) |
+
+Changes sync to both Laravel’s `users` table and `res.users`. Group membership and the active flag remain administrator-only (Settings → Users).
+
 ## Navigation layouts
 
 `VELM_MENU_LAYOUT` in `.env` (default `apps`) controls the shell chrome:

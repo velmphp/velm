@@ -12,7 +12,7 @@ final class TableWidget
 
     private int $limit = 5;
 
-    private string $size = 'half';
+    private int|string $colspan = 1;
 
     private ?string $icon = null;
 
@@ -46,9 +46,22 @@ final class TableWidget
         return $this;
     }
 
-    public function size(string $size): self
+    /**
+     * Column span inside the dashboard grid. Use `full` to span the entire row.
+     */
+    public function colspan(int|string $colspan): self
     {
-        $this->size = $size;
+        if ($colspan === 'full') {
+            $this->colspan = 'full';
+
+            return $this;
+        }
+
+        if ((int) $colspan < 1) {
+            throw new \InvalidArgumentException('colspan must be at least 1.');
+        }
+
+        $this->colspan = (int) $colspan;
 
         return $this;
     }
@@ -74,7 +87,7 @@ final class TableWidget
             'id' => $this->id,
             'view' => $this->view,
             'limit' => $this->limit,
-            'size' => $this->size,
+            'colspan' => $this->colspan,
         ];
 
         if ($this->title !== null) {

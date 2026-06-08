@@ -32,6 +32,8 @@
     <link rel="icon" href="{{ $favicon }}" />
 @endif
 
+@include('velm-ui::partials.velm-theme-scripts')
+
 @if ($themeStyle !== '')
     <style>{!! $themeStyle !!}</style>
 @endif
@@ -76,29 +78,6 @@
     @livewireStyles
 @endif
 
-<link rel="stylesheet" href="{{ \Velm\Ui\UiAssets::stylesheetHref() }}" @if ($usesLivewire) data-navigate-track @endif />
-
-@if (\Velm\Admin\Support\VelmPanel::hasDarkMode() && ! \Velm\Admin\Support\VelmPanel::hasDarkModeForced())
-    <script>
-        const loadDarkMode = () => {
-            window.theme = localStorage.getItem('theme') ?? @js(\Velm\Admin\Support\VelmPanel::getDefaultThemeMode());
-
-            if (
-                window.theme === 'dark' ||
-                (window.theme === 'system' &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches)
-            ) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        };
-
-        loadDarkMode();
-        @if ($usesLivewire)
-            document.addEventListener('livewire:navigated', loadDarkMode);
-        @endif
-    </script>
-@endif
+<link rel="stylesheet" href="{{ \Velm\Ui\UiAssets::stylesheetHref() }}" @if ($usesLivewire) data-navigate-once @endif />
 
 @stack('styles')

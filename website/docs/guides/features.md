@@ -149,7 +149,7 @@ Stored view types beyond list/form/detail:
 |--------|---------|
 | **`StatWidget`** | Record count (optional domain / measure) |
 | **`TableWidget`** | Recent rows from a list view (`->view('partner.list')`, `->limit(5)`) |
-| **`ChartWidget`** | Bar chart from a graph view arch (`->view('partner.graph')`) |
+| **`ChartWidget`** | ApexCharts embed from a graph view arch (`->view('partner.graph')`) — same renderer as full graph pages |
 
 Graph and pivot data comes from **`Recordset::readGroup()`** (sum, avg, min, max, count) via `/velm/api/analytics/*` endpoints. A view switcher on list and analytics pages links sibling stored views for the same model when registered (dashboard listed first).
 
@@ -199,6 +199,7 @@ Panel login uses Laravel session guard; Velm ACL applies after bind. See [Securi
 | **Row actions** | `ListRowAction::open()`, `::edit()`, `::delete()` |
 | **ACL gating** | Open/read, Edit/write, Delete/unlink; delete auto-added when `perm_unlink` |
 | **Inline boolean** | `Field::make('active')->toggle()` on list columns |
+| **Bulk actions** | `->bulkActions([...])` on `ListView`; checkboxes + action bar; default bulk **Delete** when unlink is allowed; `Action::wire('delete')` or URL handlers (`GET` appends `?ids=`, `POST` sends JSON `{ ids }`) |
 | **Search toolbar** | Free text, filter chips, column picker, group-by, clear all |
 | **New** | Links to `{formView}/create` (editable create form, not detail) |
 
