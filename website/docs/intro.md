@@ -12,21 +12,7 @@ sidebar_position: 1
 
 If you are new to Velm, think in three steps — not nine packages.
 
-```mermaid
-flowchart LR
-    start["① Start<br/>create-project<br/>composer run setup<br/>open /velm"]
-    code["② Code<br/>addons/my_module<br/>velm:module:sync"]
-    ship["③ Ship<br/>Laravel deploy<br/>velm:migrate"]
-
-    start -->|"~5 min"| code
-    code -->|"PHP arch"| ship
-    ship -->|"one stack"| live["/velm live"]
-
-    style start fill:#e7f5ff,stroke:#4dabf7,color:#1e1e1e
-    style code fill:#d3f9d8,stroke:#40c057,color:#1e1e1e
-    style ship fill:#fff3bf,stroke:#fab005,color:#1e1e1e
-    style live fill:#a5d8ff,stroke:#339af0,color:#1e1e1e
-```
+![Velm developer journey](/img/developer-journey.svg)
 
 | Step | What you do | What you get |
 |------|-------------|--------------|
@@ -38,7 +24,7 @@ flowchart LR
 
 Next reads: [Installation](./guides/installation) → [Scaffolding](./guides/scaffolding) → [App addons](./guides/addons) → [Production](./guides/production).
 
-Edit the diagram in this file or preview it on [Mermaid Live](https://mermaid.live).
+**Diagram source:** `website/static/img/developer-journey.svg` — import into [Excalidraw](https://excalidraw.com) (File → Import), enhance, then export SVG back to that path.
 
 ## Documentation map
 

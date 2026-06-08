@@ -17,12 +17,10 @@ const config: Config = {
   projectName: 'velm',
   onBrokenLinks: 'throw',
   markdown: {
-    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },
   },
-  themes: ['@docusaurus/theme-mermaid'],
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'fr'],
@@ -84,9 +82,6 @@ const config: Config = {
     ],
   ],
   themeConfig: {
-    mermaid: {
-      theme: { light: 'neutral', dark: 'dark' },
-    },
     image: 'img/logo-concept.svg',
     colorMode: {
       defaultMode: 'light',

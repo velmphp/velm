@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="title">
+  <title id="title">Velm developer journey  starter for Excalidraw</title>
+
+  <!-- Minimal starter diagram. Import into https://excalidraw.com ’ File ’ Import, then enhance. -->
+
+  <rect width="900" height="300" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="450" y="36" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="24" fill="#1e1e1e">start ’ code ’ ship</text>
+
+  <!-- journey path -->
+  <path d="M 80 155 Q 300 130 450 155 T 820 155" fill="none" stroke="#ced4da" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+
+  <!-- 1 Start -->
+  <rect x="48" y="72" width="220" height="170" rx="8" fill="#a5d8ff" stroke="#1e1e1e" stroke-width="2"/>
+  <text x="158" y="108" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="20" font-weight="bold" fill="#1e1e1e">Start</text>
+  <text x="158" y="138" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">create-project</text>
+  <text x="158" y="162" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">composer run setup</text>
+  <text x="158" y="200" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#495057">open /velm</text>
+
+  <!-- arrow -->
+  <line x1="276" y1="157" x2="312" y2="157" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="312,157 302,152 302,162" fill="#1e1e1e"/>
+
+  <!-- stick figure (you) -->
+  <g transform="translate(340, 118)">
+    <circle cx="0" cy="0" r="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2"/>
+    <line x1="0" y1="10" x2="0" y2="40" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="0" y1="22" x2="-14" y2="36" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="0" y1="22" x2="16" y2="30" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="0" y1="40" x2="-12" y2="58" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="0" y1="40" x2="14" y2="54" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+    <text x="0" y="78" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="13" fill="#1e1e1e">you</text>
+  </g>
+
+  <!-- 2 Code -->
+  <rect x="400" y="72" width="220" height="170" rx="8" fill="#b2f2bb" stroke="#1e1e1e" stroke-width="2"/>
+  <text x="510" y="108" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="20" font-weight="bold" fill="#1e1e1e">Code</text>
+  <text x="510" y="138" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">addons/my_module</text>
+  <text x="510" y="162" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">velm:module:sync</text>
+  <text x="510" y="200" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#495057">list + form UI</text>
+
+  <!-- arrow -->
+  <line x1="628" y1="157" x2="664" y2="157" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="664,157 654,152 654,162" fill="#1e1e1e"/>
+
+  <!-- 3 Ship -->
+  <rect x="672" y="72" width="180" height="170" rx="8" fill="#fff3bf" stroke="#1e1e1e" stroke-width="2"/>
+  <text x="762" y="108" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="20" font-weight="bold" fill="#1e1e1e">Ship</text>
+  <text x="762" y="138" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">Laravel deploy</text>
+  <text x="762" y="162" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#1e1e1e">velm:migrate</text>
+  <text x="762" y="200" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="14" fill="#495057">/velm live</text>
+
+  <text x="450" y="278" text-anchor="middle" font-family="Virgil, Segoe UI, sans-serif" font-size="13" fill="#868e96">One stack · modules per database</text>
+</svg>

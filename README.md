@@ -16,15 +16,11 @@ Velm is a modular ERP framework for PHP: installable modules per database, a rec
 
 Semantic port of [PyVelm](https://github.com/coolsam726/pyvelm).
 
-```mermaid
-flowchart LR
-    start["① Start<br/>create-project · setup"]
-    code["② Code<br/>addons/ · sync"]
-    ship["③ Ship<br/>deploy · migrate"]
-    start --> code --> ship --> live["/velm live"]
-```
+<p align="center">
+  <img src="website/static/img/developer-journey.svg" alt="Velm developer journey: start, code, ship" width="720"/>
+</p>
 
-See the full [developer journey](https://velmphp.github.io/velm/docs/next/intro#developer-journey) in the docs.
+**Start** → `create-project` & setup · **Code** → `addons/` & sync · **Ship** → Laravel deploy — [full guide](https://velmphp.github.io/velm/docs/next/intro#developer-journey)
 
 ## Quick start
 
