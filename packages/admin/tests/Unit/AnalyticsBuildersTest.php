@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Velm\Admin\Arch\DashboardBoardBuilder;
 use Velm\Admin\Arch\GraphDataBuilder;
 use Velm\Admin\Arch\KanbanBoardBuilder;
 use Velm\Admin\Arch\ListQuery;
@@ -190,4 +191,24 @@ test('kanban view declaration card schema feeds board builder', function (): voi
         ->toArray();
 
     expect($arch['arch']['card']['title'])->toBe('name');
+});
+
+test('dashboard board builder resolves stat table and chart widgets', function (): void {
+    $env = app(\Velm\Environment::class);
+    $country = $env->model('res.country')->create(['name' => 'Board Country', 'code' => 'BC']);
+    $env->model('res.partner')->create([
+        'name' => 'Board Partner',
+        'is_company' => true,
+        'country_id' => $country->ids()[0],
+    ]);
+
+    $arch = (new ViewRegistry)->arch($env, 'partners', 'partner.dashboard');
+    $board = (new DashboardBoardBuilder)->build($arch, $env, 'partners');
+
+    expect($board['columns'])->toBe(2)
+        ->and($board['widgets'])->toHaveCount(4)
+        ->and($board['widgets'][0]['view'])->toBe('velm-ui::dashboard.stat-card')
+        ->and($board['widgets'][0]['data']['value'])->toBeGreaterThanOrEqual(1)
+        ->and(collect($board['widgets'][2]['data']['items'])->pluck('label'))->toContain('Board Partner')
+        ->and($board['widgets'][3]['data']['points'])->not->toBeEmpty();
 });

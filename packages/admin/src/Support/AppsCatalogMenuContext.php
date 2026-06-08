@@ -95,7 +95,7 @@ final class AppsCatalogMenuContext
         $roots = [];
 
         foreach ($tree as $node) {
-            $href = MenuTreeBuilder::entryHref($node);
+            $href = MenuTreeBuilder::entryHref($node, $env);
             $label = (string) ($node['label'] ?? '');
 
             if ($label === '' || $href === null) {

@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ### Added
 
+- **Per-model `dashboard` view type** — `DashboardView` with stat, table, and chart widgets; rendered at `/velm/views/{module}/{name}`; view switcher on sibling analytics views; modules with a dashboard open from the app rail and **Open app** on that board by default
 - **`system_audit` module** — IT audit compatibility: `ir.audit.log` (CRUD trail), `ir.login.log` (login/logout/failure + session lifetime), `ir.user.lifecycle` (create/activate/deactivate/password/groups); CSV export page actions; `VELM_AUDIT_DSN` and `VELM_AUDIT_RETENTION_DAYS` config; daily retention cron
 - **`header_actions` / `page_actions`** — arch-declared toolbar buttons; `variant(ActionVariant)` colors; `form()` inline schema or `formView()` stored view; ACL via `perm`
 - **Demo action endpoints** — `/web/demo/partners/*` wired from partners views (load demo data, export CSV/JSON, duplicate)

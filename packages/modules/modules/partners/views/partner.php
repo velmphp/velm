@@ -6,6 +6,7 @@ use Velm\Views\Authoring\Action;
 use Velm\Views\Authoring\ActionForm;
 use Velm\Views\Authoring\ActionVariant;
 use Velm\Views\Authoring\Card;
+use Velm\Views\Authoring\DashboardView;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
@@ -15,6 +16,9 @@ use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Authoring\Menus;
 use Velm\Views\Authoring\PivotView;
+use Velm\Views\Authoring\Widgets\ChartWidget;
+use Velm\Views\Authoring\Widgets\StatWidget;
+use Velm\Views\Authoring\Widgets\TableWidget;
 use Velm\Views\Data\ViewsData;
 
 $m = new Menus('partners');
@@ -128,6 +132,31 @@ return ViewsData::make()
             ->cols(['active'])
             ->measures(['__count'])
             ->listView('partner.list'),
+        DashboardView::make('partner.dashboard')
+            ->model('res.partner')
+            ->title('Partners overview')
+            ->columns(2)
+            ->listView('partner.list')
+            ->widgets([
+                StatWidget::make('total')
+                    ->title('Total contacts')
+                    ->icon('heroicon-o-user-group'),
+                StatWidget::make('companies')
+                    ->title('Companies')
+                    ->domain([['is_company', '=', true]])
+                    ->icon('heroicon-o-building-office'),
+                TableWidget::make('recent')
+                    ->title('Recent contacts')
+                    ->view('partner.list')
+                    ->limit(5)
+                    ->size('full')
+                    ->icon('heroicon-o-clock'),
+                ChartWidget::make('by_country')
+                    ->title('By country')
+                    ->view('partner.graph')
+                    ->size('full')
+                    ->icon('heroicon-o-chart-bar'),
+            ]),
     )
     ->menus(
         $m->group('contacts', 'Contacts')
@@ -138,6 +167,10 @@ return ViewsData::make()
                     ->view('partner.list')
                     ->icon('user-group')
                     ->sequence(10),
+                $m->item('partners_dashboard', 'Partners dashboard')
+                    ->view('partner.dashboard')
+                    ->icon('squares-2x2')
+                    ->sequence(20),
                 $m->item('partners_graph', 'Partners graph')
                     ->view('partner.graph')
                     ->icon('chart-bar')

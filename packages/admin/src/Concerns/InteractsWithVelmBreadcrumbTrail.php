@@ -130,7 +130,8 @@ trait InteractsWithVelmBreadcrumbTrail
         $root = $menu['menu_active_root'] ?? null;
 
         if (is_array($root)) {
-            $href = MenuTreeBuilder::entryHref($root);
+            $env = app()->bound(\Velm\Environment::class) ? app(\Velm\Environment::class) : null;
+            $href = MenuTreeBuilder::entryHref($root, $env);
             $url = MenuLinkResolver::url($href);
 
             if (is_string($url) && $url !== '') {

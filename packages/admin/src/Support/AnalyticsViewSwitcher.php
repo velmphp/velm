@@ -18,6 +18,7 @@ final class AnalyticsViewSwitcher
         }
 
         $labels = [
+            'dashboard' => 'Dashboard',
             'list' => 'List',
             'kanban' => 'Kanban',
             'graph' => 'Graph',

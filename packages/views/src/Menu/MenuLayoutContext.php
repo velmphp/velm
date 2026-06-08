@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Velm\Views\Menu;
 
+use Velm\Environment;
+
 final class MenuLayoutContext
 {
     /**
@@ -14,6 +16,7 @@ final class MenuLayoutContext
         array $menuTree,
         ?string $currentPath,
         ?string $layout = null,
+        ?Environment $env = null,
     ): array {
         $mode = MenuLayout::resolve($layout);
 
@@ -29,10 +32,10 @@ final class MenuLayoutContext
         [$root, $rootIndex] = MenuTreeBuilder::activeRoot($menuTree, $currentPath);
 
         $context['menu_roots'] = array_map(
-            static function (array $node, int $index): array {
+            static function (array $node, int $index) use ($env): array {
                 return [
                     ...$node,
-                    'nav_href' => MenuTreeBuilder::entryHref($node),
+                    'nav_href' => MenuTreeBuilder::entryHref($node, $env),
                     'root_index' => $index,
                 ];
             },

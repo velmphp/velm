@@ -319,6 +319,59 @@ Protected modules (`base`, `admin`, and `velm.bootstrap_modules`) cannot be unin
 
 See also [Stacking extensions](../models/stacking-extensions#models-vs-views) (models vs views).
 
+## Dashboard views
+
+Per-model **dashboard** boards are stored views (`view_type: dashboard`) — distinct from the panel **home dashboard** at `/velm/dashboard` (module `dashboard.php` hooks).
+
+```php
+use Velm\Views\Authoring\DashboardView;
+use Velm\Views\Authoring\Widgets\ChartWidget;
+use Velm\Views\Authoring\Widgets\StatWidget;
+use Velm\Views\Authoring\Widgets\TableWidget;
+
+DashboardView::make('partner.dashboard')
+    ->model('res.partner')
+    ->title('Partners overview')
+    ->columns(2)
+    ->listView('partner.list')
+    ->widgets([
+        StatWidget::make('total')
+            ->title('Total contacts')
+            ->icon('heroicon-o-user-group'),
+        StatWidget::make('companies')
+            ->title('Companies')
+            ->domain([['is_company', '=', true]]),
+        TableWidget::make('recent')
+            ->title('Recent contacts')
+            ->view('partner.list')
+            ->limit(5)
+            ->size('full'),
+        ChartWidget::make('by_country')
+            ->title('By country')
+            ->view('partner.graph')
+            ->size('full'),
+    ]);
+```
+
+| API | Purpose |
+|-----|---------|
+| `->columns(n)` | Grid width for widget layout (1–12) |
+| `->listView('…')` | Default list URL for stat/table “view all” links |
+| `->domain([...])` | Optional base domain for all widgets |
+| `StatWidget::make('id')` | Count card; optional `->domain()`, `->measure()`, `->size('half'|'full')` |
+| `TableWidget::make('id')` | Recent rows from a **list** view arch (`->view('partner.list')`, `->limit(5)`) |
+| `ChartWidget::make('id')` | Bar chart from a **graph** view arch (`->view('partner.graph')`) |
+
+Register a menu item pointing at the dashboard view, then sync:
+
+```bash
+php artisan velm:module:sync partners
+```
+
+When a module has a dashboard view, the **app rail** and catalog **Open app** link open that board by default (even if the list menu item has a lower sequence). Set an explicit `->href('…')` on a menu **group** to override landing URL.
+
+URL: `/velm/views/{module}/{dashboardView}` (e.g. `/velm/views/partners/partner.dashboard`).
+
 ## Menus
 
 Register menus in `views/menu.php` and sync the module. Menu entries point at list view URLs (`/velm/views/{module}/{view}.list`).

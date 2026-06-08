@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Velm\Admin\Arch\ArchSchemaBuilder;
 use Velm\Admin\Arch\ArchTableConfigurator;
+use Velm\Admin\Arch\DashboardBoardBuilder;
 use Velm\Admin\Arch\GraphDataBuilder;
 use Velm\Admin\Arch\KanbanBoardBuilder;
 use Velm\Admin\Arch\PivotDataBuilder;
@@ -24,6 +25,7 @@ final class AdminServiceProvider extends ServiceProvider
         $this->app->singleton(ArchSchemaBuilder::class);
         $this->app->singleton(ArchTableConfigurator::class);
         $this->app->singleton(KanbanBoardBuilder::class);
+        $this->app->singleton(DashboardBoardBuilder::class);
         $this->app->singleton(GraphDataBuilder::class);
         $this->app->singleton(PivotGridBuilder::class);
         $this->app->singleton(PivotDataBuilder::class);
