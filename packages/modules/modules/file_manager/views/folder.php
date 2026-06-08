@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\KanbanView;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Data\ViewsData;
 
@@ -25,4 +27,15 @@ return ViewsData::make()
                 'sequence',
                 'color',
             ]),
+        KanbanView::make('folder.kanban')
+            ->model('res.attachment.folder')
+            ->title('Folders')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('sequence')
+                    ->fields(['color'])
+            )
+            ->formView('folder.form')
+            ->listView('folder.list'),
     );

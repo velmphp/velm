@@ -45,6 +45,11 @@
         "build-ui": [
             "npm --prefix packages/ui ci",
             "npm --prefix packages/ui run build"
+        ],
+        "velm-rebuild-ui": [
+            "@build-ui",
+            "php apps/demo/artisan vendor:publish --tag=velm-ui-assets --force",
+            "php apps/app/artisan vendor:publish --tag=velm-ui-assets --force"
         ]
     },
     "minimum-stability": "dev",

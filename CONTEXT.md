@@ -30,6 +30,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 
 - **App:** `velmphp/app` (monorepo: `apps/app`) — minimal `create-project` template; bootstrap only.
 - **Demo:** `velmphp/velm-demo` (monorepo: `apps/demo`) — `composer run setup` then `composer run dev` → `/velm` with reference modules.
+- **Bootstrap modules:** `base`, `admin`, `geo_data`, `file_manager` (via `velm.bootstrap_modules`); `partners` depends on `geo_data`; file pickers require `file_manager`.
 - **CLI:** `php artisan velm:*` only (no standalone `bin/velm` in production path).
 - **User docs:** `website/` (Docusaurus) — guides [installation](website/docs/guides/installation.md), [addons](website/docs/guides/addons.md), [admin-panel](website/docs/guides/admin-panel.md); build with `cd website && npm run build`.
 - **Demo addon:** `apps/demo/addons/demo_relations` — M2O / O2M / M2M under **Demos** menu.
@@ -42,7 +43,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - **Stored views:** `/velm/views/{module}/{view}` (list), `…/{id}` (detail), `…/edit`, `…/create` — `ResolvesStoredView` + `StoredViewRoutes`; list pages must not override detail URLs if `clickToOpen()` is used.
 - **Branding:** `CompanyBranding` — company `app_name`, logos, `primary_color`; env `VELM_APP_NAME` / `VELM_LOGO_*`; header brand links to apps catalog.
 - **Users:** `res.users` model table **`users`** (Laravel); bootstrap `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD` in `config/velm.php`; ACL admin UI uses `email`.
-- **CSS:** edit `packages/ui/resources/css/velm.src.css`, then `composer run velm-rebuild-ui` in `apps/demo`.
+- **CSS:** edit `packages/ui/resources/css/velm.src.css`, then `composer run velm-rebuild-ui` from the monorepo root (or `composer run build-ui` if you only need the package build).
 
 ## Key conventions
 
@@ -53,7 +54,7 @@ PyVelm reference implementation: `/home/smaosa/project-pyvelm` (or https://githu
 - Model fields: prefer fluent setters on `Velm\Fields\*` (e.g. `CharField::make()->required()->maxLength(2)`); constructor/`make()` args still work
 - Models: `$name` registers a table; base models get `id`, `display_name`, `created_at`, `updated_at` automatically (`$timestamps = false` to opt out); `$inherit` on a class that **extends `Model`** adds fields and joins the registry MRO — chain static hooks and instance methods with `static::super(...$args)` (recordset methods: `static::super($recordset, ...)`); `$recordset->action()` dispatches via `Recordset::__call`; `ALTER TABLE` on install (`partners_ext` fixture)
 - Views: module `views/*.php` return `ViewsData::make()->views(…)->inherits(…)->menus(…)`; synced to `ir.ui.view` / `ir.ui.menu`
-- **Authoring:** `ListView`, `FormView`, `DetailView`, `ListRowAction` (`open`, `edit`, `delete`), `Field::colspan()`, `FormView::cols()`, `->clickToOpen()`, `->detailView()`
+- **Authoring:** `ListView`, `FormView`, `DetailView`, `ListRowAction`, `Action` (`url`, `form()`, `formView()`, `variant(ActionVariant)`, `confirm`, `perm`), `ActionForm` (inline action schema), `Field::colspan()`, `FormView::cols()`, `->clickToOpen()`, `->detailView()`
 - **List presentation:** `InteractsWithVelmListPresentation` — auto **Delete** when `perm_unlink`; Open/Edit gated by ACL; icon row actions in `velm-ui` list row partial
 - **Forms:** `#velm-form` + Ctrl+S in `form-scripts.blade.php`; embed mode `?embed=1` for record dialog — full action bar, `velm-dialog-saved` postMessage to parent for M2M chips
 - **Relational UI:** M2O via `/api/m2o/search`; O2M/M2M default **dialog** widget; `pvOpenRecord()` / Alpine `recordDialog` store
@@ -90,5 +91,5 @@ Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). R
 
 ## Still open (do not assume done)
 
-- **Post-1.0** (Tier 3): `header_actions`, list inline edit, per-model arch `dashboard`
+- **Post-1.0** (Tier 3): list inline edit, per-model arch `dashboard` — `header_actions` / `page_actions` **done** in 1.1
 - Filament arch adapter (optional; not used by app/demo)

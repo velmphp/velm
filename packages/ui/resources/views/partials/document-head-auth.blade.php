@@ -1,7 +1,10 @@
 @php
     $livewire ??= null;
     $title = trim(strip_tags($livewire?->getTitle() ?? ''));
-    $appName = (string) (($velmShell ?? [])['app_name'] ?? config('app.name', 'Velm'));
+    $shell = $velmShell ?? [];
+    $appName = (string) ($shell['app_name'] ?? config('app.name', 'Velm'));
+    $themeStyle = (string) ($shell['company_theme_style'] ?? '');
+    $fontStyle = (string) ($shell['company_font_style'] ?? '');
 @endphp
 
 <meta charset="utf-8" />
@@ -15,6 +18,14 @@
         {{ $appName }}
     @endif
 </title>
+
+@if ($themeStyle !== '')
+    <style>{!! $themeStyle !!}</style>
+@endif
+
+@if ($fontStyle !== '')
+    <style>{!! $fontStyle !!}</style>
+@endif
 
 @include('velm-admin::partials.head-fonts')
 

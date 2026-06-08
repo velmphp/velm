@@ -43,18 +43,8 @@
                     </div>
                     <div>
                         <dt class="text-2xs font-medium tracking-wide text-body-subtle uppercase">{{ __('Version') }}</dt>
-                        <dd class="mt-0.5 text-body">
-                            @if (($app['state'] ?? '') === 'to_upgrade')
-                                <span class="text-warning-strong">{{ $app['installed_version'] }} → {{ $app['available_version'] }}</span>
-                            @elseif (($app['state'] ?? '') === 'needs_sync')
-                                {{ $app['installed_version'] }}
-                                <span class="text-warning-strong">({{ __('sync pending') }})</span>
-                            @elseif ($app['installed_version'] ?? null)
-                                {{ $app['installed_version'] }}
-                                <span class="text-body-subtle">({{ __('available') }} {{ $app['available_version'] }})</span>
-                            @else
-                                {{ $app['available_version'] }}
-                            @endif
+                        <dd class="mt-0.5">
+                            @include('velm-ui::pages.apps.partials.version', ['app' => $app])
                         </dd>
                     </div>
                     @if (($app['depends'] ?? []) !== [])

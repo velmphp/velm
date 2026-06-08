@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Auth\GenericUser;
 use Livewire\Livewire;
 use Velm\Admin\Pages\StoredViewPage;
+use Velm\Admin\Support\ListPageSize;
 use Velm\Admin\Support\StoredViewRoutes;
 use Velm\Admin\Tests\Support\StoredViewPageProbe;
 use Velm\Admin\Tests\TestCase;
@@ -39,27 +40,28 @@ function patchPartnerKanbanArch(Environment $env, array $patch): void
     });
 }
 
-test('stored view kanban applies group_by from arch on mount', function (): void {
+test('stored view kanban groups board when arch defines group_by', function (): void {
     $env = app(Environment::class);
     patchPartnerKanbanArch($env, ['group_by' => 'active']);
 
-    $page = Livewire::test(StoredViewPageProbe::class, [
+    $board = Livewire::test(StoredViewPageProbe::class, [
         'module' => 'partners',
         'viewName' => 'partner.kanban',
-    ]);
+    ])->instance()->kanbanBoard();
 
-    expect($page->instance()->listGroupBy)->toBe('active');
+    expect($board['grouped'])->toBeTrue()
+        ->and($board['group_by'])->toBe('active');
 });
 
 test('stored view kanban board adds open urls to grouped cards', function (): void {
     $env = app(Environment::class);
+    patchPartnerKanbanArch($env, ['group_by' => 'active']);
     $partnerId = $env->model('res.partner')->create(['name' => 'Open Url Kanban', 'active' => true])->ids()[0];
 
-    $board = Livewire::test(StoredViewPage::class, [
+    $board = Livewire::test(StoredViewPageProbe::class, [
         'module' => 'partners',
         'viewName' => 'partner.kanban',
     ])
-        ->call('setListGroupBy', 'active')
         ->instance()
         ->kanbanBoard();
 
@@ -73,6 +75,78 @@ test('stored view kanban board adds open urls to grouped cards', function (): vo
     }
 
     expect($openUrls)->toContain(StoredViewRoutes::recordPageUrl('partners', 'partner.form', $partnerId));
+});
+
+test('stored view flat kanban paginates cards', function (): void {
+    $env = app(Environment::class);
+
+    for ($i = 1; $i <= 12; $i++) {
+        $env->model('res.partner')->create(['name' => "Kanban Page {$i}", 'active' => true]);
+    }
+
+    $page = Livewire::test(StoredViewPage::class, [
+        'module' => 'partners',
+        'viewName' => 'partner.kanban',
+    ])->set('listPerPage', 10);
+
+    $board = $page->instance()->kanbanBoard();
+
+    expect($board['grouped'])->toBeFalse()
+        ->and($board['cards'])->toHaveCount(10)
+        ->and($board['paginator'])->not->toBeNull()
+        ->and($board['paginator']->total())->toBeGreaterThanOrEqual(12)
+        ->and($board['paginator']->hasMorePages())->toBeTrue();
+
+    $nextBoard = $page->call('nextPage')->instance()->kanbanBoard();
+
+    expect($nextBoard['cards'])->toHaveCount($board['paginator']->total() - 10);
+});
+
+test('stored view flat kanban shows all cards when page size is all', function (): void {
+    $env = app(Environment::class);
+
+    for ($i = 1; $i <= 8; $i++) {
+        $env->model('res.partner')->create(['name' => "Kanban All {$i}", 'active' => true]);
+    }
+
+    $board = Livewire::test(StoredViewPage::class, [
+        'module' => 'partners',
+        'viewName' => 'partner.kanban',
+    ])
+        ->set('listPerPage', ListPageSize::ALL)
+        ->instance()
+        ->kanbanBoard();
+
+    expect($board['grouped'])->toBeFalse()
+        ->and($board['paginator'])->not->toBeNull()
+        ->and($board['paginator']->hasPages())->toBeFalse()
+        ->and(count($board['cards']))->toBeGreaterThanOrEqual(8);
+});
+
+test('stored view grouped kanban does not paginate cards', function (): void {
+    $env = app(Environment::class);
+    patchPartnerKanbanArch($env, ['group_by' => 'active']);
+
+    for ($i = 1; $i <= 12; $i++) {
+        $env->model('res.partner')->create([
+            'name' => "Grouped Kanban {$i}",
+            'active' => $i % 2 === 0,
+        ]);
+    }
+
+    $board = Livewire::test(StoredViewPageProbe::class, [
+        'module' => 'partners',
+        'viewName' => 'partner.kanban',
+    ])
+        ->set('listPerPage', 5)
+        ->instance()
+        ->kanbanBoard();
+
+    $cardCount = collect($board['columns'])->sum(fn (array $column): int => count($column['cards']));
+
+    expect($board['grouped'])->toBeTrue()
+        ->and($board['paginator'] ?? null)->toBeNull()
+        ->and($cardCount)->toBeGreaterThanOrEqual(12);
 });
 
 test('stored view kanban board adds open urls to flat cards', function (): void {

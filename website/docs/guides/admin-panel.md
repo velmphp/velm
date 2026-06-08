@@ -80,18 +80,18 @@ Configure env keys under `config/velm.php` → `branding` (e.g. `VELM_APP_NAME=M
 **Dark mode** follows `velm-tokens.css`. Rebuild after theme or shell changes:
 
 ```bash
-# Monorepo root — Tailwind CSS + Flowbite JS
-composer build-ui
+# Monorepo root — Tailwind CSS, widget JS, and publish to apps/demo/public
+composer run velm-rebuild-ui
 
-# Skeleton — build and publish assets to public/
-cd apps/demo && composer run velm-rebuild-ui
+# Package build only (skip publish)
+composer run build-ui
 ```
 
 Clicking the **brand mark** in the header goes to the apps catalog (`/velm/apps`).
 
 ## File manager
 
-Install the **`file_manager`** module from the apps catalog. The shell adds **Files** in the module rail:
+The **`file_manager`** bootstrap module adds **Files** in the module rail (installed by `velm:migrate`):
 
 | Menu | Purpose |
 |------|---------|

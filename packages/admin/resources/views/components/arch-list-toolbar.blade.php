@@ -195,34 +195,36 @@
                     @endforelse
                 </section>
 
-                <section class="space-y-1 border-t border-default p-3 md:border-t-0 md:border-l-0">
-                    <header class="px-2 py-1 text-2xs font-bold tracking-wider text-body-subtle uppercase">
-                        {{ __('Group By') }}
-                    </header>
-                    @forelse ($groupable as $header)
-                        <button
-                            type="button"
-                            wire:click="toggleListGroupBy('{{ $header['name'] }}')"
-                            @class([
-                                'flex w-full cursor-pointer items-center justify-between gap-1 rounded px-2 py-1.5 text-sm transition-colors',
-                                'bg-brand-soft text-fg-brand' => $listGroupBy === $header['name'],
-                                'text-body hover:bg-neutral-secondary' => $listGroupBy !== $header['name'],
-                            ])
-                        >
-                            <span>{{ $header['label'] }}</span>
-                            @if ($listGroupBy === $header['name'])
-                                <x-velm-ui::icon icon="heroicon-o-check" class="h-3.5 w-3.5 shrink-0" />
-                            @endif
-                        </button>
-                    @empty
-                        <p class="px-2 py-1 text-xs text-body-subtle">{{ __('No groupable columns.') }}</p>
-                    @endforelse
-                </section>
+                @if ($this->showListGroupByPanel())
+                    <section class="space-y-1 border-t border-default p-3 md:border-t-0 md:border-l-0">
+                        <header class="px-2 py-1 text-2xs font-bold tracking-wider text-body-subtle uppercase">
+                            {{ __('Group By') }}
+                        </header>
+                        @forelse ($groupable as $header)
+                            <button
+                                type="button"
+                                wire:click="toggleListGroupBy('{{ $header['name'] }}')"
+                                @class([
+                                    'flex w-full cursor-pointer items-center justify-between gap-1 rounded px-2 py-1.5 text-sm transition-colors',
+                                    'bg-brand-soft text-fg-brand' => $listGroupBy === $header['name'],
+                                    'text-body hover:bg-neutral-secondary' => $listGroupBy !== $header['name'],
+                                ])
+                            >
+                                <span>{{ $header['label'] }}</span>
+                                @if ($listGroupBy === $header['name'])
+                                    <x-velm-ui::icon icon="heroicon-o-check" class="h-3.5 w-3.5 shrink-0" />
+                                @endif
+                            </button>
+                        @empty
+                            <p class="px-2 py-1 text-xs text-body-subtle">{{ __('No groupable columns.') }}</p>
+                        @endforelse
+                    </section>
+                @endif
             </div>
         </div>
     </div>
 
-    @if (filled($listGroupBy))
+    @if ($this->showListGroupByPanel() && filled($listGroupBy))
         <div class="flex items-center gap-1.5">
             <span class="text-2xs tracking-wider text-body-subtle uppercase">{{ __('Grouped by') }}</span>
             <span class="inline-flex items-center gap-1 rounded bg-warning-soft py-0.5 pr-1 pl-2 text-xs font-medium text-warning-strong">

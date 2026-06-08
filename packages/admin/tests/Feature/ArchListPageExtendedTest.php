@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Auth\GenericUser;
 use Livewire\Livewire;
 use Velm\Admin\Pages\PartnerListPage;
+use Velm\Admin\Support\ListPageSize;
 use Velm\Admin\Tests\Support\ArchListProbe;
 use Velm\Admin\Tests\TestCase;
 use Velm\Environment;
@@ -97,9 +98,37 @@ test('arch list page groups records by boolean and relation fields', function ()
 test('arch list page paginates fetched records', function (): void {
     $page = Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(PartnerListPage::class)
-        ->set('listPerPage', 2);
+        ->set('listPerPage', 25);
 
     $paginator = $page->instance()->paginatedListRecords();
 
-    expect($paginator->perPage())->toBe(2);
+    expect($paginator->perPage())->toBe(25);
+});
+
+test('arch list page shows all records when page size is all', function (): void {
+    $env = app(\Velm\Environment::class);
+
+    for ($i = 1; $i <= 5; $i++) {
+        $env->model('res.partner')->create(['name' => "All Size {$i}", 'active' => true]);
+    }
+
+    $paginator = Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
+        ->test(PartnerListPage::class)
+        ->set('listPerPage', ListPageSize::ALL)
+        ->instance()
+        ->paginatedListRecords();
+
+    expect($paginator->hasPages())->toBeFalse()
+        ->and($paginator->count())->toBeGreaterThanOrEqual(5)
+        ->and($paginator->total())->toBe($paginator->count());
+});
+
+test('arch list page uses configured pagination view', function (): void {
+    config(['velm.list_pagination' => 'full']);
+
+    $page = Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
+        ->test(PartnerListPage::class);
+
+    expect($page->instance()->listPaginationStyle())->toBe('full')
+        ->and($page->instance()->listPaginationView())->toBe('velm-ui::pagination.full');
 });

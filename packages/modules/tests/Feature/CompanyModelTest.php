@@ -26,5 +26,6 @@ test('base install creates res.company and seeds a default company', function ()
     $companies = $env->model('res.company')->search()->read();
 
     expect($companies)->toHaveCount(1)
-        ->and($companies[0]['name'])->toBe('My Company');
+        ->and($companies[0]['name'])->toBe('My Company')
+        ->and($companies[0]['currency_id'] ?? null)->not->toBeNull();
 });

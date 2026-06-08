@@ -5,9 +5,8 @@
     $mode = $this->velmFormMode();
     $sections = $this->velmFormSections();
     $workflowOnRecord = $mode === FormMode::Display
-        && method_exists($this, 'velmWorkflowModel')
-        && $this->velmWorkflowModel() !== ''
-        && $this->velmWorkflowRecordId() > 0;
+        && method_exists($this, 'velmWorkflowEnabled')
+        && $this->velmWorkflowEnabled();
     $mailThreadOnRecord = $mode === FormMode::Display
         && method_exists($this, 'velmMailThreadEnabled')
         && $this->velmMailThreadEnabled();

@@ -4,6 +4,18 @@ All notable changes to the Velm monorepo are documented here. Packagist packages
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`header_actions` / `page_actions`** — arch-declared toolbar buttons; `variant(ActionVariant)` colors; `form()` inline schema or `formView()` stored view; ACL via `perm`
+- **Demo action endpoints** — `/web/demo/partners/*` wired from partners views (load demo data, export CSV/JSON, duplicate)
+- **Geo import action** — `/web/geo/import` loads full geography (countries, states, cities) from public APIs on demand; bootstrap seed installs only the current country (IP geolocation, overridable via `VELM_GEO_COUNTRY`)
+- **`res.currency`** — base module currency model with reference seeder, company `currency_id`, Settings → Currencies UI, and `VELM_DEFAULT_CURRENCY` bootstrap default
+- **`res.currency.rate`** — company-scoped exchange rates with demo bootstrap rates; countries link to `res.currency` via `currency_id` (geo import/seeding auto-creates missing currencies)
+- **Company setup** — contact/address fields, curated font picker + Google Fonts theming per company (`CompanyFonts`), color picker for primary accent, and complete branding form sections (PyVelm-aligned)
+- **Company country bootstrap** — default company gets `country_id` from geo seed; `VELM_DEFAULT_CURRENCY` overrides currency, otherwise the bootstrap country's currency is used (i18n hook)
+
 ## [1.0.0] - 2026-06-07
 
 First **stable** Velm release — installable from Packagist without `-s rc`, with docs and constraints aligned to `^1.0`.

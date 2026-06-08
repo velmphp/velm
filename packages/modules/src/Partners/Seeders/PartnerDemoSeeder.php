@@ -19,44 +19,41 @@ final class PartnerDemoSeeder implements ModuleSeeder
         }
 
         $companyId = self::defaultCompanyId($env);
-        $be = self::countryId($env, 'BE', 'Belgium');
-        $nl = self::countryId($env, 'NL', 'Netherlands');
-        $fr = self::countryId($env, 'FR', 'France');
-        $de = self::countryId($env, 'DE', 'Germany');
+        $countryId = self::firstCountryId($env);
 
         self::upsertPartner($env, [
             'name' => 'Velm SA',
             'active' => true,
             'is_company' => true,
-            'country_id' => $be,
+            'country_id' => $countryId,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Brussels Consulting BV',
             'active' => true,
             'is_company' => true,
-            'country_id' => $be,
+            'country_id' => $countryId,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Jan de Vries',
             'active' => true,
             'is_company' => false,
-            'country_id' => $nl,
+            'country_id' => $countryId,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Lyon Industries',
             'active' => false,
             'is_company' => true,
-            'country_id' => $fr,
+            'country_id' => $countryId,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Legacy Partner GmbH',
             'active' => false,
             'is_company' => true,
-            'country_id' => $de,
+            'country_id' => $countryId,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
@@ -83,18 +80,15 @@ final class PartnerDemoSeeder implements ModuleSeeder
         return $existing->ids()[0];
     }
 
-    private static function countryId(Environment $env, string $code, string $name): int
+    private static function firstCountryId(Environment $env): int|false
     {
-        $existing = $env->model('res.country')->search([['code', '=', $code]], limit: 1);
+        $existing = $env->model('res.country')->search([], limit: 1);
 
-        if ($existing->count() > 0) {
-            return $existing->ids()[0];
+        if ($existing->count() === 0) {
+            return false;
         }
 
-        return $env->model('res.country')->create([
-            'name' => $name,
-            'code' => $code,
-        ])->ids()[0];
+        return $existing->ids()[0];
     }
 
     /**

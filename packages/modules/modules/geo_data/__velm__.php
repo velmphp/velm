@@ -10,7 +10,7 @@ use Velm\Modules\GeoData\Seeders\GeoReferenceSeeder;
 use Velm\Modules\Manifest;
 
 return Manifest::make('geo_data')
-    ->version(0, 1, 0)
+    ->version(0, 5, 0)
     ->depends('base', 'admin')
     ->models(
         Continent::class,
@@ -20,5 +20,5 @@ return Manifest::make('geo_data')
     )
     ->seeders(GeoReferenceSeeder::class)
     ->data('views/geo.php', 'views/menu.php')
-    ->summary('Continents, countries, states/provinces, and cities.')
-    ->category('Localization');
+    ->summary('Core geography: continents, countries, states/provinces, and cities.')
+    ->category('Core');

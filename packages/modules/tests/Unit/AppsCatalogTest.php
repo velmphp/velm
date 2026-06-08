@@ -32,3 +32,18 @@ test('module installer catalog delegates to apps catalog', function (): void {
     expect($row)->toHaveKey('display_name')
         ->and($row)->not->toHaveKey('version');
 });
+
+test('apps catalog disables uninstall for configured bootstrap modules', function (): void {
+    config(['velm.bootstrap_modules' => ['base', 'admin', 'geo_data', 'file_manager']]);
+
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data', 'file_manager']);
+
+    $catalog = collect((new AppsCatalog)->entries($roots));
+
+    expect($catalog->firstWhere('name', 'geo_data')['can_uninstall'] ?? null)->toBeFalse()
+        ->and($catalog->firstWhere('name', 'file_manager')['can_uninstall'] ?? null)->toBeFalse()
+        ->and($catalog->firstWhere('name', 'geo_data')['uninstall_blockers'] ?? [])->toContain('geo_data is a protected system module')
+        ->and($catalog->firstWhere('name', 'file_manager')['uninstall_blockers'] ?? [])->toContain('file_manager is a protected system module');
+});

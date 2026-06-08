@@ -26,7 +26,7 @@ Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0
 
 **Branch naming:** `feature/rc3-v1-features` — thematic PRs on one branch where practical.
 
-**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): `header_actions`, list inline edit, per-model arch `dashboard` boards.
+**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): list inline edit, per-model arch `dashboard` boards — `header_actions` / `page_actions` shipped in 1.1.
 
 ### Tier 1 — Release blockers (pre-1.0)
 
@@ -61,7 +61,7 @@ Deferred past **v1.0.0**.
 
 | Item | Status | Notes |
 |------|--------|-------|
-| `header_actions` / `page_actions` from arch | Pending | Export, duplicate, custom toolbar |
+| `header_actions` / `page_actions` from arch | **Done** | Export, duplicate, custom toolbar; ACL `perm` gating |
 | Arch `dashboard` view type (per-model boards) | Pending | Distinct from **home dashboard** (`/velm/dashboard`) |
 | List inline row edit | Pending | PLAN Phase 4+ |
 

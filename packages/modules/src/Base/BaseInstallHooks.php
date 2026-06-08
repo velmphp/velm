@@ -50,6 +50,8 @@ final class BaseInstallHooks
 
         foreach ([
             'res.company',
+            'res.currency',
+            'res.currency.rate',
             'res.groups',
             'res.users',
             'ir.model.access',

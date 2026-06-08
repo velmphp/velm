@@ -8,14 +8,24 @@
 >
     <div
         x-show="$store.recordDialog.isOpen"
-        x-transition.opacity
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
         class="pv-record-dialog-backdrop"
         @click="$store.recordDialog.close()"
     ></div>
 
     <div
         x-show="$store.recordDialog.isOpen"
-        x-transition
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-[0.97]"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-[0.97]"
         class="pv-record-dialog-panel"
         :style="$store.recordDialog.panelStyle()"
         role="dialog"

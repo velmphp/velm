@@ -13,6 +13,8 @@
             {{ $slot }}
         </main>
 
+        @include('velm-ui::partials.confirm-dialog')
         @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
+        @include('velm-ui::partials.confirm-dialog-scripts')
     </body>
 </html>

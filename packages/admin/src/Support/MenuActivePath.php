@@ -89,6 +89,15 @@ final class MenuActivePath
         }
 
         if ($class === StoredViewListPage::class || $class === StoredViewPage::class) {
+            $presentation = StoredViewRoutes::presentationType($module, $viewName);
+
+            if (in_array($presentation, ['kanban', 'graph', 'pivot'], true)) {
+                return StoredViewRoutes::listHref(
+                    $module,
+                    StoredViewRoutes::siblingListView($module, $viewName),
+                );
+            }
+
             return StoredViewRoutes::viewHref($module, $viewName);
         }
 

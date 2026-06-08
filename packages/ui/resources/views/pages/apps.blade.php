@@ -83,7 +83,7 @@
                     data-velm-app
                     data-velm-app-state="{{ $app['state'] }}"
                     data-velm-app-category="{{ $app['category'] }}"
-                    data-velm-app-haystack="{{ strtolower(implode(' ', [$app['name'], $app['display_name'], $app['summary'], $app['description'], $app['author'], $app['category']])) }}"
+                    data-velm-app-haystack="{{ strtolower(implode(' ', [$app['name'], $app['display_name'], $app['summary'], $app['description'], $app['author'], $app['category'], $app['available_version'] ?? '', $app['installed_version'] ?? ''])) }}"
                     class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-default bg-neutral-primary shadow-sm transition-all hover:border-fg-brand/40 hover:shadow-md"
                 >
                     <a
@@ -99,7 +99,10 @@
                             </div>
                         </div>
                         <h4 class="truncate text-sm font-semibold text-heading group-hover:text-fg-brand">{{ $app['display_name'] }}</h4>
-                        <p class="truncate text-xs text-body-subtle">{{ $app['category'] }}</p>
+                        <div class="flex items-center justify-between gap-2 text-xs text-body-subtle">
+                            <span class="truncate">{{ $app['category'] }}</span>
+                            @include('velm-ui::pages.apps.partials.version', ['app' => $app, 'compact' => true])
+                        </div>
                         @if (($app['summary'] ?? '') !== '')
                             <p class="line-clamp-2 text-xs leading-relaxed text-body">{{ $app['summary'] }}</p>
                         @endif

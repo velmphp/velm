@@ -336,7 +336,7 @@ function pvRichText(cfg) {
             });
         },
 
-        run(cmd) {
+        async run(cmd) {
             if (!editor || this.readonly || editor.isDestroyed) {
                 return;
             }
@@ -352,7 +352,7 @@ function pvRichText(cfg) {
                 editor.commands.redo();
             } else if (cmd === 'link') {
                 const prev = editor.getAttributes('link').href || '';
-                const url = window.prompt('URL', prev);
+                const url = await window.pvPrompt('URL', prev, { title: 'Link URL' });
                 if (url === null) {
                     return;
                 }

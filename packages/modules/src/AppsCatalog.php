@@ -6,11 +6,15 @@ namespace Velm\Modules;
 
 final class AppsCatalog
 {
+    /**
+     * @param  list<string>|null  $protectedModules  Bootstrap modules that cannot be uninstalled; null reads config.
+     */
     public function __construct(
         private readonly ModuleDiscovery $discovery = new ModuleDiscovery,
         private readonly DependencyResolver $resolver = new DependencyResolver,
         private readonly ModuleRepository $repository = new ModuleRepository,
         private readonly ModuleInstaller $installer = new ModuleInstaller,
+        private readonly ?array $protectedModules = null,
     ) {}
 
     /**
@@ -91,7 +95,11 @@ final class AppsCatalog
 
             if ($inst !== null) {
                 try {
-                    $uninstallPreview = $this->installer->uninstallPreview($name, $roots);
+                    $uninstallPreview = $this->installer->uninstallPreview(
+                        $name,
+                        $roots,
+                        $this->protectedModules(),
+                    );
                 } catch (\Throwable) {
                     $uninstallPreview = null;
                 }
@@ -202,5 +210,26 @@ final class AppsCatalog
         }
 
         return $parts === [] ? 'Schema drift (Sync cannot auto-fix)' : implode(', ', $parts);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function protectedModules(): array
+    {
+        if ($this->protectedModules !== null) {
+            return $this->protectedModules;
+        }
+
+        if (function_exists('config')) {
+            /** @var mixed $modules */
+            $modules = config('velm.bootstrap_modules');
+
+            if (is_array($modules) && $modules !== []) {
+                return array_values(array_map(static fn (mixed $name): string => (string) $name, $modules));
+            }
+        }
+
+        return ['base', 'admin'];
     }
 }

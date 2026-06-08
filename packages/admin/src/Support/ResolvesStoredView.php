@@ -147,4 +147,19 @@ trait ResolvesStoredView
     {
         return $this->supportsRecordEdit();
     }
+
+    /**
+     * @return list<array{type: string, label: string, url: string, active: bool}>
+     */
+    public function analyticsViewSwitcher(): array
+    {
+        $arch = $this->arch();
+
+        return app(AnalyticsViewSwitcher::class)->items(
+            app(Environment::class),
+            $this->velmViewModule(),
+            $this->velmViewName(),
+            (string) ($arch['model'] ?? ''),
+        );
+    }
 }

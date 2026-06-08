@@ -106,6 +106,21 @@
         @apply disabled:cursor-not-allowed disabled:opacity-60;
     }
 
+    .pv-btn-success {
+        @apply inline-flex items-center justify-center rounded-md bg-success px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .pv-btn-warning {
+        @apply inline-flex items-center justify-center rounded-md bg-warning-strong px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .pv-btn-danger {
+        @apply inline-flex items-center justify-center rounded-md border border-fg-danger/30 bg-danger-soft px-3 py-1.5 text-sm font-medium text-fg-danger transition hover:bg-danger-soft/80;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
     .pv-btn-sm {
         @apply px-2 py-1 text-xs;
     }
@@ -661,6 +676,70 @@
     background-color: var(--color-neutral-tertiary);
 }
 
+/* Blocking loader while view actions execute */
+.pv-action-busy-root {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+}
+
+.pv-action-busy-root.pv-action-busy-root--open {
+    pointer-events: auto;
+}
+
+.pv-action-busy-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(0 0 0 / 0.28);
+    backdrop-filter: blur(2px);
+}
+
+:where(.dark, .dark *) .pv-action-busy-backdrop {
+    background-color: rgb(0 0 0 / 0.42);
+}
+
+.pv-action-busy-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 71;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    pointer-events: none;
+}
+
+.pv-action-busy-spinner {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 3px solid var(--color-brand-soft);
+    border-top-color: var(--color-fg-brand);
+    animation: pv-action-busy-spin 0.75s linear infinite;
+}
+
+.pv-action-busy-message {
+    max-width: min(90vw, 20rem);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-heading);
+}
+
+body.pv-action-busy .pv-action-busy-target {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+@keyframes pv-action-busy-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Draggable record dialog (M2O / M2M / O2M quick view) */
 .pv-record-dialog-root {
     position: fixed;
@@ -689,12 +768,13 @@
 
 .pv-record-dialog-panel {
     position: fixed;
-    left: 50%;
-    top: 50%;
+    inset: 0;
     z-index: 61;
     display: flex;
+    height: fit-content;
     max-height: min(85vh, 720px);
     width: min(92vw, 42rem);
+    margin: auto;
     flex-direction: column;
     overflow: hidden;
     border-radius: 0.75rem;
@@ -703,7 +783,7 @@
     box-shadow:
         0 25px 50px -12px rgb(0 0 0 / 0.25),
         0 0 0 1px rgb(0 0 0 / 0.05);
-    transform: translate(-50%, -50%);
+    transform-origin: center center;
 }
 
 .pv-record-dialog-header {
@@ -771,4 +851,14 @@
 
 body.pv-record-dialog-open {
     overflow: hidden;
+}
+
+.pv-confirm-dialog-root {
+    z-index: 70;
+}
+
+.pv-confirm-dialog-panel {
+    z-index: 71;
+    width: min(92vw, 28rem);
+    max-height: min(80vh, 480px);
 }

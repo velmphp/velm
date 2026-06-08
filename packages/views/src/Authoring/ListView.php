@@ -31,7 +31,13 @@ final class ListView implements ViewDeclaration
     /** @var list<array{action: string, label: string, icon: string, href?: string}> */
     private array $rowActions = [];
 
+    /** @var list<array<string, mixed>> */
+    private array $pageActions = [];
+
     private bool $readonly = false;
+
+    /** @var 'simple'|'full'|null */
+    private ?string $pagination = null;
 
     private function __construct(
         private readonly string $name,
@@ -122,12 +128,51 @@ final class ListView implements ViewDeclaration
     }
 
     /**
+     * Pagination style for the list: {@see simple()} (prev/next) or {@see full()} (page numbers).
+     */
+    public function pagination(string $style): self
+    {
+        if (! in_array($style, ['simple', 'full'], true)) {
+            throw new \InvalidArgumentException("List pagination must be 'simple' or 'full', got {$style}.");
+        }
+
+        $this->pagination = $style;
+
+        return $this;
+    }
+
+    public function simplePagination(): self
+    {
+        return $this->pagination('simple');
+    }
+
+    public function fullPagination(): self
+    {
+        return $this->pagination('full');
+    }
+
+    /**
      * @param  list<ListRowAction|array{action: string, label: string, href?: string}>  $actions
      */
     public function rowActions(array $actions): self
     {
         $this->rowActions = array_map(
             static fn (ListRowAction|array $action): array => $action instanceof ListRowAction
+                ? $action->toArray()
+                : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param  list<Action|array<string, mixed>>  $actions
+     */
+    public function pageActions(array $actions): self
+    {
+        $this->pageActions = array_map(
+            static fn (Action|array $action): array => $action instanceof Action
                 ? $action->toArray()
                 : $action,
             $actions,
@@ -178,8 +223,16 @@ final class ListView implements ViewDeclaration
             $arch['row_actions'] = $this->rowActions;
         }
 
+        if ($this->pageActions !== []) {
+            $arch['page_actions'] = $this->pageActions;
+        }
+
         if ($this->readonly) {
             $arch['readonly'] = true;
+        }
+
+        if ($this->pagination !== null) {
+            $arch['pagination'] = $this->pagination;
         }
 
         return [

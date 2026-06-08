@@ -9,7 +9,7 @@ use Velm\Modules\FileManager\Models\IrAttachmentExtension;
 use Velm\Modules\Manifest;
 
 return Manifest::make('file_manager')
-    ->version(0, 1, 0)
+    ->version(0, 4, 0)
     ->depends('base', 'admin')
     ->models(AttachmentFolder::class, IrAttachmentExtension::class)
     ->installHook(FileManagerInstallHooks::class)
@@ -19,6 +19,6 @@ return Manifest::make('file_manager')
         'views/folder.php',
         'views/menu.php',
     )
-    ->summary('Drive-style file library, folders, and file-picker widgets over ir.attachment.')
-    ->category('System')
+    ->summary('Core file library, folders, and attachment pickers over ir.attachment.')
+    ->category('Core')
     ->icon('heroicon-o-folder');

@@ -89,6 +89,25 @@ test('branding reads boolean and integer overrides from velm config', function (
         ->and($branding['header_logo_height'])->toBe(72);
 });
 
+test('branding exposes per-company font stylesheet and css overrides', function (): void {
+    $env = app(Environment::class);
+    $row = $env->withAclBypass(
+        fn () => $env->model('res.company')->search(limit: 1)->read(['id'])[0] ?? null,
+    );
+
+    $env->withAclBypass(
+        fn () => $env->browse('res.company', [(int) $row['id']])->write([
+            'font_family' => 'DM Sans',
+        ]),
+    );
+
+    $branding = CompanyBranding::forEnvironment($env);
+
+    expect($branding['company_font_family'])->toBe('DM Sans')
+        ->and($branding['company_font_stylesheet_url'])->toContain('DM+Sans')
+        ->and($branding['company_font_style'])->toContain('--font-sans');
+});
+
 test('login page title uses shared shell branding', function (): void {
     config(['app.name' => 'Laravel']);
 

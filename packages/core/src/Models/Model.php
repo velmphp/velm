@@ -101,6 +101,16 @@ abstract class Model
         return static::$timestamps && ! static::isExtension();
     }
 
+    /**
+     * Extra domain leaves applied when this model is the target of relational pickers (m2o search).
+     *
+     * @return list<array{0: string, 1: string, 2: mixed}>
+     */
+    public static function relationalSearchDomain(): array
+    {
+        return [];
+    }
+
     public static function usesMailThread(): bool
     {
         if (static::$mailThread) {

@@ -10,7 +10,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/css/velm.css',
-            'Missing packages/ui/resources/css/velm.css. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/css/velm.css. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 
@@ -18,7 +18,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/flowbite.min.js',
-            'Missing packages/ui/resources/js/flowbite.min.js. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/js/flowbite.min.js. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 
@@ -86,7 +86,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/pv-rich-text.js',
-            'Missing packages/ui/resources/js/pv-rich-text.js. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/js/pv-rich-text.js. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 
@@ -94,7 +94,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/pv-code-editor.js',
-            'Missing packages/ui/resources/js/pv-code-editor.js. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/js/pv-code-editor.js. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 
@@ -112,7 +112,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/pv-graph.js',
-            'Missing packages/ui/resources/js/pv-graph.js. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/js/pv-graph.js. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 
@@ -120,7 +120,7 @@ final class UiAssets
     {
         return self::requireBuiltFile(
             dirname(__DIR__).'/resources/js/pv-pivot.js',
-            'Missing packages/ui/resources/js/pv-pivot.js. Run: cd packages/ui && npm install && npm run build',
+            'Missing packages/ui/resources/js/pv-pivot.js. Run: composer run build-ui (from the Velm monorepo root)',
         );
     }
 

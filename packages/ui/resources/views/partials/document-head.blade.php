@@ -6,6 +6,7 @@
     $appName = (string) ($shell['app_name'] ?? config('app.name', 'Velm'));
     $favicon = (string) ($shell['favicon_url'] ?? '');
     $themeStyle = (string) ($shell['company_theme_style'] ?? '');
+    $fontStyle = (string) ($shell['company_font_style'] ?? '');
 @endphp
 
 <meta charset="utf-8" />
@@ -33,6 +34,10 @@
 
 @if ($themeStyle !== '')
     <style>{!! $themeStyle !!}</style>
+@endif
+
+@if ($fontStyle !== '')
+    <style>{!! $fontStyle !!}</style>
 @endif
 
 @include('velm-admin::partials.head-fonts')

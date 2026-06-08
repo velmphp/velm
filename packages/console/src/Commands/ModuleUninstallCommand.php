@@ -34,7 +34,9 @@ class ModuleUninstallCommand extends Command
         $installer = new ModuleInstaller;
 
         try {
-            $preview = $installer->uninstallPreview($module, ModuleRoots::resolve());
+            $roots = ModuleRoots::resolve();
+            $protected = ModuleRoots::bootstrapModules();
+            $preview = $installer->uninstallPreview($module, $roots, $protected);
 
             if (! $preview->canUninstall) {
                 foreach ($preview->blockers() as $blocker) {
@@ -44,7 +46,7 @@ class ModuleUninstallCommand extends Command
                 return Command::FAILURE;
             }
 
-            $installer->uninstall($module, ModuleRoots::resolve());
+            $installer->uninstall($module, $roots, $protected);
         } catch (\Throwable $exception) {
             $output->writeln('<error>'.$exception->getMessage().'</error>');
 

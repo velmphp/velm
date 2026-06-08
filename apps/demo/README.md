@@ -23,8 +23,8 @@ Path repositories to `../../packages/*` are committed in `composer.json` (monore
 ## What `composer run setup` does
 
 1. Publish Velm shell CSS/JS
-2. Laravel + Velm bootstrap migrations (`base`, `admin`)
-3. Install reference modules: `partners`, `partners_ext`, `workflow`, `change_management`, `file_manager`, `demo_relations`
+2. Laravel + Velm bootstrap migrations (`base`, `admin`, `geo_data`, `file_manager`)
+3. Install reference modules: `partners`, `partners_ext`, `workflow`, `change_management`, `demo_relations`
 4. Seed demo Velm records (`velm:seed` — countries, partners, and other module fixtures)
 5. Seed admin user
 
@@ -32,16 +32,22 @@ Demo addon details: [addons/README.md](./addons/README.md).
 
 ## UI rebuild (monorepo)
 
-After editing `packages/ui/resources/css/velm.src.css`:
+After editing `packages/ui` CSS, Blade, or JS:
 
 ```bash
+# From the monorepo root (recommended)
 composer run velm-rebuild-ui
+
+# Package build only (no publish to apps/demo/public)
+composer run build-ui
 ```
+
+You can still run `composer run velm-rebuild-ui` from this directory — it delegates to the root script.
 
 ## Resetting the Velm schema
 
 ```bash
-php artisan velm:migrate:fresh --yes --module=partners --module=partners_ext --module=workflow --module=change_management --module=file_manager --module=demo_relations
+php artisan velm:migrate:fresh --yes --module=partners --module=partners_ext --module=workflow --module=change_management --module=demo_relations
 php artisan velm:seed
 ```
 

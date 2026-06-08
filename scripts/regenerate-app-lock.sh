@@ -11,7 +11,7 @@ cp "$ROOT/apps/app/composer.json" "$TMP/composer.json"
 cd "$TMP"
 
 echo "Updating dependencies from Packagist only..."
-composer update --no-interaction --prefer-dist
+composer update --no-interaction --prefer-dist --no-scripts
 
 cp composer.lock "$ROOT/apps/app/composer.lock"
 echo "Wrote $ROOT/apps/app/composer.lock"

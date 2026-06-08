@@ -28,6 +28,8 @@ abstract class TestCase extends Orchestra
             $app['config']->set('velm.addon_autoload_paths', [$demoAddons]);
         }
 
+        $app['config']->set('velm.geo_country', 'BE');
+
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
             'driver' => 'sqlite',

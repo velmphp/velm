@@ -23,6 +23,10 @@
     </span>
 
     <div class="flex items-center gap-2">
+        @if ($mode === FormMode::Display)
+            @include('velm-ui::partials.view-actions', ['actions' => $this->velmHeaderActions()])
+        @endif
+
         @if ($mode === FormMode::Display && filled($editUrl))
             <a
                 href="{{ $editUrl }}"

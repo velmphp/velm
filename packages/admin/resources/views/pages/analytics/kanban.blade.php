@@ -2,6 +2,7 @@
 
 <div
     class="space-y-4"
+    data-pv-form-shell
     data-velm-breadcrumb-trail="{{ $this->velmBreadcrumbTrailJson() }}"
     data-velm-nav-label="{{ $this->velmNavLabel() }}"
 >
@@ -9,15 +10,18 @@
 
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-lg font-semibold text-heading">{{ $this->getTitle() }}</h1>
-        @if ($createUrl = $this->createPageUrl())
-            <a
-                href="{{ $createUrl }}"
-                class="inline-flex items-center gap-1.5 rounded-md bg-fg-brand px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            >
-                <x-velm-ui::icon icon="heroicon-o-plus" class="h-4 w-4" />
-                {{ __('New') }}
-            </a>
-        @endif
+        <div class="flex flex-wrap items-center gap-2">
+            @include('velm-ui::partials.view-actions', ['actions' => $this->velmPageActions()])
+            @if ($createUrl = $this->createPageUrl())
+                <a
+                    href="{{ $createUrl }}"
+                    class="inline-flex items-center gap-1.5 rounded-md bg-fg-brand px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                >
+                    <x-velm-ui::icon icon="heroicon-o-plus" class="h-4 w-4" />
+                    {{ __('New') }}
+                </a>
+            @endif
+        </div>
     </div>
 
     @if (count($this->analyticsViewSwitcher()) > 1)
@@ -55,5 +59,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @include('velm-admin::pages.analytics.partials.kanban-cards', ['cards' => $board['cards']])
         </div>
+
+        @include('velm-ui::pagination.footer', ['paginator' => $board['paginator'] ?? null])
     @endif
 </div>
