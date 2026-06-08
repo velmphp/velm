@@ -24,7 +24,7 @@ use Velm\Modules\Manifest;
  * @see PLAN.md — Custom module system
  */
 return Manifest::make('base')
-    ->version(0, 8, 0)
+    ->version(0, 9, 0)
     ->models(
         Attachment::class,
         Company::class,
