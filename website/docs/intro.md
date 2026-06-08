@@ -24,7 +24,13 @@ If you are new to Velm, think in three steps — not nine packages.
 
 Next reads: [Installation](./guides/installation) → [Scaffolding](./guides/scaffolding) → [App addons](./guides/addons) → [Production](./guides/production).
 
-The diagram SVG lives in the monorepo at `website/static/img/developer-journey.svg` — import it into [Excalidraw](https://excalidraw.com) to edit the doodle.
+The doodle is generated with [roughjs](https://roughjs.com) (the same sketch engine Excalidraw uses). Regenerate after editing `website/scripts/generate-developer-journey-svg.mjs`:
+
+```bash
+cd website && npm run generate:journey-svg
+```
+
+For hand-tweaks in [Excalidraw](https://excalidraw.com), import `website/static/img/developer-journey.svg`, edit, and export — or adjust the generator script and re-run the command above.
 
 ## Documentation map
 

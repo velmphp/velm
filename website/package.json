@@ -6,7 +6,8 @@
     "build": "docusaurus build",
     "serve": "docusaurus serve",
     "docs:version": "docusaurus docs:version",
-    "write-translations": "docusaurus write-translations"
+    "write-translations": "docusaurus write-translations",
+    "generate:journey-svg": "node scripts/generate-developer-journey-svg.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.7.0",
@@ -18,6 +19,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "roughjs": "^4.6.6",
     "@docusaurus/module-type-aliases": "^3.7.0",
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
