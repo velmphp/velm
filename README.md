@@ -20,7 +20,7 @@ Semantic port of [PyVelm](https://github.com/coolsam726/pyvelm).
   <img src="website/static/img/developer-journey.svg" alt="Velm developer journey: start, code, ship" width="720"/>
 </p>
 
-**Start** → `create-project` & setup · **Code** → `addons/` & sync · **Ship** → Laravel deploy — [full guide](https://velmphp.github.io/velm/docs/next/intro#developer-journey)
+**Start** → `create-project` · **Generate** → `make:module` · **Code** → models & views · **Migrate** → `velm:migrate` · **Ship** → deploy — [full guide](https://velmphp.github.io/velm/docs/next/intro#developer-journey)
 
 ## Quick start
 

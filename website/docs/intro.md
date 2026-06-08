@@ -10,15 +10,17 @@ sidebar_position: 1
 
 ## Developer journey
 
-If you are new to Velm, think in three steps — not nine packages.
+If you are new to Velm, follow five steps — not nine packages.
 
 ![Velm developer journey](/img/developer-journey.svg)
 
 | Step | What you do | What you get |
 |------|-------------|--------------|
 | **Start** | `composer create-project velmphp/app` → `composer run setup` | A Laravel app with the Velm panel at `/velm` and bootstrap modules installed |
-| **Code** | Add an addon under `addons/` — models, `views/*.php` (list, form, menus), then `velm:module:sync` | Working list and form pages in the shell — no hand-built CRUD or Filament resources |
-| **Ship** | Deploy like any Laravel app; run `php artisan velm:migrate` on the server | The same `/velm` UI against your production database; modules are opt-in **per database** |
+| **Generate** | `php artisan velm:make:module my_module` (addon under `addons/`) | Module manifest, folder layout, and scaffolds to extend |
+| **Code** | Edit models and `views/*.php` — list, form, detail, menus | Declarative UI arch ready to sync into the shell |
+| **Migrate** | `php artisan velm:migrate` or `velm:module:install my_module` | Database schema, `ir.ui.view`, and menus registered for the module |
+| **Ship** | Deploy like any Laravel app; run `velm:migrate` on the server | The same `/velm` UI in production; modules are opt-in **per database** |
 
 **Why it feels easy:** you stay in one stack (Composer, Artisan, Eloquent connections, your host). Velm adds module install/sync and declarative view arch — you do not run a parallel ERP runtime beside Laravel.
 
