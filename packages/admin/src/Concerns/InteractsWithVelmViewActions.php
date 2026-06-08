@@ -40,7 +40,7 @@ trait InteractsWithVelmViewActions
      * @param  list<mixed>  $raw
      * @return list<array<string, mixed>>
      */
-    private function resolveViewActions(array $raw, int $recordId, string $slot): array
+    protected function resolveViewActions(array $raw, int $recordId, string $slot): array
     {
         if (! is_array($raw)) {
             return [];
@@ -86,6 +86,8 @@ trait InteractsWithVelmViewActions
                         : StoredViewRoutes::createPageUrl($module, $formView);
                     $action['kind'] = 'form';
                 }
+            } elseif (($action['wire'] ?? '') !== '' && $slot === 'bulk') {
+                $action['kind'] = 'wire';
             } elseif (strtoupper((string) ($action['method'] ?? 'POST')) === 'GET' && ($action['url'] ?? '') !== '') {
                 $action['kind'] = 'get';
             } else {

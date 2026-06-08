@@ -30,6 +30,14 @@ final class UiAssets
         );
     }
 
+    public static function themeScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/velm-theme.js',
+            'Missing packages/ui/resources/js/velm-theme.js.',
+        );
+    }
+
     public static function stylesheetHref(): string
     {
         $published = public_path('css/velm/velm.css');
@@ -55,6 +63,11 @@ final class UiAssets
     public static function navigationScriptHref(): string
     {
         return self::publishedOrVendor('js/velm/velm-nav.js', 'resources/js/velm-nav.js');
+    }
+
+    public static function themeScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/velm-theme.js', 'resources/js/velm-theme.js');
     }
 
     public static function fileHelpersScriptHref(): string
@@ -106,6 +119,19 @@ final class UiAssets
     public static function codeEditorScriptHref(): string
     {
         return self::publishedOrVendor('js/velm/pv-code-editor.js', 'resources/js/pv-code-editor.js');
+    }
+
+    public static function codeDisplayScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-code-display.js',
+            'Missing packages/ui/resources/js/pv-code-display.js. Run: composer run build-ui (from the Velm monorepo root)',
+        );
+    }
+
+    public static function codeDisplayScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-code-display.js', 'resources/js/pv-code-display.js');
     }
 
     public static function graphScriptPath(): string

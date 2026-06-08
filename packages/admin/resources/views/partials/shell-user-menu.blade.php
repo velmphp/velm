@@ -1,5 +1,7 @@
 @php
     use Velm\Admin\Pages\AppsPage;
+    use Velm\Admin\Pages\ChangePasswordPage;
+    use Velm\Admin\Pages\ProfilePage;
 
     $user = \Velm\Admin\Support\VelmPanel::auth()->user();
     $label = $user?->name ?: $user?->email;
@@ -48,13 +50,21 @@
                 @endif
             </div>
             <div class="py-1 text-sm">
-                <a href="#" class="block px-4 py-1.5 text-body hover:bg-neutral-secondary hover:text-heading">
+                <a
+                    href="{{ ProfilePage::getUrl() }}"
+                    wire:navigate
+                    class="block px-4 py-1.5 text-body hover:bg-neutral-secondary hover:text-heading"
+                >
                     {{ __('My profile') }}
                 </a>
                 <a href="{{ AppsPage::getUrl() }}" class="block px-4 py-1.5 text-body hover:bg-neutral-secondary hover:text-heading">
                     {{ __('Apps catalog') }}
                 </a>
-                <a href="#" class="block px-4 py-1.5 text-body hover:bg-neutral-secondary hover:text-heading">
+                <a
+                    href="{{ ChangePasswordPage::getUrl() }}"
+                    wire:navigate
+                    class="block px-4 py-1.5 text-body hover:bg-neutral-secondary hover:text-heading"
+                >
                     {{ __('Change password') }}
                 </a>
                 <form method="post" action="{{ \Velm\Admin\Support\VelmPanel::getLogoutUrl() }}">

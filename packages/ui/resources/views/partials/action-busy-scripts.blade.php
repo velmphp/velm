@@ -140,6 +140,79 @@
             });
         };
 
+        window.pvExecuteBulkViewAction = async function (config) {
+            const url = config?.url;
+            const method = (config?.method || 'POST').toUpperCase();
+            const label = config?.label || @js(__('Action'));
+            const confirm = config?.confirm || '';
+            const ids = Array.isArray(config?.ids)
+                ? config.ids.map((id) => parseInt(String(id), 10)).filter((id) => id > 0)
+                : [];
+
+            if (! url || ids.length === 0) {
+                if (window.pvAlert) {
+                    window.pvAlert(@js(__('Select at least one record.')), { variant: 'warning' });
+                }
+
+                return;
+            }
+
+            if (confirm) {
+                const ok = await window.pvConfirm(confirm, {
+                    title: label,
+                    confirmLabel: @js(__('Continue')),
+                });
+
+                if (! ok) {
+                    return;
+                }
+            }
+
+            if (method === 'GET') {
+                const separator = url.includes('?') ? '&' : '?';
+                window.location.href = `${url}${separator}ids=${ids.join(',')}`;
+
+                return;
+            }
+
+            await window.pvWithActionBusy(async () => {
+                const response = await fetch(url, {
+                    method,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-Token': window.pvCsrf ? window.pvCsrf() : '',
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ids }),
+                });
+
+                let payload = null;
+
+                try {
+                    payload = await response.json();
+                } catch (error) {
+                    payload = null;
+                }
+
+                if (response.ok || response.status === 204) {
+                    if (payload?.redirect) {
+                        window.location.href = payload.redirect;
+                        return;
+                    }
+
+                    if (payload?.message && window.pvToast) {
+                        window.pvToast(payload.message);
+                    }
+
+                    window.location.reload();
+                    return;
+                }
+
+                window.pvAlert(payload?.message || @js(__('Action failed.')), { variant: 'danger' });
+            }, { message: label });
+        };
+
         window.pvExecuteViewAction = async function (config) {
             const url = config?.url;
             const method = (config?.method || 'POST').toUpperCase();

@@ -18,6 +18,17 @@ Panel login uses Laravel’s session guard. Velm’s security principal **`res.u
 
 After `composer run setup`, sign in with those credentials. Velm ACL fields (`group_ids`, `company_id`, etc.) live on `res.users` and are provisioned when the user logs in.
 
+### Your account
+
+From the **user menu** (top bar, avatar):
+
+| Link | Route | Purpose |
+|------|-------|---------|
+| **My profile** | `/velm/account/profile` | Update display name, sign-in email, and default company |
+| **Change password** | `/velm/account/password` | Set a new password (requires current password) |
+
+Changes sync to both Laravel’s `users` table and `res.users`. Group membership and the active flag remain administrator-only (Settings → Users).
+
 ## Navigation layouts
 
 `VELM_MENU_LAYOUT` in `.env` (default `apps`) controls the shell chrome:
@@ -112,8 +123,11 @@ After installing **`admin`**, the shell exposes:
 | Menu area | Models |
 |-----------|--------|
 | Users & groups | `res.users`, `res.groups` |
+| Automation | `ir.actions.server`, `ir.cron` |
 | Access control | `ir.model.access`, `ir.rule` |
 | Security → Audit | `ir.audit.log`, `ir.login.log`, `ir.user.lifecycle` (from the `system_audit` module) |
+
+**Settings → Automation** exposes list/form views for **Server actions** and **Scheduled actions**. Server actions declare the target model, action type (`write`, `create`, `unlink`, or module-specific handlers), and optional JSON payload. Scheduled actions link to a server action and define interval + active flag; Laravel runs due jobs via `php artisan velm:cron:run` (see [Production](./production)).
 
 `res.users` uses Laravel’s `users` table; configure bootstrap credentials via `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`.
 

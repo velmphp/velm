@@ -113,3 +113,39 @@ test('inline action form renderer maps integer fields', function (): void {
     expect($fields[0]['type'])->toBe('integer')
         ->and($fields[0]['value'])->toBe(2);
 });
+
+test('inline action form renderer skips invalid sections and encodes non scalar fallback values', function (): void {
+    $env = app(Environment::class);
+
+    $fields = (new InlineActionFormRenderer)->fields($env, 'res.currency.rate', [
+        'sections' => [
+            'invalid-section',
+            [
+                'name' => 'main',
+                'title' => 'Main',
+                'fields' => ['name'],
+            ],
+            [
+                'name' => 'notebook',
+                'title' => 'Notebook',
+                'pages' => [
+                    'invalid-page',
+                    [
+                        'name' => 'extra',
+                        'title' => 'Extra',
+                        'fields' => [
+                            ['name' => 'rate'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ], [
+        'rate' => ['unexpected' => 'array'],
+    ]);
+
+    expect($fields)->toHaveCount(2)
+        ->and($fields[1]['type'])->toBe('char')
+        ->and($fields[1]['value'])->toBe('{"unexpected":"array"}')
+        ->and($fields[1]['name'])->toBe('rate');
+});

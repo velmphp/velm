@@ -12,9 +12,17 @@
         @click="if (! $event.defaultPrevented) { (window.Livewire && typeof Livewire.navigate === 'function') ? Livewire.navigate(@js($openUrl)) : (window.location.href = @js($openUrl)) }"
     @endif
 >
-    <td class="w-9 px-3 py-3">
-        <span class="block h-3.5 w-3.5 rounded border border-default bg-neutral-primary/60"></span>
-    </td>
+    @if ($showsSelection ?? false)
+        <td class="w-9 px-3 py-3" @click.stop>
+            <input
+                type="checkbox"
+                class="h-4 w-4 rounded border-default text-fg-brand focus:ring-fg-brand/40"
+                wire:model.live="listSelectedIds"
+                value="{{ $recordId }}"
+                aria-label="{{ __('Select record') }}"
+            />
+        </td>
+    @endif
     @foreach ($columns as $column)
         @if ($this->isListColumnVisible($column->name))
             <td class="px-4 py-3 text-body">

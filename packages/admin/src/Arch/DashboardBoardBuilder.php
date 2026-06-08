@@ -26,6 +26,7 @@ final class DashboardBoardBuilder
     public function build(array $arch, Environment $env, string $module): array
     {
         $arch = ArchNormalizer::normalize($arch, 'dashboard');
+        $boardColumns = (int) $arch['columns'];
         $boardModel = (string) ($arch['model'] ?? '');
         $boardDomain = $this->domainBuilder->build($arch);
         $listView = is_string($arch['list_view'] ?? null) ? $arch['list_view'] : null;
@@ -33,9 +34,9 @@ final class DashboardBoardBuilder
 
         foreach ($arch['widgets'] as $spec) {
             $built = match ($spec['type']) {
-                'stat' => $this->buildStatWidget($spec, $boardModel, $boardDomain, $env, $module, $listView),
-                'table' => $this->buildTableWidget($spec, $env, $module),
-                'chart' => $this->buildChartWidget($spec, $env, $module),
+                'stat' => $this->buildStatWidget($spec, $boardModel, $boardDomain, $env, $module, $listView, $boardColumns),
+                'table' => $this->buildTableWidget($spec, $env, $module, $boardColumns),
+                'chart' => $this->buildChartWidget($spec, $env, $module, $boardColumns),
                 default => null,
             };
 
@@ -62,6 +63,7 @@ final class DashboardBoardBuilder
         Environment $env,
         string $module,
         ?string $listView,
+        int $boardColumns,
     ): ?array {
         $model = (string) ($spec['model'] ?? $boardModel);
 
@@ -78,11 +80,13 @@ final class DashboardBoardBuilder
             ? StoredViewRoutes::viewPageUrl($module, $listView)
             : null;
 
+        $colspan = $this->resolveColspan($spec);
+
         return [
             'id' => (string) $spec['id'],
             'title' => (string) ($spec['title'] ?? $spec['id']),
-            'size' => (string) ($spec['size'] ?? 'half'),
-            'span_class' => $this->spanClass((string) ($spec['size'] ?? 'half')),
+            'colspan' => $colspan,
+            'span_class' => $this->spanClass($colspan, $boardColumns),
             'icon' => (string) ($spec['icon'] ?? 'heroicon-o-chart-bar'),
             'view' => 'velm-ui::dashboard.stat-card',
             'data' => [
@@ -97,7 +101,7 @@ final class DashboardBoardBuilder
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>|null
      */
-    private function buildTableWidget(array $spec, Environment $env, string $module): ?array
+    private function buildTableWidget(array $spec, Environment $env, string $module, int $boardColumns): ?array
     {
         $viewName = (string) ($spec['view'] ?? '');
 
@@ -146,11 +150,13 @@ final class DashboardBoardBuilder
             $items[] = $item;
         }
 
+        $colspan = $this->resolveColspan($spec);
+
         return [
             'id' => (string) $spec['id'],
             'title' => (string) ($spec['title'] ?? $spec['id']),
-            'size' => (string) ($spec['size'] ?? 'half'),
-            'span_class' => $this->spanClass((string) ($spec['size'] ?? 'half')),
+            'colspan' => $colspan,
+            'span_class' => $this->spanClass($colspan, $boardColumns),
             'icon' => (string) ($spec['icon'] ?? 'heroicon-o-queue-list'),
             'view' => 'velm-ui::dashboard.list-card',
             'data' => [
@@ -166,7 +172,7 @@ final class DashboardBoardBuilder
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>|null
      */
-    private function buildChartWidget(array $spec, Environment $env, string $module): ?array
+    private function buildChartWidget(array $spec, Environment $env, string $module, int $boardColumns): ?array
     {
         $viewName = (string) ($spec['view'] ?? '');
 
@@ -187,28 +193,23 @@ final class DashboardBoardBuilder
         }
 
         $graph = $this->graphDataBuilder->build($graphArch, $env);
-        $points = [];
+        $limit = 10;
+        $labels = array_slice($graph['labels'], 0, $limit);
+        $values = array_slice($graph['values'], 0, $limit);
 
-        foreach (array_slice($graph['points'], 0, 5) as $point) {
-            if (! is_array($point)) {
-                continue;
-            }
-
-            $points[] = [
-                'label' => (string) ($point['label'] ?? ''),
-                'value' => (float) ($point['value'] ?? 0),
-            ];
-        }
+        $colspan = $this->resolveColspan($spec);
 
         return [
             'id' => (string) $spec['id'],
             'title' => (string) ($spec['title'] ?? $spec['id']),
-            'size' => (string) ($spec['size'] ?? 'half'),
-            'span_class' => $this->spanClass((string) ($spec['size'] ?? 'half')),
+            'colspan' => $colspan,
+            'span_class' => $this->spanClass($colspan, $boardColumns),
             'icon' => (string) ($spec['icon'] ?? 'heroicon-o-chart-bar'),
             'view' => 'velm-ui::dashboard.chart-card',
             'data' => [
-                'points' => $points,
+                'labels' => $labels,
+                'values' => $values,
+                'chart_type' => (string) ($graph['chart'] ?? 'bar'),
                 'measure_label' => (string) ($graph['measure_label'] ?? ''),
                 'href' => StoredViewRoutes::viewPageUrl($module, $viewName),
                 'action_label' => __('Open chart'),
@@ -232,12 +233,37 @@ final class DashboardBoardBuilder
         return is_string($first) && $first !== '' ? $first : null;
     }
 
-    private function spanClass(string $size): string
+    /**
+     * @param  array<string, mixed>  $spec
+     */
+    private function resolveColspan(array $spec): int|string
     {
-        return match ($size) {
-            'full' => 'md:col-span-2 xl:col-span-3',
-            'third' => 'xl:col-span-1',
-            default => 'md:col-span-1',
-        };
+        if (($spec['colspan'] ?? null) === 'full') {
+            return 'full';
+        }
+
+        return max(1, (int) ($spec['colspan'] ?? 1));
+    }
+
+    private function spanClass(int|string $colspan, int $boardColumns): string
+    {
+        $span = $colspan === 'full' ? $boardColumns : (int) $colspan;
+        $span = max(1, min($span, max(1, $boardColumns)));
+
+        if ($boardColumns >= 3) {
+            if ($span >= $boardColumns) {
+                return 'md:col-span-2 xl:col-span-3';
+            }
+
+            return $span >= 2
+                ? 'md:col-span-2 xl:col-span-2'
+                : 'md:col-span-1 xl:col-span-1';
+        }
+
+        if ($boardColumns >= 2) {
+            return $span >= 2 ? 'md:col-span-2' : 'md:col-span-1';
+        }
+
+        return 'col-span-1';
     }
 }

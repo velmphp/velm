@@ -116,3 +116,131 @@ test('geo api importer loads countries states and cities from http gateway', fun
 
     expect($brussels['is_capital'] ?? false)->toBeTrue();
 });
+
+test('geo api importer skips invalid rows and handles city api errors', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
+
+    $env = $installer->environment($roots);
+
+    $http = new class implements GeoHttpGateway
+    {
+        public function get(string $url): array
+        {
+            if (str_contains($url, 'restcountries.com')) {
+                return [
+                    'not-array',
+                    ['cca2' => '', 'name' => ['common' => 'Ignored']],
+                    [
+                        'cca2' => 'BE',
+                        'cca3' => 'BEL',
+                        'name' => ['common' => 'Belgium'],
+                        'capital' => ['Brussels'],
+                        'population' => 1,
+                        'continents' => ['Europe'],
+                        'idd' => ['root' => '+3', 'suffixes' => ['2']],
+                        'currencies' => ['EUR' => ['name' => 'Euro']],
+                    ],
+                ];
+            }
+
+            return [
+                'error' => false,
+                'data' => [
+                    [
+                        'name' => 'Belgium',
+                        'iso2' => 'BE',
+                        'states' => [
+                            'invalid',
+                            ['name' => '', 'state_code' => ''],
+                            ['name' => 'Flanders', 'state_code' => 'VLG'],
+                        ],
+                    ],
+                    'invalid-country',
+                ],
+            ];
+        }
+
+        public function post(string $url, array $body): array
+        {
+            return ['error' => true, 'data' => []];
+        }
+    };
+
+    $counts = (new GeoApiImporter($http))->import($env);
+
+    expect($counts)->toBe(['countries' => 1, 'states' => 1, 'cities' => 0]);
+});
+
+test('geo api importer updates existing rows and imports capital cities', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
+
+    $env = $installer->environment($roots);
+
+    $http = new class implements GeoHttpGateway
+    {
+        public int $pass = 0;
+
+        public function get(string $url): array
+        {
+            if (str_contains($url, 'restcountries.com')) {
+                return [
+                    [
+                        'cca2' => 'BE',
+                        'cca3' => 'BEL',
+                        'name' => ['common' => 'Belgium'],
+                        'capital' => ['Brussels'],
+                        'population' => 1,
+                        'continents' => ['Europe'],
+                        'idd' => ['root' => '+3', 'suffixes' => ['2']],
+                        'currencies' => ['EUR' => ['name' => 'Euro']],
+                    ],
+                ];
+            }
+
+            return [
+                'error' => false,
+                'data' => [
+                    [
+                        'name' => 'Belgium',
+                        'iso2' => 'BE',
+                        'states' => [
+                            ['name' => 'Flanders'],
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        public function post(string $url, array $body): array
+        {
+            return [
+                'error' => false,
+                'data' => ['Brussels', '', 123, 'Ghent'],
+            ];
+        }
+    };
+
+    $importer = new GeoApiImporter($http);
+    $first = $importer->import($env);
+    $second = $importer->import($env);
+
+    expect($first)->toBe(['countries' => 1, 'states' => 1, 'cities' => 2])
+        ->and($second)->toBe(['countries' => 1, 'states' => 1, 'cities' => 2])
+        ->and($env->model('res.city')->search([['name', '=', 'Brussels'], ['is_capital', '=', true]])->count())->toBe(1);
+});
+
+test('geo api importer throws when geo models are not installed', function (): void {
+    $env = \Velm\Registry::using(function (\Velm\Registry $registry) {
+        $connection = \Velm\Database\PdoConnection::sqliteMemory();
+        (new \Velm\Schema\SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new \Velm\Environment($connection, $registry, uid: 1);
+    });
+
+    expect(fn () => (new GeoApiImporter)->import($env))
+        ->toThrow(RuntimeException::class, 'Geo data models are not installed.');
+});

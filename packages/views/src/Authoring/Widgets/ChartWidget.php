@@ -10,7 +10,7 @@ final class ChartWidget
 
     private ?string $view = null;
 
-    private string $size = 'half';
+    private int|string $colspan = 1;
 
     private ?string $icon = null;
 
@@ -37,9 +37,22 @@ final class ChartWidget
         return $this;
     }
 
-    public function size(string $size): self
+    /**
+     * Column span inside the dashboard grid. Use `full` to span the entire row.
+     */
+    public function colspan(int|string $colspan): self
     {
-        $this->size = $size;
+        if ($colspan === 'full') {
+            $this->colspan = 'full';
+
+            return $this;
+        }
+
+        if ((int) $colspan < 1) {
+            throw new \InvalidArgumentException('colspan must be at least 1.');
+        }
+
+        $this->colspan = (int) $colspan;
 
         return $this;
     }
@@ -64,7 +77,7 @@ final class ChartWidget
             'type' => 'chart',
             'id' => $this->id,
             'view' => $this->view,
-            'size' => $this->size,
+            'colspan' => $this->colspan,
         ];
 
         if ($this->title !== null) {

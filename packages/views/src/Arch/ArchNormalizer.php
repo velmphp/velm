@@ -212,7 +212,7 @@ final class ArchNormalizer
             $normalized = [
                 'type' => $type,
                 'id' => (string) $widget['id'],
-                'size' => (string) ($widget['size'] ?? 'half'),
+                'colspan' => self::normalizeWidgetColspan($widget),
             ];
 
             foreach (['title', 'model', 'view', 'measure', 'icon'] as $key) {
@@ -235,5 +235,25 @@ final class ArchNormalizer
         $arch['widgets'] = $widgets;
 
         return $arch;
+    }
+
+    /**
+     * @param  array<string, mixed>  $widget
+     */
+    private static function normalizeWidgetColspan(array $widget): int|string
+    {
+        if (array_key_exists('colspan', $widget)) {
+            if ($widget['colspan'] === 'full') {
+                return 'full';
+            }
+
+            return max(1, (int) $widget['colspan']);
+        }
+
+        if (isset($widget['size']) && (string) $widget['size'] === 'full') {
+            return 'full';
+        }
+
+        return 1;
     }
 }

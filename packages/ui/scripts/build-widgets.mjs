@@ -19,6 +19,7 @@ const shared = {
 const entries = [
     { in: 'resources/js/src/pv-rich-text.entry.js', out: 'pv-rich-text.js' },
     { in: 'resources/js/src/pv-code-editor.entry.js', out: 'pv-code-editor.js' },
+    { in: 'resources/js/src/pv-code-display.entry.js', out: 'pv-code-display.js' },
     { in: 'resources/js/src/pv-graph.entry.js', out: 'pv-graph.js' },
     { in: 'resources/js/src/pv-pivot.entry.js', out: 'pv-pivot.js' },
 ];

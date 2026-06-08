@@ -1,8 +1,80 @@
 import ApexCharts from 'apexcharts';
 
+import { buildApexChartOptions, renderApexChart } from './apex-chart.js';
+
 window.ApexCharts = ApexCharts;
 
+function mountApexChart(component, height = 400) {
+    if (typeof ApexCharts === 'undefined') {
+        setTimeout(() => mountApexChart(component, height), 60);
+
+        return;
+    }
+
+    const el = component.$refs.mount;
+
+    if (!el) {
+        return;
+    }
+
+    if (component._chart) {
+        component._chart.destroy();
+        component._chart = null;
+    }
+
+    if (!component.values.length) {
+        return;
+    }
+
+    const options = buildApexChartOptions({
+        labels: component.labels,
+        values: component.values,
+        measureLabel: component.measureLabel,
+        chartType: component.chartType,
+        height,
+    });
+
+    component._chart = renderApexChart(el, options, ApexCharts);
+}
+
 document.addEventListener('alpine:init', () => {
+    Alpine.data('pvDashboardChart', (cfg) => ({
+        labels: cfg.labels || [],
+        values: cfg.values || [],
+        measureLabel: cfg.measureLabel || '',
+        chartType: cfg.chartType || 'bar',
+        height: cfg.height || 240,
+        _chart: null,
+        _onResize: null,
+        _onTheme: null,
+
+        get hasData() {
+            return this.values.length > 0;
+        },
+
+        init() {
+            this.$nextTick(() => this.renderChart());
+            this._onResize = () => this.renderChart();
+            this._onTheme = () => this.renderChart();
+            window.addEventListener('resize', this._onResize);
+            document.addEventListener('velm:theme-changed', this._onTheme);
+        },
+
+        destroy() {
+            window.removeEventListener('resize', this._onResize);
+            document.removeEventListener('velm:theme-changed', this._onTheme);
+
+            if (this._chart) {
+                this._chart.destroy();
+                this._chart = null;
+            }
+        },
+
+        renderChart() {
+            mountApexChart(this, this.height);
+        },
+    }));
+
     Alpine.data('pvGraphToolbar', (cfg) => ({
         model: cfg.model,
         module: cfg.module || '',
@@ -54,10 +126,13 @@ document.addEventListener('alpine:init', () => {
                 this.renderChart();
             });
             window.addEventListener('resize', (this._onResize = () => this.renderChart()));
+            document.addEventListener('velm:theme-changed', (this._onTheme = () => this.renderChart()));
         },
 
         destroy() {
             window.removeEventListener('resize', this._onResize);
+            document.removeEventListener('velm:theme-changed', this._onTheme);
+
             if (this._chart) {
                 this._chart.destroy();
                 this._chart = null;
@@ -71,6 +146,7 @@ document.addEventListener('alpine:init', () => {
 
         async fetchData() {
             this.loading = true;
+
             try {
                 const params = new URLSearchParams({
                     model: this.model,
@@ -107,99 +183,8 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        themeVar(name, fallback) {
-            const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-
-            return value || fallback;
-        },
-
         renderChart() {
-            if (typeof ApexCharts === 'undefined') {
-                setTimeout(() => this.renderChart(), 60);
-
-                return;
-            }
-
-            const el = this.$refs.mount;
-
-            if (!el) {
-                return;
-            }
-
-            if (this._chart) {
-                this._chart.destroy();
-                this._chart = null;
-            }
-
-            if (!this.values.length) {
-                return;
-            }
-
-            const isDark = document.documentElement.classList.contains('dark');
-            const fg = this.themeVar('--color-body', isDark ? '#e5e7eb' : '#1f2937');
-            const fgSubtle = this.themeVar('--color-body-subtle', isDark ? '#9ca3af' : '#6b7280');
-            const brand = this.themeVar('--color-fg-brand', '#2563eb');
-            const gridClr = this.themeVar('--color-border-default', isDark ? '#374151' : '#e5e7eb');
-            const palette = [brand, '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
-
-            const apexType =
-                this.chartType === 'pie'
-                    ? 'pie'
-                    : this.chartType === 'line'
-                      ? 'line'
-                      : this.chartType === 'area'
-                        ? 'area'
-                        : 'bar';
-
-            const base = {
-                chart: {
-                    type: apexType,
-                    height: 400,
-                    background: 'transparent',
-                    toolbar: { show: false },
-                    animations: { speed: 220 },
-                    foreColor: fg,
-                },
-                theme: { mode: isDark ? 'dark' : 'light' },
-                colors: palette,
-                grid: { borderColor: gridClr },
-                tooltip: { theme: isDark ? 'dark' : 'light' },
-                legend: { labels: { colors: fgSubtle } },
-            };
-
-            let opts;
-
-            if (apexType === 'pie') {
-                opts = {
-                    ...base,
-                    series: this.values,
-                    labels: this.labels,
-                    dataLabels: { enabled: true },
-                };
-            } else {
-                opts = {
-                    ...base,
-                    series: [{ name: this.measureLabel, data: this.values }],
-                    xaxis: { categories: this.labels, labels: { style: { colors: fgSubtle } } },
-                    yaxis: { labels: { style: { colors: fgSubtle } } },
-                    dataLabels: { enabled: false },
-                    plotOptions: { bar: { horizontal: false, borderRadius: 4 } },
-                    fill:
-                        apexType === 'area'
-                            ? {
-                                  type: 'gradient',
-                                  gradient: { shadeIntensity: 1, opacityFrom: 0.55, opacityTo: 0.05 },
-                              }
-                            : {},
-                    stroke:
-                        apexType === 'line' || apexType === 'area'
-                            ? { curve: 'smooth', width: 2 }
-                            : { width: 0 },
-                };
-            }
-
-            this._chart = new ApexCharts(el, opts);
-            this._chart.render();
+            mountApexChart(this, 400);
         },
     }));
 });

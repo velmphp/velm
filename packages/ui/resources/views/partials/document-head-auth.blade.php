@@ -29,6 +29,8 @@
 
 @include('velm-admin::partials.head-fonts')
 
+@include('velm-ui::partials.velm-theme-scripts')
+
 <link rel="stylesheet" href="{{ \Velm\Ui\UiAssets::stylesheetHref() }}" />
 
 <style>
@@ -38,23 +40,3 @@
 </style>
 
 @livewireStyles
-
-@if (\Velm\Admin\Support\VelmPanel::hasDarkMode() && ! \Velm\Admin\Support\VelmPanel::hasDarkModeForced())
-    <script>
-        const loadDarkMode = () => {
-            window.theme = localStorage.getItem('theme') ?? @js(\Velm\Admin\Support\VelmPanel::getDefaultThemeMode());
-
-            if (
-                window.theme === 'dark' ||
-                (window.theme === 'system' &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches)
-            ) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        };
-
-        loadDarkMode();
-    </script>
-@endif

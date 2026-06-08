@@ -24,6 +24,7 @@ final class UiServiceProvider extends ServiceProvider
             UiAssets::stylesheetPath() => public_path('css/velm/velm.css'),
             UiAssets::flowbiteScriptPath() => public_path('js/velm/flowbite.min.js'),
             UiAssets::navigationScriptPath() => public_path('js/velm/velm-nav.js'),
+            UiAssets::themeScriptPath() => public_path('js/velm/velm-theme.js'),
             dirname(__DIR__).'/resources/js/pv-file-helpers.js' => public_path('js/velm/pv-file-helpers.js'),
             dirname(__DIR__).'/resources/js/pv-files-alpine.js' => public_path('js/velm/pv-files-alpine.js'),
             dirname(__DIR__).'/resources/js/pv-file-library.js' => public_path('js/velm/pv-file-library.js'),
@@ -31,6 +32,7 @@ final class UiServiceProvider extends ServiceProvider
             dirname(__DIR__).'/resources/js/pv-workflow-builder.js' => public_path('js/velm/pv-workflow-builder.js'),
             UiAssets::richTextScriptPath() => public_path('js/velm/pv-rich-text.js'),
             UiAssets::codeEditorScriptPath() => public_path('js/velm/pv-code-editor.js'),
+            UiAssets::codeDisplayScriptPath() => public_path('js/velm/pv-code-display.js'),
             UiAssets::graphScriptPath() => public_path('js/velm/pv-graph.js'),
             UiAssets::pivotScriptPath() => public_path('js/velm/pv-pivot.js'),
         ], 'velm-ui-assets');

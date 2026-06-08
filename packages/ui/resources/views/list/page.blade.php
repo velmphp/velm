@@ -28,5 +28,7 @@
 
     @include('velm-admin::components.arch-list-toolbar')
 
+    @include('velm-ui::list.bulk-bar')
+
     @include('velm-ui::list.table')
 </div>

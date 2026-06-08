@@ -6,6 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+### Added
+
+- **Account self-service** — user menu links to **My profile** (`/velm/account/profile`) and **Change password** (`/velm/account/password`); updates sync Laravel `users` and `res.users`
+- **List bulk actions** — row checkboxes, select-all on page, bulk action bar; arch `bulk_actions` with `Action::wire()` / URL handlers; default bulk **Delete** when unlink is allowed
+- **Dashboard chart widgets** — `ChartWidget` cards now render with **ApexCharts** (shared options with graph views); re-theme on dark mode toggle
+- **Dashboard widget layout** — `StatWidget`, `TableWidget`, and `ChartWidget` use `->colspan()` instead of `->size()` (aligned with form fields); legacy `size: full` arch is still normalized
+- **Automation settings** — **Settings → Automation** list/form views for `ir.actions.server` and `ir.cron` (server actions + scheduled jobs)
+- **Code field display** — read-only `code` widget fields render with Prism syntax highlighting
+
+### Fixed
+
+- **Dark mode after `wire:navigate`** — theme re-applies on Livewire navigation (dashboard, profile, apps catalog, etc.) without a hard refresh
+
 ## [1.0.1] - 2026-06-08
 
 First post-stable patch — Tier 3 shell polish, IT audit trail, currencies/geo bootstrap, and per-model dashboard boards.

@@ -345,11 +345,11 @@ DashboardView::make('partner.dashboard')
             ->title('Recent contacts')
             ->view('partner.list')
             ->limit(5)
-            ->size('full'),
+            ->colspan('full'),
         ChartWidget::make('by_country')
             ->title('By country')
             ->view('partner.graph')
-            ->size('full'),
+            ->colspan('full'),
     ]);
 ```
 
@@ -358,9 +358,9 @@ DashboardView::make('partner.dashboard')
 | `->columns(n)` | Grid width for widget layout (1–12) |
 | `->listView('…')` | Default list URL for stat/table “view all” links |
 | `->domain([...])` | Optional base domain for all widgets |
-| `StatWidget::make('id')` | Count card; optional `->domain()`, `->measure()`, `->size('half'|'full')` |
-| `TableWidget::make('id')` | Recent rows from a **list** view arch (`->view('partner.list')`, `->limit(5)`) |
-| `ChartWidget::make('id')` | Bar chart from a **graph** view arch (`->view('partner.graph')`) |
+| `StatWidget::make('id')` | Count card; optional `->domain()`, `->measure()`, `->colspan(2)` or `->colspan('full')` |
+| `TableWidget::make('id')` | Recent rows from a **list** view arch (`->view('partner.list')`, `->limit(5)`); optional `->colspan()` |
+| `ChartWidget::make('id')` | **ApexCharts** embed from a **graph** view arch (`->view('partner.graph')`); optional `->colspan()` — chart type follows the graph arch (`->chart('bar')`, etc.) |
 
 Register a menu item pointing at the dashboard view, then sync:
 

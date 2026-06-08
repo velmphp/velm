@@ -34,6 +34,9 @@ final class ListView implements ViewDeclaration
     /** @var list<array<string, mixed>> */
     private array $pageActions = [];
 
+    /** @var list<array<string, mixed>> */
+    private array $bulkActions = [];
+
     private bool $readonly = false;
 
     /** @var 'simple'|'full'|null */
@@ -182,6 +185,21 @@ final class ListView implements ViewDeclaration
     }
 
     /**
+     * @param  list<Action|array<string, mixed>>  $actions
+     */
+    public function bulkActions(array $actions): self
+    {
+        $this->bulkActions = array_map(
+            static fn (Action|array $action): array => $action instanceof Action
+                ? $action->toArray()
+                : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -225,6 +243,10 @@ final class ListView implements ViewDeclaration
 
         if ($this->pageActions !== []) {
             $arch['page_actions'] = $this->pageActions;
+        }
+
+        if ($this->bulkActions !== []) {
+            $arch['bulk_actions'] = $this->bulkActions;
         }
 
         if ($this->readonly) {

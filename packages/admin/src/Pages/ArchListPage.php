@@ -13,6 +13,7 @@ use Velm\Admin\Arch\ArchSchemaBuilder;
 use Velm\Admin\Arch\ArchTableConfigurator;
 use Velm\Admin\Arch\ListColumn;
 use Velm\Admin\Concerns\InteractsWithArchListToolbar;
+use Velm\Admin\Concerns\InteractsWithVelmListBulkActions;
 use Velm\Admin\Concerns\InteractsWithVelmListPresentation;
 use Velm\Admin\Concerns\InteractsWithVelmViewActions;
 use Velm\Admin\Support\ListPageSize;
@@ -21,6 +22,7 @@ use Velm\Admin\Support\ListPagination;
 abstract class ArchListPage extends VelmShellPage
 {
     use InteractsWithArchListToolbar;
+    use InteractsWithVelmListBulkActions;
     use InteractsWithVelmListPresentation;
     use InteractsWithVelmViewActions;
     use WithPagination;
@@ -46,7 +48,13 @@ abstract class ArchListPage extends VelmShellPage
     public function updatedListPerPage(): void
     {
         $this->listPerPage = ListPageSize::normalize($this->listPerPage);
+        $this->clearListSelection();
         $this->resetPage();
+    }
+
+    public function updatedListGroupBy(): void
+    {
+        $this->clearListSelection();
     }
 
     /**

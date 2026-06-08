@@ -53,6 +53,13 @@ return ViewsData::make()
                     ->variant(ActionVariant::Secondary)
                     ->perm('read'),
             ])
+            ->bulkActions([
+                Action::make('Export selected')
+                    ->url('/web/demo/partners/export')
+                    ->method('GET')
+                    ->variant(ActionVariant::Secondary)
+                    ->perm('read'),
+            ])
             ->rowActions([
                 ListRowAction::open(),
                 ListRowAction::edit(),
@@ -149,12 +156,10 @@ return ViewsData::make()
                     ->title('Recent contacts')
                     ->view('partner.list')
                     ->limit(5)
-                    ->size('full')
                     ->icon('heroicon-o-clock'),
                 ChartWidget::make('by_country')
                     ->title('By country')
                     ->view('partner.graph')
-                    ->size('full')
                     ->icon('heroicon-o-chart-bar'),
             ]),
     )
