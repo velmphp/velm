@@ -11,7 +11,7 @@ The public docs live in `website/` (Docusaurus 3) and deploy to [https://velmphp
 | `website/versions.json` | Ordered list of released doc versions |
 | `website/i18n/{locale}/` | UI strings + translated markdown |
 
-Default version for visitors: **latest entry in `versions.json`** (currently `1.0.0`). **Next** shows an “unreleased” banner.
+Default version for visitors: **latest entry in `versions.json`** (currently `1.0.1`). **Next** shows an “unreleased” banner.
 
 ## Cut a docs version (each git tag)
 
