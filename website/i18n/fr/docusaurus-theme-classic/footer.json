@@ -9,15 +9,15 @@
   },
   "link.item.label.Introduction": {
     "message": "Introduction",
-    "description": "The label of footer link with label=Introduction linking to /docs/1.0.0/intro"
+    "description": "The label of footer link with label=Introduction linking to /docs/1.0.1/intro"
   },
   "link.item.label.Installation": {
     "message": "Installation",
-    "description": "The label of footer link with label=Installation linking to /docs/1.0.0/guides/installation"
+    "description": "The label of footer link with label=Installation linking to /docs/1.0.1/guides/installation"
   },
   "link.item.label.Extending models": {
     "message": "Extending models",
-    "description": "The label of footer link with label=Extending models linking to /docs/1.0.0/models/extending-a-model"
+    "description": "The label of footer link with label=Extending models linking to /docs/1.0.1/models/extending-a-model"
   },
   "link.item.label.GitHub": {
     "message": "GitHub",

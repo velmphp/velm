@@ -84,11 +84,58 @@ This writes `coverage.xml` and fails if line coverage drops below the configured
 
 Create a **release** (not pre-release) on `velmphp/velm` from tag `v1.0.0`. Copy the `[1.0.0]` section from [CHANGELOG.md](./CHANGELOG.md).
 
+## Release v1.0.1
+
+Post-stable patch with Tier 3 features (audit trail, page actions, currencies/geo, per-model dashboards). Same flow as **v1.0.0** with tag **`v1.0.1`**.
+
+### Pre-flight
+
+- [ ] `main` CI green (PR #92 merged or equivalent)
+- [ ] [CHANGELOG](./CHANGELOG.md) `[1.0.1]` section finalized
+- [ ] Docs snapshot `1.0.1` committed (`npm run docs:version -- 1.0.1`)
+
+### Tag and publish
+
+```bash
+git pull origin main
+git tag -a v1.0.1 -m "Velm 1.0.1"
+git push origin v1.0.1
+```
+
+Verify Packagist lists **`1.0.1`** on all nine `velmphp/*` packages (same `curl` loop as below, expect `1.0.1` in the version list).
+
+### Snapshot documentation
+
+```bash
+cd website && npm ci
+npm run docs:version -- 1.0.1
+npm run write-translations -- --locale fr
+```
+
+Update `docusaurus.config.ts` (`latestDocsVersion`, `lastVersion`, new `1.0.1` version entry). Commit and push `main`.
+
+### Regenerate app lock (recommended)
+
+After Packagist indexes `1.0.1`:
+
+```bash
+./scripts/regenerate-app-lock.sh
+git add apps/app/composer.lock
+git commit -m "Pin velmphp/app lock from Packagist 1.0.1"
+git push origin main
+```
+
+### GitHub release
+
+Create a **release** (not pre-release) from tag `v1.0.1`. Copy the `[1.0.1]` section from [CHANGELOG.md](./CHANGELOG.md).
+
+---
+
 ## Post-1.0 patches
 
 | When | Action |
 |------|--------|
-| Bugfix | Tag `v1.0.1`, same flow |
+| Bugfix | Tag `v1.0.x`, same flow as **v1.0.1** |
 | Minor feature | Tag `v1.1.0` per [ROADMAP.md](./ROADMAP.md) Tier 3 |
 | Docs only | Update `website/docs/` + deploy; optional `docs:version` on next tag |
 

@@ -14,6 +14,7 @@ We ship **feature release candidates** before `v1.0.0` — each RC is tagged on 
 | **v1.0-rc2** | Packagist publishing, MIT, install/CI fixes | **Done** |
 | **v1.0-rc3** | Full 1.0 feature set — ORM, widgets, ops, kanban/graph/pivot | **Done** |
 | **v1.0.0** | Stable tag, `^1.0` constraints, no `-s rc` for `create-project` | **Done** |
+| **v1.0.1** | Tier 3 shell polish — audit trail, page actions, currencies/geo, per-model dashboards | **Done** |
 
 ### Release candidate plan (pre-1.0)
 
@@ -26,7 +27,7 @@ Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0
 
 **Branch naming:** `feature/rc3-v1-features` — thematic PRs on one branch where practical.
 
-**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): list inline edit — `header_actions` / `page_actions` and per-model arch `dashboard` boards shipped in 1.1.
+**Deferred past v1.0.0** (Tier 3 → 1.0.1+): list inline edit — remaining Tier 3 item for a future **1.1.0** release.
 
 ### Tier 1 — Release blockers (pre-1.0)
 
@@ -55,9 +56,9 @@ Ship in **rc3** — last RC before stable.
 | 2.8 | Graph view renderer | **rc3** | **Done** | `GraphView` + `read_group` API + ApexCharts page |
 | 2.9 | Pivot view renderer | **rc3** | **Done** | `PivotView` + row/col groupby grid + measures |
 
-### Tier 3 — Shell polish (1.0.1 or 1.1)
+### Tier 3 — Shell polish (1.0.1)
 
-Deferred past **v1.0.0**.
+Shipped in **v1.0.1** except list inline edit (deferred to **1.1.0**).
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -315,12 +316,12 @@ Install: `composer create-project velmphp/app my_app v1.0.0-rc2 -s rc`
 
 ## Backlog (was “Next up”)
 
-See [Stable v1.0 target](#stable-v10-target) tiers above. **v1.0.0** shipped; next items:
+See [Stable v1.0 target](#stable-v10-target) tiers above. **v1.0.1** shipped; next items:
 
 | Item | Target |
 |------|--------|
-| List inline edit | 1.0.1 / 1.1 (Tier 3) |
-| `velmphp/composer-plugin` | v1.1+ (Tier 4) |
+| List inline edit | 1.1.0 (Tier 3) |
+| `velmphp/composer-plugin` | 1.1+ (Tier 4) |
 | Optional Filament arch adapter | — (won't do) |
 
 See [PLAN.md](./PLAN.md) for the long-range design; user-facing behavior is in `website/docs/guides/`.

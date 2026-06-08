@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-08
+
+First post-stable patch — Tier 3 shell polish, IT audit trail, currencies/geo bootstrap, and per-model dashboard boards.
+
 ### Added
 
 - **Per-model `dashboard` view type** — `DashboardView` with stat, table, and chart widgets; rendered at `/velm/views/{module}/{name}`; view switcher on sibling analytics views; modules with a dashboard open from the app rail and **Open app** on that board by default
@@ -17,6 +21,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 - **`res.currency.rate`** — company-scoped exchange rates with demo bootstrap rates; countries link to `res.currency` via `currency_id` (geo import/seeding auto-creates missing currencies)
 - **Company setup** — contact/address fields, curated font picker + Google Fonts theming per company (`CompanyFonts`), color picker for primary accent, and complete branding form sections (PyVelm-aligned)
 - **Company country bootstrap** — default company gets `country_id` from geo seed; `VELM_DEFAULT_CURRENCY` overrides currency, otherwise the bootstrap country's currency is used (i18n hook)
+
+### Install
+
+```bash
+composer create-project velmphp/app my_app
+cd my_app && composer run setup
+```
+
+Sign in at `/velm` with `admin@velm.test` / `password`. Install **`system_audit`** from the apps catalog (or `php artisan velm:module:install system_audit`) for audit menus.
 
 ## [1.0.0] - 2026-06-07
 
