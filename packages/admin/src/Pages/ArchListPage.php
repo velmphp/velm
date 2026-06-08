@@ -14,14 +14,18 @@ use Velm\Admin\Arch\ArchTableConfigurator;
 use Velm\Admin\Arch\ListColumn;
 use Velm\Admin\Concerns\InteractsWithArchListToolbar;
 use Velm\Admin\Concerns\InteractsWithVelmListPresentation;
+use Velm\Admin\Concerns\InteractsWithVelmViewActions;
+use Velm\Admin\Support\ListPageSize;
+use Velm\Admin\Support\ListPagination;
 
 abstract class ArchListPage extends VelmShellPage
 {
     use InteractsWithArchListToolbar;
     use InteractsWithVelmListPresentation;
+    use InteractsWithVelmViewActions;
     use WithPagination;
 
-    public int $listPerPage = 10;
+    public int $listPerPage = -1;
 
     /** @var array<string, bool> */
     public array $listColumnVisibility = [];
@@ -34,6 +38,23 @@ abstract class ArchListPage extends VelmShellPage
     public function mount(): void
     {
         $this->bootListColumnVisibility();
+        if (! in_array($this->listPerPage, ListPageSize::values(), true)) {
+            $this->listPerPage = ListPageSize::default();
+        }
+    }
+
+    public function updatedListPerPage(): void
+    {
+        $this->listPerPage = ListPageSize::normalize($this->listPerPage);
+        $this->resetPage();
+    }
+
+    /**
+     * @return list<array{value: int, label: string}>
+     */
+    public function listPageSizeOptions(): array
+    {
+        return ListPageSize::options();
     }
 
     public function getTitle(): string|Htmlable
@@ -67,16 +88,32 @@ abstract class ArchListPage extends VelmShellPage
     public function paginatedListRecords(): LengthAwarePaginator
     {
         $items = $this->listRecords();
-        $page = max(1, $this->getPage());
-        $perPage = max(1, $this->listPerPage);
+        $total = $items->count();
+        $perPage = ListPageSize::effectivePerPage($this->listPerPage, $total);
+        $page = ListPageSize::isAll($this->listPerPage) ? 1 : max(1, $this->getPage());
+        $pageItems = ListPageSize::isAll($this->listPerPage)
+            ? $items->values()->all()
+            : $items->forPage($page, $perPage)->values()->all();
 
         return new LengthAwarePaginator(
-            $items->forPage($page, $perPage)->values()->all(),
-            $items->count(),
+            $pageItems,
+            $total,
             $perPage,
             $page,
             ['path' => request()->url(), 'pageName' => 'page'],
         );
+    }
+
+    public function listPaginationStyle(): string
+    {
+        $archStyle = $this->arch()['pagination'] ?? null;
+
+        return ListPagination::resolveStyle(is_string($archStyle) ? $archStyle : null);
+    }
+
+    public function listPaginationView(): string
+    {
+        return ListPagination::viewForStyle($this->listPaginationStyle());
     }
 
     /**
@@ -130,15 +167,12 @@ abstract class ArchListPage extends VelmShellPage
         $this->resetPage();
     }
 
-    /**
-     * @return list<array{type: string, label: string, url: string, active: bool}>
-     */
-    public function analyticsViewSwitcher(): array
+    public function showListColumnsPanel(): bool
     {
-        return [];
+        return true;
     }
 
-    public function showListColumnsPanel(): bool
+    public function showListGroupByPanel(): bool
     {
         return true;
     }

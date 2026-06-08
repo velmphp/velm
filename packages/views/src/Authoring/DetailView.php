@@ -15,6 +15,9 @@ final class DetailView implements ViewDeclaration
 
     private ?string $title = null;
 
+    /** @var list<array<string, mixed>> */
+    private array $headerActions = [];
+
     private function __construct(
         private readonly string $name,
     ) {}
@@ -39,6 +42,21 @@ final class DetailView implements ViewDeclaration
     }
 
     /**
+     * @param  list<Action|array<string, mixed>>  $actions
+     */
+    public function headerActions(array $actions): self
+    {
+        $this->headerActions = array_map(
+            static fn (Action|array $action): array => $action instanceof Action
+                ? $action->toArray()
+                : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -51,6 +69,10 @@ final class DetailView implements ViewDeclaration
 
         if ($this->title !== null) {
             $arch['title'] = $this->title;
+        }
+
+        if ($this->headerActions !== []) {
+            $arch['header_actions'] = $this->headerActions;
         }
 
         return [

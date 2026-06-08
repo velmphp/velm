@@ -9,6 +9,10 @@
         } catch (_) {}
 
         try {
+            Alpine.store('confirmDialog')?.cancel?.();
+        } catch (_) {}
+
+        try {
             Alpine.store('workflowDialog')?.close?.();
         } catch (_) {}
     }
@@ -17,6 +21,8 @@
     document.addEventListener('livewire:navigating', closeVelmOverlayDialogs);
 
     document.addEventListener('alpine:init', () => {
+        const PV_DIALOG_LEAVE_MS = 220;
+
         Alpine.store('recordDialog', {
             isOpen: false,
             iframeUrl: null,
@@ -38,10 +44,13 @@
 
             close() {
                 this.isOpen = false;
-                this.iframeUrl = null;
-                this.fullPageUrl = null;
-                this.title = '';
-                document.body.classList.remove('pv-record-dialog-open');
+
+                window.setTimeout(() => {
+                    this.iframeUrl = null;
+                    this.fullPageUrl = null;
+                    this.title = '';
+                    document.body.classList.remove('pv-record-dialog-open');
+                }, PV_DIALOG_LEAVE_MS);
             },
 
             panelStyle() {
@@ -49,7 +58,7 @@
                     return '';
                 }
 
-                return `left:${this.posX}px;top:${this.posY}px;transform:none;margin:0;`;
+                return `left:${this.posX}px;top:${this.posY}px;right:auto;bottom:auto;transform:none;margin:0;`;
             },
 
             startDrag(event) {

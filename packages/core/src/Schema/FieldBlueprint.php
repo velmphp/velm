@@ -10,6 +10,7 @@ use Velm\Fields\BooleanField;
 use Velm\Fields\CharField;
 use Velm\Fields\DatetimeField;
 use Velm\Fields\Field;
+use Velm\Fields\FloatField;
 use Velm\Fields\IntegerField;
 use Velm\Fields\Many2oneField;
 use Velm\Fields\TextField;
@@ -53,6 +54,10 @@ final class FieldBlueprint
 
         if ($field instanceof IntegerField || $field instanceof BooleanField || $field instanceof Many2oneField) {
             return $blueprint->integer($name);
+        }
+
+        if ($field instanceof FloatField) {
+            return $blueprint->float($name);
         }
 
         if ($field instanceof DatetimeField) {

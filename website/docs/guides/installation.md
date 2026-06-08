@@ -66,7 +66,7 @@ This single command runs the following (in order):
 | 3 | `composer velm-build-css` | Publishes prebuilt Velm shell CSS/JS to `public/css/velm/` and `public/js/velm/` |
 | 4 | Create `database/database.sqlite` | Empty SQLite file (when `DB_CONNECTION=sqlite`) |
 | 5 | `php artisan migrate` | Laravel tables (`users`, `sessions`, `jobs`, …) |
-| 6 | `php artisan velm:migrate` | Velm bootstrap modules: **`base`**, **`admin`** |
+| 6 | `php artisan velm:migrate` | Velm bootstrap modules: **`base`**, **`admin`**, **`geo_data`**, **`file_manager`** |
 | 7 | `php artisan db:seed` | Bootstrap admin user for the panel |
 
 Install bundled modules (e.g. `partners`) from `/velm/apps` or `php artisan velm:module:install <name>`. Reference demos live in the monorepo **`apps/demo/`** only.

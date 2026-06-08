@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Action;
+use Velm\Views\Authoring\ActionForm;
+use Velm\Views\Authoring\ActionVariant;
 use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
@@ -23,6 +26,29 @@ return ViewsData::make()
             ->title('Partners')
             ->formView('partner.form')
             ->detailView('partner.detail')
+            ->pageActions([
+                Action::make('Quick add')
+                    ->model('res.partner')
+                    ->variant(ActionVariant::Primary)
+                    ->perm('create')
+                    ->form(fn (ActionForm $form) => $form
+                        ->section('identity', 'Quick contact', [
+                            'name',
+                            'country_id',
+                            Field::make('active')->toggle(),
+                        ])
+                    ),
+                Action::make('Load demo data')
+                    ->url('/web/demo/partners/seed')
+                    ->confirm('Load or refresh the bundled demo partners?')
+                    ->variant(ActionVariant::Warning)
+                    ->perm('create'),
+                Action::make('Export CSV')
+                    ->url('/web/demo/partners/export')
+                    ->method('GET')
+                    ->variant(ActionVariant::Secondary)
+                    ->perm('read'),
+            ])
             ->rowActions([
                 ListRowAction::open(),
                 ListRowAction::edit(),
@@ -37,6 +63,29 @@ return ViewsData::make()
         DetailView::make('partner.detail')
             ->model('res.partner')
             ->title('Partner')
+            ->headerActions([
+                Action::make('Quick edit')
+                    ->model('res.partner')
+                    ->variant(ActionVariant::Danger)
+                    ->perm('write')
+                    ->form(fn (ActionForm $form) => $form->cols(2)
+                        ->section('identity', 'Quick edit', [
+                            'name',
+                            'country_id',
+                            Field::make('active')->toggle(),
+                        ])
+                    ),
+                Action::make('Duplicate')
+                    ->url('/web/demo/partners/{id}/duplicate')
+                    ->confirm('Create a copy of this partner?')
+                    ->variant(ActionVariant::Success)
+                    ->perm('create'),
+                Action::make('Export JSON')
+                    ->url('/web/demo/partners/{id}/export')
+                    ->method('GET')
+                    ->variant(ActionVariant::Secondary)
+                    ->perm('read'),
+            ])
             ->section('identity', 'Identity', [
                 'name',
                 Field::make('is_company')->toggle(),
@@ -89,10 +138,6 @@ return ViewsData::make()
                     ->view('partner.list')
                     ->icon('user-group')
                     ->sequence(10),
-                $m->item('partners_kanban', 'Partners kanban')
-                    ->view('partner.kanban')
-                    ->icon('view-columns')
-                    ->sequence(20),
                 $m->item('partners_graph', 'Partners graph')
                     ->view('partner.graph')
                     ->icon('chart-bar')

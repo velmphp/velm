@@ -62,6 +62,26 @@ final class Field implements ViewDeclaration
     }
 
     /**
+     * @param  list<array{value: string, label: string}>  $choices
+     */
+    public function choices(array $choices): self
+    {
+        $this->options['choices'] = $choices;
+
+        return $this;
+    }
+
+    public function selection(): self
+    {
+        return $this->widget('selection');
+    }
+
+    public function color(): self
+    {
+        return $this->widget('color');
+    }
+
+    /**
      * Column span inside the section grid. Use {@see wide()} or the string `full` for a full-width row.
      */
     public function colspan(int|string $colspan): self

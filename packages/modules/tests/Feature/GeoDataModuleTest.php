@@ -19,8 +19,7 @@ test('installing geo_data creates geography tables and extends countries', funct
     $roots = [dirname(__DIR__, 2).'/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base', 'admin']);
-    $installer->install('geo_data', $roots);
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
 
     expect(Schema::hasTable('res_continent'))->toBeTrue()
         ->and(Schema::hasTable('res_country_state'))->toBeTrue()
@@ -36,22 +35,55 @@ test('installing geo_data creates geography tables and extends countries', funct
         ]);
 });
 
-test('geo reference seeder loads continents and starter countries', function (): void {
+test('geo reference seeder loads only the detected country and its continent', function (): void {
     $roots = [dirname(__DIR__, 2).'/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base', 'admin']);
-    $installer->install('geo_data', $roots);
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
 
     $env = $installer->environment($roots);
 
-    expect($env->model('res.continent')->search()->count())->toBe(7)
-        ->and($env->model('res.country')->search([['code', '=', 'BE']])->count())->toBe(1);
+    expect($env->model('res.continent')->search()->count())->toBe(1)
+        ->and($env->model('res.country')->search()->count())->toBe(1)
+        ->and($env->model('res.country')->search([['code', '=', 'BE']])->count())->toBe(1)
+        ->and($env->model('res.country')->search([['code', '=', 'FR']])->count())->toBe(0);
 
     $belgium = $env->model('res.country')->search([['code', '=', 'BE']])->read()[0];
 
     expect($belgium['iso3'] ?? null)->toBe('BEL')
-        ->and($belgium['flag_emoji'] ?? null)->toBe('🇧🇪');
+        ->and($belgium['flag_emoji'] ?? null)->toBe('🇧🇪')
+        ->and($belgium['continent_id'] ?? null)->not->toBeNull()
+        ->and($belgium['currency_id'] ?? null)->not->toBeNull();
+
+    $euro = $env->model('res.currency')->search([['name', '=', 'EUR']], limit: 1)->ids()[0] ?? null;
+
+    expect($belgium['currency_id'] ?? null)->toBe($euro);
+
+    $company = $env->model('res.company')->search(limit: 1)->read(['country_id', 'currency_id'])[0] ?? [];
+
+    expect($company['country_id'] ?? null)->toBe($belgium['id'] ?? null)
+        ->and($company['currency_id'] ?? null)->toBe($euro);
+});
+
+test('bootstrap company uses country currency when default currency env is unset', function (): void {
+    config(['velm.default_currency' => null, 'velm.geo_country' => 'KE']);
+    putenv('VELM_DEFAULT_CURRENCY');
+
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
+
+    $env = $installer->environment($roots);
+
+    $kenya = $env->model('res.country')->search([['code', '=', 'KE']], limit: 1)->read(['id', 'currency_id'])[0] ?? [];
+    $kes = $env->model('res.currency')->search([['name', '=', 'KES']], limit: 1)->ids()[0] ?? null;
+    $company = $env->model('res.company')->search(limit: 1)->read(['country_id', 'currency_id'])[0] ?? [];
+
+    expect($kenya['currency_id'] ?? null)->toBe($kes)
+        ->and($company['country_id'] ?? null)->toBe($kenya['id'] ?? null)
+        ->and($company['currency_id'] ?? null)->toBe($kes)
+        ->and($env->model('res.currency')->search([['active', '=', true]])->count())->toBe(1)
+        ->and($env->model('res.currency')->search([['name', '=', 'KES'], ['active', '=', true]])->count())->toBe(1);
 });
 
 test('partners are company scoped via company_id many2one', function (): void {
@@ -85,8 +117,7 @@ test('country partner_ids one2many reads inverse country_id from merged field se
     $roots = [dirname(__DIR__, 2).'/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base']);
-    $installer->install('geo_data', $roots);
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
     $installer->install('partners', $roots);
 
     /** @var Environment $env */

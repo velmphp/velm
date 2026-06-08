@@ -47,7 +47,8 @@ final class AnalyticsViewSwitcher
             $items[] = [
                 'type' => $type,
                 'label' => $labels[$type],
-                'url' => StoredViewRoutes::viewPageUrl($module, $name),
+                'url' => ArchPageMap::pageUrlForView($module, $name)
+                    ?? StoredViewRoutes::viewPageUrl($module, $name),
                 'active' => $name === $currentView,
                 'order' => array_search($type, $order, true),
             ];

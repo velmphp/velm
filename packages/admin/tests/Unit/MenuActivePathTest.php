@@ -11,6 +11,7 @@ use Velm\Admin\Pages\PartnerListPage;
 use Velm\Admin\Pages\StoredViewCreatePage;
 use Velm\Admin\Pages\StoredViewEditPage;
 use Velm\Admin\Pages\StoredViewListPage;
+use Velm\Admin\Pages\StoredViewPage;
 use Velm\Admin\Pages\StoredViewRecordPage;
 use Velm\Admin\Pages\WorkflowBuilderPage;
 use Velm\Admin\Pages\WorkflowInboxPage;
@@ -89,6 +90,20 @@ test('menu active path resolves dashboard file and workflow shell routes', funct
         ->and(MenuActivePath::forRequest($library))->toBe('/web/files/library')
         ->and(MenuActivePath::forRequest($inbox))->toBe('/web/workflow/inbox')
         ->and(MenuActivePath::forRequest($builder))->toBe('/web/workflow/9/build');
+});
+
+test('menu active path resolves stored view analytics routes to list href', function (): void {
+    $request = Request::create('/velm/views/partners/partner.kanban', 'GET');
+    $route = new Route(['GET'], '/velm/views/{module}/{viewName}', [
+        'livewire_component' => StoredViewPage::class,
+    ]);
+    $route->bind($request);
+    $route->setParameter('module', 'partners');
+    $route->setParameter('viewName', 'partner.kanban');
+    $request->setRouteResolver(fn () => $route);
+
+    expect(MenuActivePath::forRequest($request))
+        ->toBe('/velm/views/partners/partner.list');
 });
 
 test('menu active path resolves stored view form routes to list href', function (): void {

@@ -11,7 +11,9 @@ use Velm\Admin\Arch\PivotDataBuilder;
 use Velm\Admin\Arch\PivotGridBuilder;
 use Velm\Admin\Arch\ViewFieldCatalog;
 use Velm\Admin\Concerns\ReconcilesVelmModuleUi;
-use Velm\Admin\Support\AnalyticsViewSwitcher;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Velm\Admin\Support\ListPageSize;
+use Velm\Admin\Support\ListPagination;
 use Velm\Admin\Support\ResolvesStoredView;
 use Velm\Admin\Support\StoredViewRoutes;
 use Velm\Environment;
@@ -35,20 +37,21 @@ class StoredViewPage extends ArchListPage
 
         if (in_array($this->presentationType(), ['list', 'kanban'], true)) {
             parent::mount();
-
-            if ($this->presentationType() === 'kanban') {
-                $groupBy = (string) ($this->arch()['group_by'] ?? '');
-
-                if ($groupBy !== '') {
-                    $this->listGroupBy = $groupBy;
-                }
-            }
         }
     }
 
     public function showListColumnsPanel(): bool
     {
         return $this->presentationType() !== 'kanban';
+    }
+
+    public function showListGroupByPanel(): bool
+    {
+        if ($this->presentationType() !== 'kanban') {
+            return true;
+        }
+
+        return $this->kanbanArchGroupBy() !== null;
     }
 
     /**
@@ -84,7 +87,7 @@ class StoredViewPage extends ArchListPage
             app(Environment::class),
             $this->kanbanQueryArch(),
             $this->listQuery(),
-            $this->listGroupBy,
+            $this->kanbanArchGroupBy(),
         );
 
         if ($board['grouped']) {
@@ -101,9 +104,41 @@ class StoredViewPage extends ArchListPage
             }
 
             unset($card);
+
+            $board = $this->paginateFlatKanbanBoard($board);
+        }
+
+        if ($board['grouped']) {
+            $board['paginator'] = null;
         }
 
         return $board;
+    }
+
+    public function listPaginationStyle(): string
+    {
+        if ($this->presentationType() === 'kanban') {
+            $listView = $this->arch()['list_view'] ?? null;
+
+            if (is_string($listView) && $listView !== '') {
+                try {
+                    $listArch = app(ViewRegistry::class)->arch(
+                        app(Environment::class),
+                        $this->module,
+                        $listView,
+                    );
+                    $archStyle = $listArch['pagination'] ?? null;
+
+                    if (is_string($archStyle) && $archStyle !== '') {
+                        return ListPagination::resolveStyle($archStyle);
+                    }
+                } catch (\Throwable) {
+                    // Fall back to configured default when the sibling list is unavailable.
+                }
+            }
+        }
+
+        return parent::listPaginationStyle();
     }
 
     /**
@@ -166,21 +201,6 @@ class StoredViewPage extends ArchListPage
             'measurable' => $catalog['measurable'],
             'initial' => $this->pivotData(),
         ];
-    }
-
-    /**
-     * @return list<array{type: string, label: string, url: string, active: bool}>
-     */
-    public function analyticsViewSwitcher(): array
-    {
-        $arch = $this->arch();
-
-        return app(AnalyticsViewSwitcher::class)->items(
-            app(Environment::class),
-            $this->module,
-            $this->viewName,
-            (string) ($arch['model'] ?? ''),
-        );
     }
 
     /**
@@ -260,5 +280,38 @@ class StoredViewPage extends ArchListPage
     protected function presentationType(): string
     {
         return StoredViewRoutes::presentationType($this->module, $this->viewName);
+    }
+
+    protected function kanbanArchGroupBy(): ?string
+    {
+        $groupBy = (string) ($this->arch()['group_by'] ?? '');
+
+        return $groupBy !== '' ? $groupBy : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $board
+     * @return array<string, mixed>
+     */
+    private function paginateFlatKanbanBoard(array $board): array
+    {
+        $cards = is_array($board['cards'] ?? null) ? $board['cards'] : [];
+        $total = count($cards);
+        $perPage = ListPageSize::effectivePerPage($this->listPerPage, $total);
+        $page = ListPageSize::isAll($this->listPerPage) ? 1 : max(1, $this->getPage());
+        $slice = ListPageSize::isAll($this->listPerPage)
+            ? $cards
+            : array_slice($cards, ($page - 1) * $perPage, $perPage);
+
+        $board['paginator'] = new LengthAwarePaginator(
+            $slice,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'pageName' => 'page'],
+        );
+        $board['cards'] = $board['paginator']->items();
+
+        return $board;
     }
 }

@@ -33,5 +33,9 @@ return ViewsData::make()
                     ->view('workflow_approval.list')
                     ->icon('check-badge')
                     ->sequence(25),
+                $m->item('tasks', 'Tasks')
+                    ->view('workflow_task.list')
+                    ->icon('clipboard-document-check')
+                    ->sequence(30),
             ),
     );

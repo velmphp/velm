@@ -19,7 +19,7 @@ test('installing partners creates ORM tables and records', function (): void {
     $roots = [dirname(__DIR__, 2).'/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base']);
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
     $installer->install('partners', $roots);
 
     expect(Schema::hasTable('res_country'))->toBeTrue()
@@ -41,5 +41,5 @@ test('partners manifest is discovered with model classes', function (): void {
     $specs = (new ModuleInstaller)->discover($roots);
 
     expect($specs['partners']->models)->toHaveCount(2)
-        ->and($specs['partners']->depends)->toBe(['base']);
+        ->and($specs['partners']->depends)->toBe(['base', 'geo_data']);
 });

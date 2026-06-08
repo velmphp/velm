@@ -1,5 +1,7 @@
 <script>
     document.addEventListener('alpine:init', () => {
+        const PV_DIALOG_LEAVE_MS = 220;
+
         Alpine.store('workflowDialog', {
             isOpen: false,
             title: '',
@@ -16,7 +18,7 @@
                     return '';
                 }
 
-                return `left:${this.posX}px;top:${this.posY}px;transform:none;margin:0;`;
+                return `left:${this.posX}px;top:${this.posY}px;right:auto;bottom:auto;transform:none;margin:0;`;
             },
 
             startDrag(event) {
@@ -80,11 +82,18 @@
                 const cb = this._onResult;
                 this._onResult = null;
                 this.isOpen = false;
-                this.title = '';
-                document.body.classList.remove('pv-record-dialog-open');
-                const body = document.getElementById('pv-workflow-dialog-body');
-                if (body) body.innerHTML = '';
-                if (cb) cb(result);
+
+                window.setTimeout(() => {
+                    this.title = '';
+                    document.body.classList.remove('pv-record-dialog-open');
+                    const body = document.getElementById('pv-workflow-dialog-body');
+                    if (body) {
+                        body.innerHTML = '';
+                    }
+                    if (cb) {
+                        cb(result);
+                    }
+                }, PV_DIALOG_LEAVE_MS);
             },
         });
 
@@ -96,7 +105,7 @@
                         return r.text();
                     })
                     .then((html) => Alpine.store('workflowDialog').open(title, html, onResult))
-                    .catch((e) => window.alert(e.message));
+                    .catch((e) => window.pvAlert(e.message, { variant: 'danger' }));
             },
 
             openApproval(approvalId, approved, transitionLabel, onResult) {
@@ -123,24 +132,27 @@
                     document.getElementById('pv-wf-approval-cancel')?.addEventListener('click', () => window.PvWorkflowDialog.close());
                     form?.addEventListener('submit', async (e) => {
                         e.preventDefault();
-                        const comment = form.querySelector('[name=comment]')?.value || '';
-                        const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                        const r = await fetch(`/web/workflow/approvals/${approvalId}/act`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                Accept: 'application/json',
-                                'X-CSRF-TOKEN': token,
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify({ approved, comment }),
-                        });
-                        const data = await r.json().catch(() => ({}));
-                        if (!r.ok) {
-                            if (err) { err.textContent = data.message || 'Failed'; err.classList.remove('hidden'); }
-                            return;
-                        }
-                        window.PvWorkflowDialog.close(data);
+
+                        await window.pvWithActionBusy(async () => {
+                            const comment = form.querySelector('[name=comment]')?.value || '';
+                            const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                            const r = await fetch(`/web/workflow/approvals/${approvalId}/act`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Accept: 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify({ approved, comment }),
+                            });
+                            const data = await r.json().catch(() => ({}));
+                            if (!r.ok) {
+                                if (err) { err.textContent = data.message || 'Failed'; err.classList.remove('hidden'); }
+                                return;
+                            }
+                            window.PvWorkflowDialog.close(data);
+                        }, { message: @js(__('Working…')) });
                     });
                 }, 0);
             },

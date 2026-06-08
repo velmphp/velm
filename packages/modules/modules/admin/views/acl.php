@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\KanbanView;
 use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Authoring\Menus;
@@ -30,6 +32,12 @@ return ViewsData::make()
             ->model('res.groups')
             ->section('main', 'Group', ['name'])
             ->section('members', 'Members', ['user_ids']),
+        KanbanView::make('group.kanban')
+            ->model('res.groups')
+            ->title('Groups')
+            ->card(Card::make()->title('name'))
+            ->formView('group.form')
+            ->listView('group.list'),
         ListView::make('user.list')
             ->model('res.users')
             ->title('Users')
@@ -61,6 +69,18 @@ return ViewsData::make()
                 'company_id',
             ])
             ->section('groups', 'Groups', ['group_ids']),
+        KanbanView::make('user.kanban')
+            ->model('res.users')
+            ->title('Users')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('email')
+                    ->fields(['company_id'])
+                    ->badges([Field::make('active')->toggle()])
+            )
+            ->formView('user.form')
+            ->listView('user.list'),
         ListView::make('access.list')
             ->model('ir.model.access')
             ->title('Model Access')
@@ -95,6 +115,20 @@ return ViewsData::make()
                 Field::make('perm_create')->toggle(),
                 Field::make('perm_unlink')->toggle(),
             ]),
+        KanbanView::make('access.kanban')
+            ->model('ir.model.access')
+            ->title('Model Access')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('group_id')
+                    ->fields([
+                        Field::make('perm_read')->toggle(),
+                        Field::make('perm_write')->toggle(),
+                    ])
+            )
+            ->formView('access.form')
+            ->listView('access.list'),
         ListView::make('rule.list')
             ->model('ir.rule')
             ->title('Record rules')
@@ -127,6 +161,20 @@ return ViewsData::make()
                 Field::make('perm_create')->toggle(),
                 Field::make('perm_unlink')->toggle(),
             ]),
+        KanbanView::make('rule.kanban')
+            ->model('ir.rule')
+            ->title('Record rules')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('group_id')
+                    ->fields([
+                        Field::make('perm_read')->toggle(),
+                        Field::make('perm_write')->toggle(),
+                    ])
+            )
+            ->formView('rule.form')
+            ->listView('rule.list'),
     )
     ->menus(
         $m->group('settings', 'Settings')
@@ -139,6 +187,12 @@ return ViewsData::make()
                         $m->item('settings.companies', 'Companies')
                             ->view('company.list', 'base')
                             ->sequence(10),
+                        $m->item('settings.currencies', 'Currencies')
+                            ->view('currency.list', 'base')
+                            ->sequence(20),
+                        $m->item('settings.currency_rates', 'Exchange rates')
+                            ->view('currency.rate.list', 'base')
+                            ->sequence(30),
                     ),
                 $m->group('settings.access', 'Users & access')
                     ->sequence(20)

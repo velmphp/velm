@@ -26,7 +26,9 @@
                 {{ $slot }}
             </main>
 
+            @include('velm-ui::partials.confirm-dialog')
             @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
+            @include('velm-ui::partials.confirm-dialog-scripts')
         </body>
     @else
         <body
@@ -158,11 +160,15 @@
                 </div>
             </div>
 
+            @include('velm-ui::partials.confirm-dialog')
             @include('velm-ui::partials.record-dialog')
             @include('velm-ui::partials.workflow-dialog')
+            @include('velm-ui::partials.action-busy-overlay')
             @include('velm-ui::partials.document-foot', ['livewire' => $livewire])
+            @include('velm-ui::partials.confirm-dialog-scripts')
             @include('velm-ui::partials.record-dialog-scripts')
             @include('velm-ui::partials.workflow-dialog-scripts')
+            @include('velm-ui::partials.action-busy-scripts')
         </body>
     @endif
 </html>

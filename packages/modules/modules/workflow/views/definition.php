@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Action;
+use Velm\Views\Authoring\ActionVariant;
+use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\FormView;
+use Velm\Views\Authoring\KanbanView;
 use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Data\ViewsData;
@@ -29,6 +33,14 @@ return ViewsData::make()
         DetailView::make('workflow_definition.detail')
             ->model('workflow.definition')
             ->title('Workflow definition')
+            ->headerActions([
+                Action::make('Open designer')
+                    ->url('/web/workflow/{id}/build')
+                    ->method('GET')
+                    ->fullPage()
+                    ->variant(ActionVariant::Primary)
+                    ->perm('write'),
+            ])
             ->section('main', 'Workflow', [
                 'name',
                 'description',
@@ -48,4 +60,15 @@ return ViewsData::make()
                 Field::make('definition')->code('json')->wide(),
             ])
             ->section('access', 'Access', ['group_ids']),
+        KanbanView::make('workflow_definition.kanban')
+            ->model('workflow.definition')
+            ->title('Workflow definitions')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('model')
+                    ->badges([Field::make('active')->toggle()])
+            )
+            ->formView('workflow_definition.form')
+            ->listView('workflow_definition.list'),
     );

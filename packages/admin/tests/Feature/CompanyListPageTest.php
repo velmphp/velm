@@ -14,6 +14,22 @@ beforeEach(function (): void {
     }
 });
 
+test('company list page exposes analytics view switcher items', function (): void {
+    $switcher = app(CompanyListPage::class)->analyticsViewSwitcher();
+
+    expect($switcher)->not->toBeEmpty();
+
+    $list = collect($switcher)->firstWhere('type', 'list');
+    $kanban = collect($switcher)->firstWhere('type', 'kanban');
+
+    expect($list)->not->toBeNull()
+        ->and($list['active'])->toBeTrue()
+        ->and($list['url'])->toBe(CompanyListPage::getUrl())
+        ->and($kanban)->not->toBeNull()
+        ->and($kanban['active'])->toBeFalse()
+        ->and($kanban['url'])->toContain('/velm/views/base/company.kanban');
+});
+
 test('company list open links to display record page not edit', function (): void {
     $page = app(CompanyListPage::class);
 

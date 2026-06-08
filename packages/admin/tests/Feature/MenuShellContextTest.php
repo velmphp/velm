@@ -44,10 +44,10 @@ test('menu layout context builds apps secondary for partners', function (): void
         MenuLayout::APPS,
     );
 
-    expect($ctx['menu_secondary'])->toHaveCount(4);
+    expect($ctx['menu_secondary'])->toHaveCount(3);
 
     $labels = array_column($ctx['menu_secondary'], 'label');
-    expect($labels)->toContain('Partners', 'Partners kanban', 'Partners graph', 'Partners pivot');
+    expect($labels)->toContain('Partners', 'Partners graph', 'Partners pivot');
 });
 
 test('menu layout config defaults to apps', function (): void {

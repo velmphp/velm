@@ -264,7 +264,7 @@
             const node = this.folderContextMenu;
             if (!node) return;
             this.closeFolderContextMenu();
-            const name = window.prompt('Rename folder', node.name);
+            const name = await window.pvPrompt('Rename folder', node.name, { title: 'Rename folder' });
             if (!name || name === node.name) return;
             try {
                 const r = await fetch(`/web/files/folders/${node.id}`, {
@@ -340,9 +340,7 @@
         async deleteSelected() {
             const ids = Array.from(this.selected);
             if (!ids.length) return;
-            const ok = await (window.pvConfirm
-                ? window.pvConfirm(`Delete ${ids.length} file(s)?`, { title: 'Delete files', variant: 'danger', confirmLabel: 'Delete' })
-                : Promise.resolve(window.confirm(`Delete ${ids.length} file(s)?`)));
+            const ok = await window.pvConfirm(`Delete ${ids.length} file(s)?`, { title: 'Delete files', variant: 'danger', confirmLabel: 'Delete' });
             if (!ok) return;
             try {
                 const r = await fetch('/web/files/bulk/delete', {
@@ -358,9 +356,7 @@
             }
         },
         async deleteOne(id) {
-            const ok = await (window.pvConfirm
-                ? window.pvConfirm('Delete this file?', { title: 'Delete file', variant: 'danger', confirmLabel: 'Delete' })
-                : Promise.resolve(window.confirm('Delete this file?')));
+            const ok = await window.pvConfirm('Delete this file?', { title: 'Delete file', variant: 'danger', confirmLabel: 'Delete' });
             if (!ok) return;
             const r = await fetch('/api/attachment/' + id, {
                 method: 'DELETE', credentials: 'same-origin',

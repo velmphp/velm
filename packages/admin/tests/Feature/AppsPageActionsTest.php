@@ -31,36 +31,36 @@ test('apps page catalog summary counts bundled modules', function (): void {
 test('apps page can install and sync optional module', function (): void {
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(AppsPage::class)
-        ->call('installModule', 'geo_data')
+        ->call('installModule', 'workflow')
         ->assertHasNoErrors();
 
-    expect(app(VelmManager::class)->environment()->registry->has('res.country'))->toBeTrue();
+    expect(app(VelmManager::class)->environment()->registry->has('workflow.definition'))->toBeTrue();
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(AppsPage::class)
-        ->call('syncModule', 'geo_data')
+        ->call('syncModule', 'workflow')
         ->assertHasNoErrors();
 });
 
 test('apps detail page sync action runs for installed module', function (): void {
-    app(VelmManager::class)->install('geo_data');
+    app(VelmManager::class)->install('workflow');
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
-        ->test(AppsDetailPage::class, ['name' => 'geo_data'])
+        ->test(AppsDetailPage::class, ['name' => 'workflow'])
         ->call('syncModule')
         ->assertHasNoErrors();
 });
 
 test('apps page upgrade and uninstall hooks run for installed optional module', function (): void {
-    app(VelmManager::class)->install('geo_data');
+    app(VelmManager::class)->install('workflow');
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(AppsPage::class)
-        ->call('upgradeModule', 'geo_data')
+        ->call('upgradeModule', 'workflow')
         ->assertHasNoErrors();
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(AppsPage::class)
-        ->call('uninstallModule', 'geo_data')
+        ->call('uninstallModule', 'workflow')
         ->assertHasNoErrors();
 });

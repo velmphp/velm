@@ -69,8 +69,6 @@
     </table>
 </div>
 
-@if (! $grouped && $records->hasPages())
-    <div class="mt-3">
-        {{ $records->links() }}
-    </div>
+@if (! $grouped)
+    @include('velm-ui::pagination.footer', ['paginator' => $records])
 @endif

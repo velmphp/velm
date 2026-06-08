@@ -116,13 +116,19 @@ test('stored view partner pages render for list form and detail', function (): v
     Livewire::test(StoredViewPage::class, [
         'module' => 'partners',
         'viewName' => 'partner.list',
-    ])->assertOk();
+    ])->assertOk()
+        ->assertSee('Quick add', false)
+        ->assertSee('Load demo data', false)
+        ->assertSee('Export CSV', false);
 
     Livewire::test(StoredViewRecordPage::class, [
         'module' => 'partners',
         'viewName' => 'partner.detail',
         'record' => $partnerId,
-    ])->assertOk();
+    ])->assertOk()
+        ->assertSee('Quick edit', false)
+        ->assertSee('Duplicate', false)
+        ->assertSee('Export JSON', false);
 
     Livewire::test(StoredViewEditPage::class, [
         'module' => 'partners',

@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
+use Velm\Views\Authoring\KanbanView;
 use Velm\Views\Authoring\ListRowAction;
 use Velm\Views\Authoring\ListView;
 use Velm\Views\Data\ViewsData;
@@ -50,4 +52,15 @@ return ViewsData::make()
                 'created_at',
                 'updated_at',
             ]),
+        KanbanView::make('file.kanban')
+            ->model('ir.attachment')
+            ->title('All files')
+            ->card(
+                Card::make()
+                    ->title('name')
+                    ->subtitle('mimetype')
+                    ->fields(['file_size'])
+                    ->badges([Field::make('public')->toggle()])
+            )
+            ->listView('file.list'),
     );

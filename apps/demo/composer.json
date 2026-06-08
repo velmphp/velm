@@ -49,21 +49,17 @@
             "@php artisan vendor:publish --tag=velm-ui-assets --force"
         ],
         "velm-rebuild-ui": [
-            "npm --prefix ../../packages/ui ci",
-            "npm --prefix ../../packages/ui run build",
-            "@velm-build-css"
+            "composer -d ../.. run velm-rebuild-ui"
         ],
         "velm-setup": [
             "@velm-build-css",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --force",
             "@php artisan velm:migrate",
-            "@php artisan velm:module:install geo_data",
             "@php artisan velm:module:install partners",
             "@php artisan velm:module:install partners_ext",
             "@php artisan velm:module:install workflow",
             "@php artisan velm:module:install change_management",
-            "@php artisan velm:module:install file_manager",
             "@php artisan velm:module:install demo_relations",
             "@php artisan velm:seed --no-interaction",
             "@php artisan db:seed --class=Database\\\\Seeders\\\\VelmSeeder --force"

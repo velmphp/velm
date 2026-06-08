@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Velm\Admin\Support;
 
 use Velm\Admin\Pages\CompanyListPage;
+use Velm\Admin\Pages\VelmShellPage;
 use Velm\Admin\Pages\CreateCompanyPage;
 use Velm\Admin\Pages\CreatePartnerPage;
 use Velm\Admin\Pages\EditCompanyPage;
@@ -68,6 +69,17 @@ final class ArchPageMap
         [$module, $name] = explode('.', $viewKey, 2);
 
         return "/velm/views/{$module}/{$name}";
+    }
+
+    public static function pageUrlForView(string $module, string $viewName): ?string
+    {
+        $pageClass = self::VIEW_PAGES["{$module}.{$viewName}"] ?? null;
+
+        if ($pageClass === null || ! is_subclass_of($pageClass, VelmShellPage::class)) {
+            return null;
+        }
+
+        return $pageClass::getUrl();
     }
 
     private static function viewKeyFromHref(string $href): ?string

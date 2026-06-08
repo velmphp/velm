@@ -13,6 +13,9 @@ final class FormView implements ViewDeclaration
 
     private ?string $model = null;
 
+    /** @var list<array<string, mixed>> */
+    private array $headerActions = [];
+
     private function __construct(
         private readonly string $name,
     ) {}
@@ -30,6 +33,21 @@ final class FormView implements ViewDeclaration
     }
 
     /**
+     * @param  list<Action|array<string, mixed>>  $actions
+     */
+    public function headerActions(array $actions): self
+    {
+        $this->headerActions = array_map(
+            static fn (Action|array $action): array => $action instanceof Action
+                ? $action->toArray()
+                : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -38,11 +56,17 @@ final class FormView implements ViewDeclaration
             throw new \LogicException("Form view {$this->name} is missing model().");
         }
 
+        $arch = $this->sectionsArch();
+
+        if ($this->headerActions !== []) {
+            $arch['header_actions'] = $this->headerActions;
+        }
+
         return [
             'name' => $this->name,
             'model' => $this->model,
             'view_type' => 'form',
-            'arch' => $this->sectionsArch(),
+            'arch' => $arch,
         ];
     }
 }

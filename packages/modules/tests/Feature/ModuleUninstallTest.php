@@ -78,14 +78,42 @@ test('cannot uninstall protected bootstrap modules', function (): void {
     $roots = [dirname(__DIR__, 2).'/modules'];
     $installer = new ModuleInstaller;
 
-    $installer->installBootstrap($roots, ['base', 'admin']);
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data', 'file_manager']);
 
-    $preview = $installer->uninstallPreview('base', $roots);
+    $preview = $installer->uninstallPreview('base', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
 
     expect($preview->canUninstall)->toBeFalse()
         ->and($preview->blockers())->not->toBeEmpty();
 
-    $installer->uninstall('base', $roots);
+    $installer->uninstall('base', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
+})->throws(RuntimeException::class);
+
+test('cannot uninstall geo_data when it is a bootstrap module', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data', 'file_manager']);
+
+    $preview = $installer->uninstallPreview('geo_data', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
+
+    expect($preview->canUninstall)->toBeFalse()
+        ->and($preview->blockers())->toContain('geo_data is a protected system module');
+
+    $installer->uninstall('geo_data', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
+})->throws(RuntimeException::class);
+
+test('cannot uninstall file_manager when it is a bootstrap module', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data', 'file_manager']);
+
+    $preview = $installer->uninstallPreview('file_manager', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
+
+    expect($preview->canUninstall)->toBeFalse()
+        ->and($preview->blockers())->toContain('file_manager is a protected system module');
+
+    $installer->uninstall('file_manager', $roots, ['base', 'admin', 'geo_data', 'file_manager']);
 })->throws(RuntimeException::class);
 
 test('cannot uninstall module with reverse dependencies', function (): void {

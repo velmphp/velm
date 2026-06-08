@@ -42,7 +42,7 @@ Demonstrates **Many2one**, **One2many**, **Many2many**, and **attachment pickers
 | `demo.task` | `project_id` (M2O → `demo.project`), `cover_id` (M2O → `ir.attachment`, **`file`** widget, images only) |
 | `demo.tag` | `name` |
 
-Requires the bundled **`file_manager`** module (installed before this addon in `composer run setup`). Open **Demos → Projects** or **Demos → Tasks**, edit a record, and use **Pick a file** / the multi-file picker (upload or choose from the library).
+Requires the bootstrap **`file_manager`** module (installed by `velm:migrate`). Open **Demos → Projects** or **Demos → Tasks**, edit a record, and use **Pick a file** / the multi-file picker (upload or choose from the library).
 
 Documentation: [Platform features](https://github.com/velmphp/velm/blob/main/website/docs/guides/features.md) (demo module, relational UI), [Relational fields](https://github.com/velmphp/velm/blob/main/website/docs/models/relational-fields.md), [Views and forms](https://github.com/velmphp/velm/blob/main/website/docs/guides/views-and-forms.md).
 

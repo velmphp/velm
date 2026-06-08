@@ -20,6 +20,18 @@ final class CompanyBranding
         $row = self::loadCompanyRow($env, $companyId);
         $primary = CompanyTheme::normalizeHex(isset($row['primary_color']) ? (string) $row['primary_color'] : null) ?? '';
 
+        return array_merge(
+            self::brandingFromRow($row, $primary),
+            CompanyFonts::contextFromCompanyRow($row),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private static function brandingFromRow(array $row, string $primary): array
+    {
         $logoLight = self::pickString($row['logo_url'] ?? null, 'VELM_LOGO_URL');
         $logoDark = self::pickString($row['logo_url_dark'] ?? null, 'VELM_LOGO_URL_DARK') ?: $logoLight;
         $headerHeight = self::pickInt($row['header_logo_height'] ?? null, 'VELM_HEADER_LOGO_HEIGHT', self::DEFAULT_HEADER_LOGO_HEIGHT);

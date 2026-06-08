@@ -66,7 +66,7 @@ Remove a module from `ir.module` and delete its synced views and menus. **Databa
 
 | Blocker | Meaning |
 |---------|---------|
-| Protected module | `base`, `admin`, or entries in `velm.bootstrap_modules` |
+| Protected module | `base`, `admin`, `geo_data`, `file_manager`, or entries in `velm.bootstrap_modules` |
 | Reverse dependency | Another **installed** module lists this one in `DEPENDS` |
 | Model extension | Another installed module extends this module's models via `$inherit` |
 
@@ -111,7 +111,7 @@ The **`file_manager`** module adds Drive-style storage over **`ir.attachment`**:
 | **Upload / download / delete** | `POST /api/attachment/upload`, `GET /api/attachment/{id}/download`, `DELETE /api/attachment/{id}` |
 | **Web file routes** | `/web/files/*` — tree, move/copy, bulk download/public, picker browse/upload |
 
-Install from the apps catalog or `php artisan velm:module:install file_manager`. Menus: **Files → Library**, **All files**, **Folders**.
+Installed with bootstrap modules (`velm:migrate`). Menus: **Files → Library**, **All files**, **Folders**.
 
 Storage backend: `VELM_ATTACHMENT_BACKEND` (`local` or `db`); local path via `VELM_ATTACHMENT_DIR`. See module manifest under `packages/modules/modules/file_manager/`.
 

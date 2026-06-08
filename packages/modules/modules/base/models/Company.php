@@ -7,7 +7,7 @@ namespace Velm\Modules\Base\Models;
 use Velm\Fields\BooleanField;
 use Velm\Fields\CharField;
 use Velm\Fields\IntegerField;
-use Velm\Fields\TextField;
+use Velm\Fields\Many2oneField;
 use Velm\Models\Model;
 
 class Company extends Model
@@ -20,8 +20,17 @@ class Company extends Model
     {
         return [
             'name' => CharField::make()->required()->label('Name'),
+            'currency_id' => Many2oneField::make()->comodel('res.currency')->label('Currency'),
+            'country_id' => Many2oneField::make()->comodel('res.country')->label('Country'),
             'active' => BooleanField::make()->default(true)->label('Active'),
             'timezone' => CharField::make()->default('UTC')->label('Timezone'),
+            'street' => CharField::make()->label('Street'),
+            'city' => CharField::make()->label('City'),
+            'zip' => CharField::make()->label('ZIP'),
+            'phone' => CharField::make()->label('Phone'),
+            'email' => CharField::make()->label('Email'),
+            'website' => CharField::make()->label('Website'),
+            'vat' => CharField::make()->label('Tax ID / VAT'),
             'primary_color' => CharField::make()->label('Primary color'),
             'font_family' => CharField::make()->label('Font family'),
             'app_name' => CharField::make()->label('Application name'),

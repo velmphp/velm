@@ -230,6 +230,11 @@ final class FormRenderer
             $props['placeholder'] = $placeholder;
         }
 
+        $choices = $ctx->spec['choices'] ?? null;
+        if (is_array($choices) && $choices !== []) {
+            $props['choices'] = $choices;
+        }
+
         return $props;
     }
 

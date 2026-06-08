@@ -21,7 +21,7 @@ class CountryExtension extends Model
             'continent_id' => Many2oneField::make()->comodel('res.continent')->label('Continent'),
             'iso3' => CharField::make()->maxLength(3)->label('ISO-3'),
             'phone_code' => CharField::make()->label('Phone code'),
-            'currency_code' => CharField::make()->label('Currency code'),
+            'currency_id' => Many2oneField::make()->comodel('res.currency')->label('Currency'),
             'capital' => CharField::make()->label('Capital'),
             'population' => IntegerField::make()->label('Population'),
             'flag_emoji' => CharField::make()->label('Flag'),
