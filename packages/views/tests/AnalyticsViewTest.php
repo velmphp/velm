@@ -163,3 +163,9 @@ test('arch normalizer migrates legacy dashboard widget size full to colspan', fu
 test('dashboard widget colspan rejects values below one', function (): void {
     StatWidget::make('total')->colspan(0);
 })->throws(InvalidArgumentException::class, 'colspan must be at least 1');
+
+test('dashboard widgets serialize numeric and full colspan values', function (): void {
+    expect(StatWidget::make('half')->colspan(1)->toArray()['colspan'])->toBe(1)
+        ->and(TableWidget::make('wide')->view('partner.list')->colspan('full')->toArray()['colspan'])->toBe('full')
+        ->and(ChartWidget::make('chart')->view('partner.graph')->colspan(2)->toArray()['colspan'])->toBe(2);
+});

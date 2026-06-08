@@ -214,3 +214,34 @@ test('dashboard board builder resolves stat table and chart widgets', function (
         ->and($board['widgets'][3]['data']['values'])->not->toBeEmpty()
         ->and($board['widgets'][3]['data']['chart_type'])->toBe('bar');
 });
+
+test('dashboard board builder maps widget colspan to grid span classes', function (): void {
+    $env = app(\Velm\Environment::class);
+
+    $twoColumn = (new DashboardBoardBuilder)->build([
+        'model' => 'res.partner',
+        'columns' => 2,
+        'widgets' => [
+            ['type' => 'stat', 'id' => 'half', 'title' => 'Half'],
+            ['type' => 'stat', 'id' => 'full', 'title' => 'Full', 'colspan' => 'full'],
+            ['type' => 'stat', 'id' => 'double', 'title' => 'Double', 'colspan' => 2],
+        ],
+    ], $env, 'partners');
+
+    expect($twoColumn['widgets'][0]['span_class'])->toBe('md:col-span-1')
+        ->and($twoColumn['widgets'][1]['colspan'])->toBe('full')
+        ->and($twoColumn['widgets'][1]['span_class'])->toBe('md:col-span-2')
+        ->and($twoColumn['widgets'][2]['span_class'])->toBe('md:col-span-2');
+
+    $threeColumn = (new DashboardBoardBuilder)->build([
+        'model' => 'res.partner',
+        'columns' => 3,
+        'widgets' => [
+            ['type' => 'stat', 'id' => 'wide', 'title' => 'Wide', 'colspan' => 2],
+            ['type' => 'stat', 'id' => 'row', 'title' => 'Row', 'colspan' => 'full'],
+        ],
+    ], $env, 'partners');
+
+    expect($threeColumn['widgets'][0]['span_class'])->toBe('md:col-span-2 xl:col-span-2')
+        ->and($threeColumn['widgets'][1]['span_class'])->toBe('md:col-span-2 xl:col-span-3');
+});
