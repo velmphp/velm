@@ -374,6 +374,16 @@ final class Environment
 
     private function accessGranted(string $modelName, string $perm): bool
     {
+        // Audit / IT compliance logs must be append-only.
+        // Regular users (even superuser uid=1) must not be able to create/write/unlink them.
+        // Internal writers (AuditLogger / cron retention) use `withAclBypass()` to allow mutation.
+        if (
+            in_array($modelName, ['ir.audit.log', 'ir.login.log', 'ir.user.lifecycle'], true)
+            && in_array($perm, ['create', 'write', 'unlink'], true)
+        ) {
+            return $this->aclBypass;
+        }
+
         if ($this->isSuperuser() || $this->aclBypass) {
             return true;
         }

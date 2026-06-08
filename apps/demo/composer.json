@@ -61,6 +61,7 @@
             "@php artisan velm:module:install workflow",
             "@php artisan velm:module:install change_management",
             "@php artisan velm:module:install demo_relations",
+            "@php artisan velm:module:install system_audit",
             "@php artisan velm:seed --no-interaction",
             "@php artisan db:seed --class=Database\\\\Seeders\\\\VelmSeeder --force"
         ],

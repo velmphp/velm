@@ -35,5 +35,9 @@ final class ModulesServiceProvider extends ServiceProvider
         ]);
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        if (class_exists(\Velm\Modules\SystemAudit\AuditRecordListener::class)) {
+            \Velm\Modules\SystemAudit\AuditRecordListener::register();
+        }
     }
 }

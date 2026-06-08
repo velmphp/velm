@@ -13,6 +13,7 @@ use Velm\Fields\DatetimeField;
 use Velm\Fields\Field;
 use Velm\Fields\Many2manyField;
 use Velm\Fields\One2manyField;
+use Velm\Support\RecordChangeNotifier;
 use Velm\Support\VelmDatetime;
 use Velm\Models\Model;
 use Velm\Registry;
@@ -163,6 +164,8 @@ final class Recordset
 
         $this->env->computeRunner()->computeStoredOnCreate($created);
 
+        RecordChangeNotifier::notify($this->env, $created, $values, 'create');
+
         return $created;
     }
 
@@ -308,6 +311,7 @@ final class Recordset
         [$columnValues, $m2mValues, $o2mValues] = $this->splitValues($values);
         $modelClass = $this->modelClass;
         $fields = $this->modelFields();
+        $snapshots = $this->snapshotRecords(array_keys($values));
         $sets = [];
         $params = [];
 
@@ -339,6 +343,12 @@ final class Recordset
         }
 
         $this->env->computeRunner()->recomputeAfterWrite($this, array_keys($columnValues));
+
+        if ($sets !== [] || $m2mValues !== [] || $o2mValues !== []) {
+            RecordChangeNotifier::notify($this->env, $this, $values, 'write', [
+                'snapshots' => $snapshots,
+            ]);
+        }
     }
 
     public function unlink(): void
@@ -372,6 +382,7 @@ final class Recordset
         $this->env->checkAccess($this->modelName(), 'unlink');
 
         $modelClass = $this->modelClass;
+        $snapshots = $this->snapshotRecords();
         $placeholders = implode(', ', array_fill(0, count($this->ids), '?'));
         $sql = 'DELETE FROM '.$this->q($modelClass::table()).' WHERE '.$this->q('id').' IN ('.$placeholders.')';
         $this->env->connection->execute($sql, $this->ids);
@@ -379,6 +390,30 @@ final class Recordset
         foreach ($this->ids as $id) {
             $this->env->cache->forget($modelClass::name(), $id);
         }
+
+        RecordChangeNotifier::notify($this->env, $this, [], 'unlink', [
+            'snapshots' => $snapshots,
+        ]);
+    }
+
+    /**
+     * @param  list<string>|null  $fieldNames
+     * @return array<int, array<string, mixed>>
+     */
+    private function snapshotRecords(?array $fieldNames = null): array
+    {
+        if ($this->ids === []) {
+            return [];
+        }
+
+        $snapshots = [];
+
+        foreach ($this->ids as $id) {
+            $rows = $this->env->browse($this->modelName(), [$id])->read($fieldNames);
+            $snapshots[$id] = $rows[0] ?? [];
+        }
+
+        return $snapshots;
     }
 
     /**

@@ -66,6 +66,8 @@ Use a real queue worker (`php artisan queue:work`) if you add queued jobs alongs
 | `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD` | Bootstrap admin user on first `velm:migrate` |
 | `VELM_APP_NAME` / `VELM_LOGO_*` | Panel branding |
 | `VELM_MENU_LAYOUT` | `apps` (default) or `sidebar` |
+| `VELM_AUDIT_DSN` | Optional dedicated database URL for IT audit tables (empty = main app database) |
+| `VELM_AUDIT_RETENTION_DAYS` | Keep `system_audit` logs (`ir.audit.log`, `ir.login.log`, `ir.user.lifecycle`) for this many days before the daily cron purges them |
 
 See [installation](./installation.md) and [addons](./addons.md) for addon paths and drop-in Laravel setup.
 

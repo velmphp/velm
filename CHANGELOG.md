@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ### Added
 
+- **`system_audit` module** — IT audit compatibility: `ir.audit.log` (CRUD trail), `ir.login.log` (login/logout/failure + session lifetime), `ir.user.lifecycle` (create/activate/deactivate/password/groups); CSV export page actions; `VELM_AUDIT_DSN` and `VELM_AUDIT_RETENTION_DAYS` config; daily retention cron
 - **`header_actions` / `page_actions`** — arch-declared toolbar buttons; `variant(ActionVariant)` colors; `form()` inline schema or `formView()` stored view; ACL via `perm`
 - **Demo action endpoints** — `/web/demo/partners/*` wired from partners views (load demo data, export CSV/JSON, duplicate)
 - **Geo import action** — `/web/geo/import` loads full geography (countries, states, cities) from public APIs on demand; bootstrap seed installs only the current country (IP geolocation, overridable via `VELM_GEO_COUNTRY`)

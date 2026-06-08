@@ -62,6 +62,7 @@ Deferred past **v1.0.0**.
 | Item | Status | Notes |
 |------|--------|-------|
 | `header_actions` / `page_actions` from arch | **Done** | Export, duplicate, custom toolbar; ACL `perm` gating |
+| IT audit trail (`system_audit` module) | **Done** | Audit log, login history, user lifecycle; export + retention cron |
 | Arch `dashboard` view type (per-model boards) | Pending | Distinct from **home dashboard** (`/velm/dashboard`) |
 | List inline row edit | Pending | PLAN Phase 4+ |
 
