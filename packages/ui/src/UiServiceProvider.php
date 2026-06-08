@@ -32,6 +32,7 @@ final class UiServiceProvider extends ServiceProvider
             dirname(__DIR__).'/resources/js/pv-workflow-builder.js' => public_path('js/velm/pv-workflow-builder.js'),
             UiAssets::richTextScriptPath() => public_path('js/velm/pv-rich-text.js'),
             UiAssets::codeEditorScriptPath() => public_path('js/velm/pv-code-editor.js'),
+            UiAssets::codeDisplayScriptPath() => public_path('js/velm/pv-code-display.js'),
             UiAssets::graphScriptPath() => public_path('js/velm/pv-graph.js'),
             UiAssets::pivotScriptPath() => public_path('js/velm/pv-pivot.js'),
         ], 'velm-ui-assets');

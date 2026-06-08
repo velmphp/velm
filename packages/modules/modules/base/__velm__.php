@@ -42,6 +42,6 @@ return Manifest::make('base')
     )
     ->installHook(BaseInstallHooks::class)
     ->seeders(CurrencyReferenceSeeder::class)
-    ->data('views/company.php', 'views/currency.php', 'views/currency_rate.php')
+    ->data('views/company.php', 'views/currency.php', 'views/currency_rate.php', 'views/automation.php')
     ->summary('Framework primitives — users, groups, views, menus, modules.')
     ->category('Administration');

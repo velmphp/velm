@@ -121,6 +121,19 @@ final class UiAssets
         return self::publishedOrVendor('js/velm/pv-code-editor.js', 'resources/js/pv-code-editor.js');
     }
 
+    public static function codeDisplayScriptPath(): string
+    {
+        return self::requireBuiltFile(
+            dirname(__DIR__).'/resources/js/pv-code-display.js',
+            'Missing packages/ui/resources/js/pv-code-display.js. Run: composer run build-ui (from the Velm monorepo root)',
+        );
+    }
+
+    public static function codeDisplayScriptHref(): string
+    {
+        return self::publishedOrVendor('js/velm/pv-code-display.js', 'resources/js/pv-code-display.js');
+    }
+
     public static function graphScriptPath(): string
     {
         return self::requireBuiltFile(

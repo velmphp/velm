@@ -274,9 +274,74 @@
         min-height: 12rem;
     }
 
+    .pv-code-display {
+        margin: 0;
+    }
+
     .pv-code-display code {
+        display: block;
         white-space: pre-wrap;
         word-break: break-word;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        background: transparent;
+    }
+
+    .pv-code-display .token.comment,
+    .pv-code-display .token.prolog,
+    .pv-code-display .token.doctype,
+    .pv-code-display .token.cdata {
+        color: var(--color-body-subtle);
+    }
+
+    .pv-code-display .token.punctuation {
+        color: var(--color-body);
+    }
+
+    .pv-code-display .token.property,
+    .pv-code-display .token.tag,
+    .pv-code-display .token.constant,
+    .pv-code-display .token.symbol,
+    .pv-code-display .token.deleted {
+        color: var(--color-fg-danger);
+    }
+
+    .pv-code-display .token.boolean,
+    .pv-code-display .token.number {
+        color: color-mix(in srgb, var(--color-fg-brand) 75%, var(--color-body));
+    }
+
+    .pv-code-display .token.selector,
+    .pv-code-display .token.attr-name,
+    .pv-code-display .token.string,
+    .pv-code-display .token.char,
+    .pv-code-display .token.builtin,
+    .pv-code-display .token.inserted {
+        color: color-mix(in srgb, var(--color-fg-brand) 55%, var(--color-body));
+    }
+
+    .pv-code-display .token.operator,
+    .pv-code-display .token.entity,
+    .pv-code-display .token.url,
+    .pv-code-display .language-css .token.string,
+    .pv-code-display .style .token.string {
+        color: var(--color-body);
+    }
+
+    .pv-code-display .token.atrule,
+    .pv-code-display .token.attr-value,
+    .pv-code-display .token.keyword {
+        color: var(--color-fg-brand);
+    }
+
+    .pv-code-display .token.function,
+    .pv-code-display .token.class-name {
+        color: color-mix(in srgb, var(--color-fg-brand) 80%, white);
+    }
+
+    .pv-code-display .token.regex,
+    .pv-code-display .token.important,
+    .pv-code-display .token.variable {
+        color: color-mix(in srgb, var(--color-fg-danger) 70%, var(--color-fg-brand));
     }
 
     .pv-focus-within {

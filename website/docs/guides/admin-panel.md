@@ -123,8 +123,11 @@ After installing **`admin`**, the shell exposes:
 | Menu area | Models |
 |-----------|--------|
 | Users & groups | `res.users`, `res.groups` |
+| Automation | `ir.actions.server`, `ir.cron` |
 | Access control | `ir.model.access`, `ir.rule` |
 | Security → Audit | `ir.audit.log`, `ir.login.log`, `ir.user.lifecycle` (from the `system_audit` module) |
+
+**Settings → Automation** exposes list/form views for **Server actions** and **Scheduled actions**. Server actions declare the target model, action type (`write`, `create`, `unlink`, or module-specific handlers), and optional JSON payload. Scheduled actions link to a server action and define interval + active flag; Laravel runs due jobs via `php artisan velm:cron:run` (see [Production](./production)).
 
 `res.users` uses Laravel’s `users` table; configure bootstrap credentials via `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`.
 

@@ -66,7 +66,7 @@ return static function (Environment $env): void {
 
 ## Scheduled jobs
 
-`ir.cron` and `ir.actions.server` live on the `base` module. Run due jobs via Laravel Scheduler:
+`ir.cron` and `ir.actions.server` live on the `base` module. Administrators manage them under **Settings → Automation** in the panel. Run due jobs via Laravel Scheduler:
 
 ```bash
 php artisan velm:cron:run

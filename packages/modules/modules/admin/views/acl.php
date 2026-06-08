@@ -204,6 +204,16 @@ return ViewsData::make()
                             ->view('group.list')
                             ->sequence(20),
                     ),
+                $m->group('settings.automation', 'Automation')
+                    ->sequence(30)
+                    ->children(
+                        $m->item('settings.server_actions', 'Server actions')
+                            ->view('server.action.list', 'base')
+                            ->sequence(10),
+                        $m->item('settings.scheduled_actions', 'Scheduled actions')
+                            ->view('cron.list', 'base')
+                            ->sequence(20),
+                    ),
             ),
         $m->group('security', 'Security')
             ->icon('heroicon-o-clipboard-document-list')
