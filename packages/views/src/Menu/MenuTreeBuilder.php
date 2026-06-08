@@ -153,7 +153,7 @@ final class MenuTreeBuilder
     /**
      * @param  array<string, mixed>  $node
      */
-    public static function entryHref(array $node): ?string
+    public static function entryHref(array $node, ?Environment $env = null): ?string
     {
         $href = $node['href'] ?? null;
 
@@ -161,8 +161,18 @@ final class MenuTreeBuilder
             return $href;
         }
 
+        if ($env !== null) {
+            foreach (ModuleLandingView::modulesInNode($node) as $module) {
+                $dashboardHref = ModuleLandingView::dashboardHref($env, $module);
+
+                if ($dashboardHref !== null) {
+                    return $dashboardHref;
+                }
+            }
+        }
+
         foreach ($node['children'] ?? [] as $child) {
-            $childHref = self::entryHref($child);
+            $childHref = self::entryHref($child, $env);
 
             if ($childHref !== null) {
                 return $childHref;

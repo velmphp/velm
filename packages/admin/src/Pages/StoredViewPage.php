@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Velm\Admin\Pages;
 
+use Velm\Admin\Arch\DashboardBoardBuilder;
 use Velm\Admin\Arch\GraphDataBuilder;
 use Velm\Admin\Arch\KanbanBoardBuilder;
 use Velm\Admin\Arch\ListColumnHeaders;
@@ -73,8 +74,21 @@ class StoredViewPage extends ArchListPage
             'kanban' => view('velm-admin::pages.analytics.kanban'),
             'graph' => view('velm-admin::pages.analytics.graph'),
             'pivot' => view('velm-admin::pages.analytics.pivot'),
+            'dashboard' => view('velm-admin::pages.analytics.dashboard'),
             default => abort(404, 'Unsupported stored view type: '.$this->presentationType()),
         };
+    }
+
+    /**
+     * @return array{columns: int, widgets: list<array<string, mixed>>}
+     */
+    public function dashboardBoard(): array
+    {
+        return app(DashboardBoardBuilder::class)->build(
+            $this->arch(),
+            app(Environment::class),
+            $this->module,
+        );
     }
 
     /**

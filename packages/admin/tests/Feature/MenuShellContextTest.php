@@ -42,12 +42,16 @@ test('menu layout context builds apps secondary for partners', function (): void
         $tree,
         '/velm/views/partners/partner.list',
         MenuLayout::APPS,
+        $env,
     );
 
-    expect($ctx['menu_secondary'])->toHaveCount(3);
+    expect($ctx['menu_secondary'])->toHaveCount(4);
 
     $labels = array_column($ctx['menu_secondary'], 'label');
-    expect($labels)->toContain('Partners', 'Partners graph', 'Partners pivot');
+    expect($labels)->toContain('Partners', 'Partners dashboard', 'Partners graph', 'Partners pivot');
+
+    $contactsRoot = collect($ctx['menu_roots'])->firstWhere('label', 'Contacts');
+    expect($contactsRoot['nav_href'] ?? null)->toBe('/velm/views/partners/partner.dashboard');
 });
 
 test('menu layout config defaults to apps', function (): void {

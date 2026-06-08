@@ -44,6 +44,27 @@ test('partner graph page renders bar chart rows', function (): void {
         ->assertSee('Belgium');
 });
 
+test('partner dashboard page renders stat table and chart widgets', function (): void {
+    $env = app(\Velm\Environment::class);
+    $country = $env->model('res.country')->create(['name' => 'Netherlands', 'code' => 'NL']);
+    $env->model('res.partner')->create([
+        'name' => 'Dashboard Partner',
+        'is_company' => true,
+        'country_id' => $country->ids()[0],
+    ]);
+
+    Livewire::test(StoredViewPage::class, [
+        'module' => 'partners',
+        'viewName' => 'partner.dashboard',
+    ])
+        ->assertOk()
+        ->assertSee('Partners overview')
+        ->assertSee('Total contacts')
+        ->assertSee('Recent contacts')
+        ->assertSee('Dashboard Partner')
+        ->assertSee('By country');
+});
+
 test('partner pivot page renders matrix table', function (): void {
     $env = app(\Velm\Environment::class);
     $env->model('res.partner')->create(['name' => 'Pivot Partner', 'is_company' => true, 'active' => true]);

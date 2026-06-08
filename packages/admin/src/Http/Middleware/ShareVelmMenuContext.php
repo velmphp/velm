@@ -45,6 +45,7 @@ final class ShareVelmMenuContext
                 $tree,
                 $currentPath,
                 is_string($layout) ? $layout : null,
+                $env,
             ));
         }
         View::share('velmShell', array_merge(

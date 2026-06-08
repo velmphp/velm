@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 use Velm\Views\Arch\ArchNormalizer;
 use Velm\Views\Authoring\Card;
+use Velm\Views\Authoring\DashboardView;
 use Velm\Views\Authoring\Field;
 use Velm\Views\Authoring\GraphView;
 use Velm\Views\Authoring\KanbanView;
 use Velm\Views\Authoring\PivotView;
+use Velm\Views\Authoring\Widgets\ChartWidget;
+use Velm\Views\Authoring\Widgets\StatWidget;
+use Velm\Views\Authoring\Widgets\TableWidget;
 
 test('kanban view declaration exposes route arch schema', function (): void {
     $view = KanbanView::make('task.kanban')
@@ -100,5 +104,47 @@ test('arch normalizer coerces analytics arch keys', function (): void {
 
 test('supported view types include analytics renderers', function (): void {
     expect(ArchNormalizer::supportedViewTypes())
-        ->toContain('kanban', 'graph', 'pivot');
+        ->toContain('kanban', 'graph', 'pivot', 'dashboard');
+});
+
+test('dashboard view declaration exposes widget arch schema', function (): void {
+    $view = DashboardView::make('partner.dashboard')
+        ->model('res.partner')
+        ->title('Partners overview')
+        ->columns(2)
+        ->listView('partner.list')
+        ->widgets([
+            StatWidget::make('total')->title('Total contacts'),
+            StatWidget::make('companies')->domain([['is_company', '=', true]]),
+            TableWidget::make('recent')->view('partner.list')->limit(3)->size('full'),
+            ChartWidget::make('by_country')->view('partner.graph'),
+        ])
+        ->toArray();
+
+    expect($view['view_type'])->toBe('dashboard')
+        ->and($view['arch']['columns'])->toBe(2)
+        ->and($view['arch']['list_view'])->toBe('partner.list')
+        ->and($view['arch']['widgets'])->toHaveCount(4)
+        ->and($view['arch']['widgets'][0]['type'])->toBe('stat')
+        ->and($view['arch']['widgets'][2]['limit'])->toBe(3);
+});
+
+test('dashboard view requires model and widgets before serialize', function (): void {
+    DashboardView::make('incomplete.dashboard')->toArray();
+})->throws(LogicException::class, 'missing model()');
+
+test('arch normalizer coerces dashboard widget specs', function (): void {
+    $dashboard = ArchNormalizer::normalize([
+        'columns' => 0,
+        'widgets' => [
+            ['type' => 'stat', 'id' => 'total', 'limit' => 2],
+            ['type' => 'table', 'id' => 'recent', 'view' => 'partner.list', 'limit' => 0],
+            ['ignored' => true],
+        ],
+    ], 'dashboard');
+
+    expect($dashboard['columns'])->toBe(1)
+        ->and($dashboard['widgets'])->toHaveCount(2)
+        ->and($dashboard['widgets'][0]['size'])->toBe('half')
+        ->and($dashboard['widgets'][1]['limit'])->toBe(1);
 });

@@ -18,6 +18,7 @@ final class ArchNormalizer
             'kanban' => self::normalizeKanban($arch),
             'graph' => self::normalizeGraph($arch),
             'pivot' => self::normalizePivot($arch),
+            'dashboard' => self::normalizeDashboard($arch),
             default => $arch,
         };
     }
@@ -27,7 +28,7 @@ final class ArchNormalizer
      */
     public static function supportedViewTypes(): array
     {
-        return ['list', 'form', 'detail', 'kanban', 'graph', 'pivot'];
+        return ['list', 'form', 'detail', 'kanban', 'graph', 'pivot', 'dashboard'];
     }
 
     /**
@@ -183,6 +184,55 @@ final class ArchNormalizer
         if (! isset($arch['measures']) || $arch['measures'] === []) {
             $arch['measures'] = ['__count'];
         }
+
+        return $arch;
+    }
+
+    /**
+     * @param  array<string, mixed>  $arch
+     * @return array<string, mixed>
+     */
+    public static function normalizeDashboard(array $arch): array
+    {
+        $arch['columns'] = max(1, (int) ($arch['columns'] ?? 2));
+
+        $widgets = [];
+
+        foreach ($arch['widgets'] ?? [] as $widget) {
+            if (! is_array($widget)) {
+                continue;
+            }
+
+            $type = (string) ($widget['type'] ?? '');
+
+            if ($type === '' || ! isset($widget['id'])) {
+                continue;
+            }
+
+            $normalized = [
+                'type' => $type,
+                'id' => (string) $widget['id'],
+                'size' => (string) ($widget['size'] ?? 'half'),
+            ];
+
+            foreach (['title', 'model', 'view', 'measure', 'icon'] as $key) {
+                if (isset($widget[$key]) && is_string($widget[$key]) && $widget[$key] !== '') {
+                    $normalized[$key] = $widget[$key];
+                }
+            }
+
+            if (isset($widget['limit'])) {
+                $normalized['limit'] = max(1, (int) $widget['limit']);
+            }
+
+            if (isset($widget['domain']) && is_array($widget['domain'])) {
+                $normalized['domain'] = $widget['domain'];
+            }
+
+            $widgets[] = $normalized;
+        }
+
+        $arch['widgets'] = $widgets;
 
         return $arch;
     }
