@@ -91,5 +91,5 @@ Local coverage requires **pcov** (`apt install php8.4-pcov` or `php8.3-pcov`). R
 
 ## Still open (do not assume done)
 
-- **Post-1.0** (Tier 3): list inline edit, per-model arch `dashboard` — `header_actions` / `page_actions` **done** in 1.1
+- **Post-1.0** (Tier 3): list inline edit — `header_actions` / `page_actions` and per-model arch `dashboard` **done** in 1.1
 - Filament arch adapter (optional; not used by app/demo)

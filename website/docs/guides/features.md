@@ -36,7 +36,8 @@ The active company’s timezone is bound into `Environment` on each panel/API re
 | Feature | Description |
 |---------|-------------|
 | **Default home** | `/velm` redirects to `/velm/dashboard` (ACL-gated widgets from installed modules) |
-| **Dashboard** | Composable stat/list widgets; modules register via `{module}/dashboard.php` |
+| **Home dashboard** | Composable stat/list widgets; modules register via `{module}/dashboard.php` |
+| **Module landing** | App rail and **Open app** prefer a module’s arch **`dashboard`** view when one exists; otherwise the first menu entry by sequence |
 | **Catalog sidebar** | Dedicated filters: Catalog, Status, Category, Open app |
 | **Status filters** | All, Installed, **Upgrade**, **Sync pending**, Not installed |
 | **Module rail** | Flat list of installed apps (no “Installed” heading); **Apps** link last to return to the catalog |
@@ -131,19 +132,28 @@ Field::make('document_ids')->widget('files'),
 
 Requires **`file_manager`**. **`file_url`** remains for Char columns that store download URLs (e.g. company logos). See [Views and forms — Attachment pickers](./views-and-forms#attachment-pickers-file-files).
 
-## Analytics views (kanban, graph, pivot)
+## Analytics views (dashboard, kanban, graph, pivot)
 
 Stored view types beyond list/form/detail:
 
 | View | Authoring | Shell |
 |------|-----------|-------|
+| **Dashboard** | `DashboardView::make('…')->model(…)->widgets([StatWidget, TableWidget, ChartWidget])` | Responsive widget grid (stats, recent rows, embedded chart) |
 | **Kanban** | `KanbanView::make('…')->model(…)->groupBy('…')->card(…)` | Column board with card template |
 | **Graph** | `GraphView::make('…')->measure(…)->groupBy(…)` | Bar/line chart (ApexCharts) |
 | **Pivot** | `PivotView::make('…')->row(…)->col(…)->measure(…)` | Row/column groupby grid |
 
-Data comes from **`Recordset::readGroup()`** (sum, avg, min, max, count) via `/velm/api/analytics/*` endpoints. A view switcher on list pages links sibling stored views when registered.
+**Dashboard** widgets:
 
-Demo: **Partners** module ships `partner.kanban`, `partner.graph`, and `partner.pivot` under **Contacts → Partners** (sync `partners` module). Authoring details: [Views and forms](./views-and-forms).
+| Widget | Purpose |
+|--------|---------|
+| **`StatWidget`** | Record count (optional domain / measure) |
+| **`TableWidget`** | Recent rows from a list view (`->view('partner.list')`, `->limit(5)`) |
+| **`ChartWidget`** | Bar chart from a graph view arch (`->view('partner.graph')`) |
+
+Graph and pivot data comes from **`Recordset::readGroup()`** (sum, avg, min, max, count) via `/velm/api/analytics/*` endpoints. A view switcher on list and analytics pages links sibling stored views for the same model when registered (dashboard listed first).
+
+Demo: **Partners** ships `partner.dashboard`, `partner.kanban`, `partner.graph`, and `partner.pivot` under **Contacts** (sync `partners` module). Opening **Contacts** from the app rail lands on **Partners overview** (`partner.dashboard`). Authoring details: [Views and forms — Dashboard views](./views-and-forms#dashboard-views).
 
 ## Users, groups, and ACL in the shell
 
@@ -213,6 +223,7 @@ Stored view URLs:
 | Page | Pattern |
 |------|---------|
 | List | `/velm/views/{module}/{listView}` |
+| Dashboard | `/velm/views/{module}/{dashboardView}` |
 | Detail | `/velm/views/{module}/{detailView}/{id}` |
 | Edit | `/velm/views/{module}/{formView}/{id}/edit` |
 | Create | `/velm/views/{module}/{formView}/create` |

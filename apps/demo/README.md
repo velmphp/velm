@@ -53,6 +53,8 @@ php artisan velm:seed
 
 Audit logs (`Security → Audit`) are created automatically when you use the shell — no extra setup is required beyond the `system_audit` module installed by `composer run setup`.
 
+**Partners dashboard:** after setup, open **Contacts** from the app rail — it lands on **Partners overview** (`partner.dashboard`) with stat, table, and chart widgets. List, kanban, graph, and pivot views are in the same app's secondary menu.
+
 ## Divergence from `apps/app`
 
 | | `apps/app` | `apps/demo` (this tree) |

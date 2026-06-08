@@ -24,7 +24,7 @@ After `composer run setup`, sign in with those credentials. Velm ACL fields (`gr
 
 | Value | Behavior |
 |-------|----------|
-| `apps` *(default)* | **Apps rail** on the left: flat list of installed module roots (installed apps first, **Apps** link last) + **secondary top bar** for the active app’s menus |
+| `apps` *(default)* | **Apps rail** on the left: flat list of installed module roots (installed apps first, **Apps** link last) + **secondary top bar** for the active app’s menus. Rail icons link to each app’s default landing (dashboard view when the module defines one) |
 | `sidebar` | Classic nested sidebar (accordion groups) |
 
 Per-company override: set **Navigation layout** on **Settings → Companies** (`res.company.menu_layout`).
@@ -36,7 +36,7 @@ The panel home is the **dashboard** (`/velm` → `/velm/dashboard`). The apps ca
 - **Catalog** — browse all discovered modules
 - **Status** — filter: All, Installed, Upgrade, Sync pending, Not installed
 - **Category** — filter by module category
-- **Open app** — jump to an installed module’s first menu entry
+- **Open app** — jump to an installed module’s default landing URL (arch **dashboard** view when present, otherwise the first menu entry by sequence)
 
 From any **module workspace** page (e.g. Partners list), the left rail includes **Apps** as a normal Level 2 link (no section wrapper) to open the catalog.
 
@@ -138,7 +138,7 @@ This runs `npm run build` in `packages/ui` (Tailwind CSS and Flowbite JS) and co
 |-----|---------|
 | `/velm` | Panel (redirects to apps catalog) |
 | `/velm/apps` | Module catalog |
-| `/velm/views/{module}/{viewName}` | Arch-driven list pages |
+| `/velm/views/{module}/{viewName}` | Arch-driven stored views (list, dashboard, kanban, graph, pivot) |
 | `/velm/views/{module}/{viewName}/{id}` | Record display |
 | `/velm/views/{module}/{viewName}/{id}/edit` | Record edit |
 | `/velm/views/{module}/{viewName}/create` | Create (editable form; uses `formView`, not `detailView`) |

@@ -26,7 +26,7 @@ Each RC = feature PR(s) on `main` → CI green → `CHANGELOG` → `git tag v1.0
 
 **Branch naming:** `feature/rc3-v1-features` — thematic PRs on one branch where practical.
 
-**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): list inline edit, per-model arch `dashboard` boards — `header_actions` / `page_actions` shipped in 1.1.
+**Deferred past v1.0.0** (Tier 3 → 1.0.1 or 1.1): list inline edit — `header_actions` / `page_actions` and per-model arch `dashboard` boards shipped in 1.1.
 
 ### Tier 1 — Release blockers (pre-1.0)
 
@@ -319,8 +319,7 @@ See [Stable v1.0 target](#stable-v10-target) tiers above. **v1.0.0** shipped; ne
 
 | Item | Target |
 |------|--------|
-| `header_actions` / list inline edit | 1.0.1 / 1.1 (Tier 3) |
-| Per-model arch `dashboard` boards | 1.0.1 / 1.1 (Tier 3) |
+| List inline edit | 1.0.1 / 1.1 (Tier 3) |
 | `velmphp/composer-plugin` | v1.1+ (Tier 4) |
 | Optional Filament arch adapter | — (won't do) |
 
