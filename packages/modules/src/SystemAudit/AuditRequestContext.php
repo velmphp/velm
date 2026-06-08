@@ -6,12 +6,20 @@ namespace Velm\Modules\SystemAudit;
 
 final class AuditRequestContext
 {
+    private static bool $simulateStandaloneRuntime = false;
+
+    /** @internal Test seam for non-Laravel runtime branches */
+    public static function simulateStandaloneRuntime(bool $simulate = true): void
+    {
+        self::$simulateStandaloneRuntime = $simulate;
+    }
+
     /**
      * @return array{ip: string, user_agent: string, session_id: string}
      */
     public static function capture(): array
     {
-        if (! function_exists('request')) {
+        if (self::$simulateStandaloneRuntime || ! function_exists('request')) {
             return [
                 'ip' => '',
                 'user_agent' => '',
@@ -30,7 +38,7 @@ final class AuditRequestContext
 
     public static function sessionLifetimeMinutes(): int
     {
-        if (! function_exists('config')) {
+        if (self::$simulateStandaloneRuntime || ! function_exists('config')) {
             return 120;
         }
 
