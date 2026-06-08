@@ -19,41 +19,44 @@ final class PartnerDemoSeeder implements ModuleSeeder
         }
 
         $companyId = self::defaultCompanyId($env);
-        $countryId = self::firstCountryId($env);
+        $be = self::countryId($env, 'BE', 'Belgium');
+        $nl = self::countryId($env, 'NL', 'Netherlands');
+        $fr = self::countryId($env, 'FR', 'France');
+        $de = self::countryId($env, 'DE', 'Germany');
 
         self::upsertPartner($env, [
             'name' => 'Velm SA',
             'active' => true,
             'is_company' => true,
-            'country_id' => $countryId,
+            'country_id' => $be,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Brussels Consulting BV',
             'active' => true,
             'is_company' => true,
-            'country_id' => $countryId,
+            'country_id' => $be,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Jan de Vries',
             'active' => true,
             'is_company' => false,
-            'country_id' => $countryId,
+            'country_id' => $nl,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Lyon Industries',
             'active' => false,
             'is_company' => true,
-            'country_id' => $countryId,
+            'country_id' => $fr,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
             'name' => 'Legacy Partner GmbH',
             'active' => false,
             'is_company' => true,
-            'country_id' => $countryId,
+            'country_id' => $de,
             'company_id' => $companyId,
         ]);
         self::upsertPartner($env, [
@@ -80,15 +83,18 @@ final class PartnerDemoSeeder implements ModuleSeeder
         return $existing->ids()[0];
     }
 
-    private static function firstCountryId(Environment $env): int|false
+    private static function countryId(Environment $env, string $code, string $name): int
     {
-        $existing = $env->model('res.country')->search([], limit: 1);
+        $existing = $env->model('res.country')->search([['code', '=', $code]], limit: 1);
 
-        if ($existing->count() === 0) {
-            return false;
+        if ($existing->count() > 0) {
+            return $existing->ids()[0];
         }
 
-        return $existing->ids()[0];
+        return $env->model('res.country')->create([
+            'name' => $name,
+            'code' => $code,
+        ])->ids()[0];
     }
 
     /**
