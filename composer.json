@@ -38,7 +38,8 @@
         }
     },
     "scripts": {
-        "test": "pest",
+        "test": "pest --parallel",
+        "test:serial": "pest",
         "test:coverage": "pest --coverage-clover=coverage.xml",
         "test:coverage:report": "pest --coverage --coverage-clover=coverage.xml --min=95",
         "analyse": "phpstan analyse --memory-limit=512M",

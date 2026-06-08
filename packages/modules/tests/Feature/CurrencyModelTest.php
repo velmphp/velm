@@ -137,3 +137,54 @@ test('base install seeds configured default currency code from env', function ()
         ->and($env->model('res.currency')->search([['name', '=', 'USD']])->count())->toBe(1)
         ->and($env->model('res.currency')->search([['active', '=', true]])->count())->toBe(1);
 });
+
+test('currency reference seeder import profiles upserts inactive currencies', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    $imported = CurrencyReferenceSeeder::importProfiles($env, [
+        ['code' => 'USD', 'full_name' => 'US Dollar', 'symbol' => '$', 'decimal_places' => 2],
+        ['code' => 'GBP', 'full_name' => 'British Pound', 'symbol' => '£', 'decimal_places' => 2],
+    ]);
+
+    expect($imported)->toBe(2)
+        ->and($env->model('res.currency')->search([['name', '=', 'USD']])->read(['active'])[0]['active'])->toBeFalse();
+});
+
+test('currency reference seeder activate only enables matching code', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    CurrencyReferenceSeeder::importProfiles($env, [
+        ['code' => 'USD', 'full_name' => 'US Dollar', 'symbol' => '$', 'decimal_places' => 2],
+        ['code' => 'GBP', 'full_name' => 'British Pound', 'symbol' => '£', 'decimal_places' => 2],
+    ]);
+
+    CurrencyReferenceSeeder::activateOnly($env, 'GBP');
+
+    expect($env->model('res.currency')->search([['name', '=', 'GBP'], ['active', '=', true]])->count())->toBe(1)
+        ->and($env->model('res.currency')->search([['name', '=', 'USD'], ['active', '=', true]])->count())->toBe(0);
+});
+
+test('currency reference seeder import profiles updates existing rows without toggling active', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    $eurId = $env->model('res.currency')->search([['name', '=', 'EUR']], limit: 1)->ids()[0];
+    $env->browse('res.currency', [$eurId])->write(['active' => true]);
+
+    CurrencyReferenceSeeder::importProfiles($env, [
+        ['code' => 'EUR', 'full_name' => 'Euro updated', 'symbol' => '€', 'decimal_places' => 2],
+    ]);
+
+    $row = $env->model('res.currency')->search([['id', '=', $eurId]], limit: 1)->read(['full_name', 'active'])[0];
+
+    expect($row['full_name'])->toBe('Euro updated')
+        ->and($row['active'])->toBeTrue();
+});
