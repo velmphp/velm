@@ -43,6 +43,34 @@ test('action builder requires url form view or inline form', function (): void {
     Action::make('Empty')->variant(ActionVariant::Primary)->toArray();
 })->throws(LogicException::class);
 
+test('action builder serializes confirm policy and stored form view metadata', function (): void {
+    $action = Action::make('Open form')
+        ->formView('partner.form', 'partners')
+        ->confirm('Continue?')
+        ->policy('partner.write')
+        ->fullPage()
+        ->perm('write')
+        ->variant(ActionVariant::Primary)
+        ->toArray();
+
+    expect($action['form_view'])->toBe('partner.form')
+        ->and($action['form_module'])->toBe('partners')
+        ->and($action['confirm'])->toBe('Continue?')
+        ->and($action['policy'])->toBe('partner.write')
+        ->and($action['full_page'])->toBeTrue();
+});
+
+test('action builder rejects empty label', function (): void {
+    Action::make('')->url('/web/demo')->toArray();
+})->throws(LogicException::class);
+
+test('inline action form rejects empty sections', function (): void {
+    Action::make('Quick add')
+        ->model('res.partner')
+        ->form(ActionForm::make())
+        ->toArray();
+})->throws(InvalidArgumentException::class);
+
 test('inline action form requires model', function (): void {
     Action::make('Quick add')
         ->variant(ActionVariant::Primary)

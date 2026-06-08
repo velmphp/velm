@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Velm\Views\Authoring\Action;
+use Velm\Views\Authoring\ActionVariant;
 use Velm\Views\Authoring\Card;
 use Velm\Views\Authoring\DetailView;
 use Velm\Views\Authoring\Field;
@@ -19,6 +21,13 @@ return ViewsData::make()
             ->formView('currency.form')
             ->detailView('currency.detail')
             ->clickToOpen()
+            ->pageActions([
+                Action::make('Import currencies')
+                    ->url('/web/currencies/import')
+                    ->confirm('Download ISO-4217 currencies from the public API? New currencies are added inactive; existing rows are updated.')
+                    ->variant(ActionVariant::Warning)
+                    ->perm('write'),
+            ])
             ->rowActions([
                 ListRowAction::open(),
                 ListRowAction::edit(),

@@ -39,3 +39,20 @@ test('company fonts context uses inter without css override when unset', functio
     expect($context['company_font_family'])->toBe('Inter')
         ->and($context['company_font_style'])->toBe('');
 });
+
+test('company fonts normalize rejects invalid names and defaults', function (): void {
+    expect(CompanyFonts::normalize('default'))->toBe('')
+        ->and(CompanyFonts::normalize('Inter'))->toBe('')
+        ->and(CompanyFonts::normalize('!!!'))->toBe('')
+        ->and(CompanyFonts::normalize('Roboto'))->toBe('Roboto');
+});
+
+test('company fonts isAllowedChoice accepts empty and curated families only', function (): void {
+    expect(CompanyFonts::isAllowedChoice(''))->toBeTrue()
+        ->and(CompanyFonts::isAllowedChoice('Roboto'))->toBeTrue()
+        ->and(CompanyFonts::isAllowedChoice('Comic Sans MS'))->toBeFalse();
+});
+
+test('company fonts stylesheet url falls back to inter for blank family', function (): void {
+    expect(CompanyFonts::stylesheetUrl(''))->toContain('family=Inter');
+});

@@ -6,38 +6,22 @@ namespace Velm\Modules\Base\Seeders;
 
 use Velm\Environment;
 use Velm\Modules\Base\CompanyBootstrap;
-use Velm\Modules\Base\CurrencyApiImporter;
 use Velm\Modules\Base\CurrencyBootstrap;
 use Velm\Modules\Seeding\ModuleSeeder;
 
 /**
- * Seeds world ISO-4217 currencies (inactive by default), activates the default currency,
- * demo exchange rates, and company defaults.
+ * Seeds the default company currency on install; full ISO-4217 import is on demand.
  */
 final class CurrencyReferenceSeeder implements ModuleSeeder
 {
-    private static ?CurrencyApiImporter $importer = null;
-
-    public static function usingImporter(?CurrencyApiImporter $importer): void
-    {
-        self::$importer = $importer;
-    }
-
     public static function run(Environment $env): void
     {
         if (! $env->registry->has('res.currency')) {
             return;
         }
 
-        foreach (self::importer()->fetchProfiles() as $profile) {
-            self::upsertCurrency($env, [
-                'name' => $profile['code'],
-                'full_name' => $profile['full_name'],
-                'symbol' => $profile['symbol'],
-                'decimal_places' => $profile['decimal_places'],
-                'active' => false,
-            ]);
-        }
+        $code = CompanyBootstrap::configuredDefaultCurrencyCode() ?? 'EUR';
+        CurrencyBootstrap::ensureCode($env, $code);
 
         self::activateDefaultCurrency($env);
 
@@ -56,6 +40,27 @@ final class CurrencyReferenceSeeder implements ModuleSeeder
         }
 
         self::refreshExchangeRates($env);
+    }
+
+    /**
+     * @param  list<array{code: string, full_name: string, symbol: string, decimal_places: int}>  $profiles
+     */
+    public static function importProfiles(Environment $env, array $profiles): int
+    {
+        $imported = 0;
+
+        foreach ($profiles as $profile) {
+            self::upsertCurrency($env, [
+                'name' => $profile['code'],
+                'full_name' => $profile['full_name'],
+                'symbol' => $profile['symbol'],
+                'decimal_places' => $profile['decimal_places'],
+                'active' => false,
+            ]);
+            $imported++;
+        }
+
+        return $imported;
     }
 
     public static function activateDefaultCurrency(Environment $env): void
@@ -104,11 +109,6 @@ final class CurrencyReferenceSeeder implements ModuleSeeder
     public static function refreshExchangeRates(Environment $env): void
     {
         self::seedExchangeRates($env);
-    }
-
-    private static function importer(): CurrencyApiImporter
-    {
-        return self::$importer ?? new CurrencyApiImporter;
     }
 
     private static function seedExchangeRates(Environment $env): void
@@ -204,5 +204,4 @@ final class CurrencyReferenceSeeder implements ModuleSeeder
 
         $env->model('res.currency.rate')->create($values);
     }
-
 }
