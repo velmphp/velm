@@ -67,7 +67,7 @@ final class StoredViewRecordPage extends VelmShellPage
         ]);
     }
 
-    public function velmEditPageUrl(): string
+    public function velmEditPageUrl(): ?string
     {
         $listArch = app(ViewRegistry::class)->arch(
             app(Environment::class),
@@ -75,10 +75,14 @@ final class StoredViewRecordPage extends VelmShellPage
             StoredViewRoutes::listViewFromRecordView($this->viewName),
         );
 
+        if (filter_var($listArch['readonly'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            return null;
+        }
+
         $formView = $listArch['form_view'] ?? $listArch['edit_view'] ?? null;
 
         if (! is_string($formView) || $formView === '') {
-            throw new \LogicException("No form_view on list arch for {$this->module}.{$this->viewName}.");
+            return null;
         }
 
         return StoredViewEditPage::getUrl([

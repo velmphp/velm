@@ -113,6 +113,7 @@ After installing **`admin`**, the shell exposes:
 |-----------|--------|
 | Users & groups | `res.users`, `res.groups` |
 | Access control | `ir.model.access`, `ir.rule` |
+| Security → Audit | `ir.audit.log`, `ir.login.log`, `ir.user.lifecycle` (from the `system_audit` module) |
 
 `res.users` uses Laravel’s `users` table; configure bootstrap credentials via `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`.
 

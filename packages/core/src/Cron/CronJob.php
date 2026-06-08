@@ -89,6 +89,9 @@ final class CronJob
             'workflow_escalate' => class_exists(\Velm\Modules\Workflow\WorkflowEscalation::class)
                 ? \Velm\Modules\Workflow\WorkflowEscalation::processOverdue($env)
                 : null,
+            'audit_purge' => class_exists(\Velm\Modules\SystemAudit\AuditRetention::class)
+                ? \Velm\Modules\SystemAudit\AuditRetention::purge($env)
+                : null,
             default => throw new \InvalidArgumentException("Unknown action_type {$kind}."),
         };
     }

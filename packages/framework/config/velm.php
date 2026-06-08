@@ -73,4 +73,15 @@ return [
         'backend' => env('VELM_ATTACHMENT_BACKEND'),
         'dir' => env('VELM_ATTACHMENT_DIR'),
     ],
+
+    /**
+     * IT audit log storage and retention.
+     *
+     * - dsn: optional database URL for a dedicated audit connection (empty = main app DB)
+     * - retention_days: purge audit/login/lifecycle rows older than this (daily cron)
+     */
+    'audit' => [
+        'dsn' => env('VELM_AUDIT_DSN'),
+        'retention_days' => (int) env('VELM_AUDIT_RETENTION_DAYS', 90),
+    ],
 ];

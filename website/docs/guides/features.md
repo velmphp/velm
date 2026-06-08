@@ -154,6 +154,27 @@ Demo: **Partners** module ships `partner.kanban`, `partner.graph`, and `partner.
 | `ir.model.access` | Model access — per-model CRUD flags |
 | `ir.rule` | Record rules — row-level domains |
 
+## System audit (IT audit trail)
+
+The **`system_audit`** module adds an append-only IT audit log for compliance:
+
+| Model | Purpose | Panel menus |
+|-------|---------|-------------|
+| `ir.audit.log` | CRUD trail for all models — before/after JSON, actor, IP, user agent, company | **Security → Audit → Audit log** |
+| `ir.login.log` | Login success/failure/logout events with session lifetime | **Security → Audit → Login history** |
+| `ir.user.lifecycle` | User lifecycle events (created, activated/deactivated, password/groups changes) | **Security → Audit → User lifecycle** |
+
+Key behaviors:
+
+- **Append-only** — application users cannot modify or delete audit rows; mutations are only allowed when `Environment::withAclBypass()` is active (used by internal writers and the retention cron).
+- **Company scoping** — audit rows carry a `company_id` where applicable (for `res.company` edits this is the company itself) so the shell can filter logs by the active company.
+- **Retention** — a daily cron job purges audit rows older than `VELM_AUDIT_RETENTION_DAYS` (default 90 days).
+
+Configuration (see [Production operations](./production#environment-variables)):
+
+- `VELM_AUDIT_DSN` — optional separate database URL for the audit tables (empty = main app DB)
+- `VELM_AUDIT_RETENTION_DAYS` — keep audit/login/lifecycle rows for this many days
+
 `res.users` maps to Laravel’s **`users`** table. Bootstrap admin: `VELM_ADMIN_EMAIL` / `VELM_ADMIN_PASSWORD`.
 
 Password handling: empty password on save leaves the hash unchanged; plain text is hashed on write. `password` is listed in `schemaExternalColumns()` so Velm schema sync does not treat it as a missing column.

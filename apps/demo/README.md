@@ -23,7 +23,7 @@ Path repositories to `../../packages/*` are committed in `composer.json` (monore
 ## What `composer run setup` does
 
 1. Publish Velm shell CSS/JS
-2. Laravel + Velm bootstrap migrations (`base`, `admin`, `geo_data`, `file_manager`)
+2. Laravel + Velm bootstrap migrations (`base`, `admin`, `geo_data`, `file_manager`, `system_audit`)
 3. Install reference modules: `partners`, `partners_ext`, `workflow`, `change_management`, `demo_relations`
 4. Seed demo Velm records (`velm:seed` — countries, partners, and other module fixtures)
 5. Seed admin user
@@ -50,6 +50,8 @@ You can still run `composer run velm-rebuild-ui` from this directory — it dele
 php artisan velm:migrate:fresh --yes --module=partners --module=partners_ext --module=workflow --module=change_management --module=demo_relations
 php artisan velm:seed
 ```
+
+Audit logs (`Security → Audit`) are created automatically when you use the shell — no extra setup is required beyond the `system_audit` module installed by `composer run setup`.
 
 ## Divergence from `apps/app`
 

@@ -10,7 +10,9 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Velm\Admin\Support\VelmPanel;
+use Velm\Environment;
 use Velm\Framework\Auth\UserProvisioner;
+use Velm\Modules\SystemAudit\AuditLoginLogger;
 
 #[Layout('velm-ui::layouts.auth')]
 final class Login extends Component
@@ -54,6 +56,12 @@ final class Login extends Component
         $remember = (bool) ($validated['data']['remember'] ?? false);
 
         if (! Auth::attempt($credentials, $remember)) {
+            AuditLoginLogger::log(
+                app(Environment::class),
+                'login_failure',
+                email: $credentials['email'],
+            );
+
             throw ValidationException::withMessages([
                 'data.email' => __('These credentials do not match our records.'),
             ]);
@@ -66,6 +74,14 @@ final class Login extends Component
 
         if ($authenticated !== null) {
             UserProvisioner::ensureProfile($authenticated);
+
+            $userId = $authenticated->getAuthIdentifier();
+            AuditLoginLogger::log(
+                app(Environment::class),
+                'login_success',
+                is_numeric($userId) ? (int) $userId : null,
+                $credentials['email'],
+            );
         }
 
         return redirect()->intended(VelmPanel::homeUrl());

@@ -58,6 +58,14 @@ cd website && npm install && npm start
 | `velmphp/admin` | `packages/admin` |
 | `velmphp/framework` | `packages/framework` |
 
+Common bundled modules (shipped from `packages/modules/modules/`):
+
+- **`base`** — core models (`res.company`, `res.users`, currencies, cron, ACL)
+- **`admin`** — panel shell, apps catalog, stored views
+- **`file_manager`** — attachments library and file pickers
+- **`geo_data`** — geography reference data and import actions
+- **`system_audit`** — IT audit trail (`ir.audit.log`, `ir.login.log`, `ir.user.lifecycle`) with CSV export, retention cron, and append-only logs
+
 Bundled Velm modules (`base`, `admin`, …) ship under `packages/modules/modules/`.
 
 ## Development
