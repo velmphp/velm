@@ -50,7 +50,7 @@ test('partner list column visibility can be toggled', function (): void {
 
 test('partner list m2o filter and clear query reset toolbar state', function (): void {
     $env = app(Environment::class);
-    $countryId = $env->model('res.country')->search(limit: 1)->ids()[0];
+    $countryId = $env->model('res.country')->create(['name' => 'Belgium', 'code' => 'BE'])->ids()[0];
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->test(PartnerListPage::class)

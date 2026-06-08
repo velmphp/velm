@@ -53,7 +53,7 @@ test('edit partner page saves arch form changes', function (): void {
 });
 
 test('create partner page prefills relational defaults from query string', function (): void {
-    $countryId = app(Environment::class)->model('res.country')->search(limit: 1)->ids()[0];
+    $countryId = app(Environment::class)->model('res.country')->create(['name' => 'Prefill Country', 'code' => 'PC'])->ids()[0];
 
     Livewire::actingAs(new GenericUser(['id' => 1, 'email' => 'admin@test']))
         ->withQueryParams(['country_id' => (string) $countryId])

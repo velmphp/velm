@@ -50,7 +50,7 @@ test('arch list page toggles boolean fields and ignores invalid deletes', functi
 
 test('arch list page groups records by boolean and relation fields', function (): void {
     $env = app(Environment::class);
-    $countryId = $env->model('res.country')->search(limit: 1)->ids()[0];
+    $countryId = $env->model('res.country')->create(['name' => 'Grouped Country', 'code' => 'GC'])->ids()[0];
     $env->model('res.partner')->create(['name' => 'Grouped Active', 'active' => true, 'country_id' => $countryId]);
     $env->model('res.partner')->create(['name' => 'Grouped Inactive', 'active' => false]);
 
