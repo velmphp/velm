@@ -63,3 +63,43 @@ test('geo reference seed action installs only the detected country profile', fun
         ->and($env->model('res.country')->search([['code', '=', 'FR']])->count())->toBe(1)
         ->and($env->model('res.country')->search([['code', '=', 'BE']])->count())->toBe(0);
 });
+
+test('geo reference seed action no-ops when geo models are missing or profile cannot load', function (): void {
+    $env = \Velm\Registry::using(function (\Velm\Registry $registry) {
+        $connection = \Velm\Database\PdoConnection::sqliteMemory();
+        (new \Velm\Schema\SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new \Velm\Environment($connection, $registry, uid: 1);
+    });
+
+    (new GeoReferenceSeedAction())->run($env);
+
+    expect($env->registry->has('res.country'))->toBeFalse();
+
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
+    $geoEnv = $installer->environment($roots);
+    $geoEnv->connection->execute('DELETE FROM res_country');
+    $geoEnv->connection->execute('DELETE FROM res_continent');
+
+    $failingHttp = new class implements GeoHttpGateway
+    {
+        public function get(string $url): array
+        {
+            throw new RuntimeException('offline');
+        }
+
+        public function post(string $url, array $body): array
+        {
+            throw new RuntimeException('Unexpected POST '.$url);
+        }
+    };
+
+    (new GeoReferenceSeedAction(
+        new GeoCountryDetector($failingHttp, 'BE'),
+        new GeoCountryProfileLoader($failingHttp),
+    ))->run($geoEnv);
+
+    expect($geoEnv->model('res.country')->search([['code', '=', 'BE']])->count())->toBe(0);
+});

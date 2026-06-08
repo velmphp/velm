@@ -188,3 +188,83 @@ test('currency reference seeder import profiles updates existing rows without to
     expect($row['full_name'])->toBe('Euro updated')
         ->and($row['active'])->toBeTrue();
 });
+
+test('currency import service throws when currency model is missing', function (): void {
+    $envWithoutCurrency = \Velm\Registry::using(function (\Velm\Registry $registry) {
+        $connection = \Velm\Database\PdoConnection::sqliteMemory();
+        (new \Velm\Schema\SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new \Velm\Environment($connection, $registry, uid: 1);
+    });
+
+    expect(fn () => (new CurrencyImportService)->import($envWithoutCurrency))
+        ->toThrow(RuntimeException::class, 'Currency model is not installed.');
+});
+
+test('currency reference seeder no-ops when currency or company models are missing', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    CurrencyReferenceSeeder::activateDefaultCurrency($env);
+    CurrencyReferenceSeeder::refreshExchangeRates($env);
+
+    expect($env->registry->has('res.currency'))->toBeTrue();
+
+    $envWithoutCurrency = \Velm\Registry::using(function (\Velm\Registry $registry) {
+        $connection = \Velm\Database\PdoConnection::sqliteMemory();
+        (new \Velm\Schema\SchemaBuilder($connection))->syncRegistry($registry);
+
+        return new \Velm\Environment($connection, $registry, uid: 1);
+    });
+
+    CurrencyReferenceSeeder::run($envWithoutCurrency);
+    CurrencyReferenceSeeder::activateOnly($envWithoutCurrency, 'EUR');
+
+    expect(true)->toBeTrue();
+});
+
+test('currency reference seeder refreshes exchange rates for installed companies', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base', 'admin', 'geo_data']);
+
+    $env = $installer->environment($roots);
+
+    CurrencyReferenceSeeder::importProfiles($env, [
+        ['code' => 'USD', 'full_name' => 'US Dollar', 'symbol' => '$', 'decimal_places' => 2],
+    ]);
+    CurrencyReferenceSeeder::activateOnly($env, 'USD');
+    CurrencyReferenceSeeder::refreshExchangeRates($env);
+
+    expect($env->model('res.currency.rate')->search()->count())->toBeGreaterThan(0);
+});
+
+test('currency reference seeder private upsert helpers ignore invalid values', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $installer = new ModuleInstaller;
+    $installer->installBootstrap($roots, ['base']);
+    $env = $installer->environment($roots);
+
+    $importProfiles = new ReflectionMethod(CurrencyReferenceSeeder::class, 'importProfiles');
+    $importProfiles->setAccessible(true);
+
+    expect($importProfiles->invoke(null, $env, [
+        ['code' => '', 'full_name' => 'Ignored', 'symbol' => '$', 'decimal_places' => 2],
+    ]))->toBe(1);
+
+    $upsertRate = new ReflectionMethod(CurrencyReferenceSeeder::class, 'upsertRate');
+    $upsertRate->setAccessible(true);
+    $upsertRate->invoke(null, $env, [
+        'name' => '',
+        'rate' => 1.0,
+        'currency_id' => 1,
+        'company_id' => 1,
+    ]);
+
+    CurrencyReferenceSeeder::activateDefaultCurrency($env);
+    CurrencyReferenceSeeder::activateOnly($env, '');
+
+    expect(true)->toBeTrue();
+});

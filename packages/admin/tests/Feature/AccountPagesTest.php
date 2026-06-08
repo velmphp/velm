@@ -124,6 +124,41 @@ test('change password page updates hash when current password matches', function
         ->and(Hash::check('new-secret-99', (string) $newHash))->toBeTrue();
 });
 
+test('profile page exposes company options and saves company_id', function (): void {
+    $env = app(Environment::class);
+    $companyA = (int) $env->model('res.company')->create(['name' => 'Zulu Co'])->ids()[0];
+    $companyB = (int) $env->model('res.company')->create(['name' => 'Alpha Co'])->ids()[0];
+    $userId = 1;
+
+    $env->withAclBypass(fn () => $env->browse('res.users', [$userId])->write([
+        'name' => 'Company User',
+        'email' => 'company-user@velm.test',
+        'company_id' => $companyA,
+    ]));
+
+    app()->instance(Environment::class, new Environment(
+        $env->connection,
+        $env->registry,
+        $userId,
+    ));
+
+    $page = Livewire::actingAs(new GenericUser(['id' => $userId, 'email' => 'company-user@velm.test']))
+        ->test(ProfilePage::class);
+
+    $options = $page->instance()->companyOptions();
+
+    expect($options)->not->toBeEmpty()
+        ->and($options[0]['label'])->toBe('Alpha Co')
+        ->and(collect($options)->pluck('value')->all())->toContain($companyA, $companyB);
+
+    $page->set('data.company_id', $companyB)
+        ->call('saveProfile')
+        ->assertHasNoErrors();
+
+    expect($env->withAclBypass(fn () => $env->browse('res.users', [$userId])->read(['company_id'])[0]['company_id']))
+        ->toBe($companyB);
+});
+
 test('change password page rejects wrong current password', function (): void {
     $env = app(Environment::class);
     $userId = $env->model('res.users')->create([

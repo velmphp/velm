@@ -47,3 +47,34 @@ test('apps catalog disables uninstall for configured bootstrap modules', functio
         ->and($catalog->firstWhere('name', 'geo_data')['uninstall_blockers'] ?? [])->toContain('geo_data is a protected system module')
         ->and($catalog->firstWhere('name', 'file_manager')['uninstall_blockers'] ?? [])->toContain('file_manager is a protected system module');
 });
+
+test('apps catalog entry lookup returns one module row', function (): void {
+    $roots = [dirname(__DIR__, 2).'/modules'];
+    $catalog = new AppsCatalog;
+
+    expect($catalog->entry($roots, 'base')['name'] ?? null)->toBe('base')
+        ->and($catalog->entry($roots, 'missing-module'))->toBeNull();
+});
+
+test('apps catalog summarizes schema and drift diffs via private helpers', function (): void {
+    $catalog = new AppsCatalog;
+    $diff = new \Velm\Schema\SchemaDiff;
+    $diff->newTables = [['demo_table', 'Demo']];
+    $diff->newColumns = [['demo_table', 'demo_col', \Velm\Fields\CharField::make()]];
+    $diff->alterations = [new \Velm\Schema\SchemaAlteration('demo_table', 'demo_col', 'nullable', 'allow null')];
+    $diff->orphanColumns = [['demo_table', 'orphan_col']];
+
+    $actionable = new ReflectionMethod(AppsCatalog::class, 'summarizeActionableDiff');
+    $actionable->setAccessible(true);
+    $drift = new ReflectionMethod(AppsCatalog::class, 'summarizeDriftDiff');
+    $drift->setAccessible(true);
+    $combine = new ReflectionMethod(AppsCatalog::class, 'combineSyncSummaries');
+    $combine->setAccessible(true);
+
+    expect($actionable->invoke($catalog, $diff, true))->toContain('new table')
+        ->and($actionable->invoke($catalog, new \Velm\Schema\SchemaDiff, true))->toBe('Schema changes pending')
+        ->and($drift->invoke($catalog, $diff, false))->toContain('orphan column')
+        ->and($drift->invoke($catalog, new \Velm\Schema\SchemaDiff, false))->toBe('Schema drift (Sync cannot auto-fix)')
+        ->and($combine->invoke($catalog, 'Schema', 'UI'))->toBe('Schema; UI')
+        ->and($combine->invoke($catalog, '', ''))->toBe('');
+});
